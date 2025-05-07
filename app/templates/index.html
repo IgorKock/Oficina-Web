@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Inicial</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+	    <style>
+        .logo-container {
+            display: flex;
+            justify-content: center; /* Centraliza horizontalmente */
+            align-items: center;
+            margin: 0 auto; /* Centraliza no topo */
+            padding: 0px 0; /* Espaçamento acima e abaixo */
+            width: 100%; /* Ocupa toda a largura */
+        }
+
+        .logo-container img {
+            max-width: 200px; /* Tamanho máximo da logo */
+            height: auto; /* Mantém proporção */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Garantia de posicionamento */
+        .container {
+            margin-top: 0px; /* Espaço abaixo da logo */
+        }
+	</style>
+</head>
+<body>
+    <!-- Adicionar contêiner da logo fixo no topo -->
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa">
+    </div>
+    <div class="container mt-3">
+        <h1 class="text-center">Bem-vindo à Oficina Web</h1>
+        <p class="text-center">Escolha o que você gostaria de acessar:</p>
+
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <!-- Link para Inventário -->
+            <a href="{{ url_for('main.inventario') }}" class="btn btn-primary btn-lg">Inventário</a>
+            <!-- Link para Lista de Clientes -->
+			<a href="{{ url_for('main.client') }}" class="btn btn-secondary btn-lg">Lista de Clientes</a>
+        </div>
+    </div>
+</body>
+</html>

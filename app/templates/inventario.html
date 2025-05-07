@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventário de Peças</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <style>
+        /* Layout principal */
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Contêiner da Logo */
+		.logo-container {
+			display: flex;
+			justify-content: center; /* Centraliza horizontalmente */
+			align-items: center;
+			width: 50%;
+			padding: 10px 0;
+			position: absolute; /* Impede que ela sobreponha o menu ou o conteúdo */
+			top: 10px; /* Ajusta a posição para evitar sobreposição */
+			left: 50%;
+			transform: translateX(-50%); /* Mantém centralizado */
+			z-index: 1001;
+			background: none; /* Remove qualquer fundo branco */
+			pointer-events: none; /* Permite que elementos abaixo sejam clicáveis */
+		}
+
+        .logo-container img {
+            max-width: 125px; /* Tamanho máximo */
+            height: auto; /* Mantém proporção */
+			background: none; /* Remove qualquer fundo da imagem */
+        }
+
+        /* Ajuste no Menu Lateral */
+		.menu-lateral {
+			width: 200px;
+			height: 100vh; /* Garante que ocupe toda a altura da tela */
+			position: fixed;
+			top: 0; /* Começa no topo */
+			left: 0;
+			background-color: #343a40;
+			padding-top: 20px;
+			transition: width 0.3s ease-in-out;
+			z-index: 1000;
+			overflow-y: auto; /* Adiciona rolagem para evitar cortes */
+		}
+
+        .menu-lateral.recolhido {
+            width: 0px;
+        }
+
+        .menu-lateral a {
+            display: block;
+            color: white;
+            padding: 15px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .menu-lateral.recolhido a {
+            opacity: 0;
+        }
+
+        .menu-lateral a:hover {
+            background-color: #495057;
+        }
+
+        /* 🔹 Ajuste no Conteúdo */
+        .conteudo {
+            flex-grow: 1;
+            padding: 20px;
+            margin-left: 200px;
+            margin-top: 80px;
+            transition: margin-left 0.3s ease-in-out;
+            position: relative;
+            height: calc(100vh - 80px);
+            overflow: auto;
+        }
+
+        .conteudo.menu-recolhido {
+            margin-left: 60px;
+            width: calc(100% - 60px);
+        }
+
+        /* Botão de recolher menu */
+        .toggle-btn {
+            position: fixed;
+            top: 70px;
+            left: 210px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            transition: left 0.3s ease-in-out;
+            z-index: 1002;
+        }
+
+        .toggle-btn.recolhido {
+            left: 70px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Contêiner da Logo -->
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa">
+    </div>
+
+    <!-- Menu lateral fixo -->
+    <div class="menu-lateral" id="menu">
+        <button class="toggle-btn" onclick="toggleMenu()">☰</button>
+        <a href="/">Menu Inicial</a>
+        <a href="/listaclientes">Lista de Clientes</a>
+    </div>
+
+    <!-- Conteúdo da página -->
+    <div class="conteudo" id="conteudo">
+		<p></p>
+        <p><strong>Clique no botão ☰ para recolher ou expandir o menu.</strong></p>
+
+        <!-- Formulário para Adicionar Nova Peça -->
+        <h3 class="mt-2">Adicionar Nova Peça</h3>
+        <form action="/add_peca" method="POST" class="mb-2">
+            <input type="text" name="nome" class="form-control mb-2" placeholder="Nome da Peça" required>
+            <input type="text" name="descricao" class="form-control mb-2" placeholder="Descrição (opcional)">
+            <input type="number" name="quantidade" class="form-control mb-2" placeholder="Quantidade" required>
+            <input type="number" step="0.01" name="preco" class="form-control mb-2" placeholder="Preço por unidade" required>
+            <button type="submit" class="btn btn-primary mb-2">Adicionar</button>
+        </form>
+
+        <!-- Tabela de Peças -->
+        <h3 class="mt-2">Peças no Inventário</h3>
+        {% if pecas %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Descrição</th>
+                    <th>Quantidade</th>
+                    <th>Preço</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for peca in pecas %}
+                <tr>
+                    <td>{{ peca.nome }}</td>
+                    <td>{{ peca.descricao or 'N/A' }}</td>
+                    <td>{{ peca.quantidade }}</td>
+                    <td>R$ {{ "%.2f"|format(peca.preco) }}</td>
+                    <td>
+                        <form action="/update_peca/{{ peca.id }}" method="POST" class="d-inline">
+                            <input type="text" name="nome" class="form-control mb-2" value="{{ peca.nome }}" required>
+                            <input type="text" name="descricao" class="form-control mb-2" value="{{ peca.descricao or '' }}">
+                            <input type="number" name="quantidade" class="form-control mb-2" value="{{ peca.quantidade }}" required>
+                            <input type="number" step="0.01" name="preco" class="form-control mb-2" value="{{ peca.preco }}" required>
+                            <button type="submit" class="btn btn-warning btn-sm">Atualizar</button>
+                        </form>
+                        <form action="/delete_peca/{{ peca.id }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-sm">Remover</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Nenhuma peça encontrada no inventário.</p>
+        {% endif %}
+    </div>
+
+    <!-- JavaScript para alternar estado do menu -->
+    <script>
+        function toggleMenu() {
+            let menu = document.getElementById("menu");
+            let conteudo = document.getElementById("conteudo");
+            let botao = document.querySelector(".toggle-btn");
+
+            if (menu.classList.contains("recolhido")) {
+                menu.classList.remove("recolhido");
+                conteudo.classList.remove("menu-recolhido");
+                botao.classList.remove("recolhido");
+            } 
+			else {
+                menu.classList.add("recolhido");
+                conteudo.classList.add("menu-recolhido");
+                botao.classList.add("recolhido");
+            }
+        }
+    </script>
+
+</body>
+</html>

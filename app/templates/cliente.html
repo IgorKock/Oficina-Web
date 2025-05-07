@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Cliente</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <script>
+        // Função para adicionar novos campos de telefone
+        function adicionarCampoTelefone() {
+            const container = document.getElementById('telefones-container');
+            const novoCampo = document.createElement('div');
+            novoCampo.classList.add('mb-2');
+            novoCampo.innerHTML = `
+                <input type="text" name="numeros[]" class="form-control" placeholder="Digite o número adicional" required>
+            `;
+            container.appendChild(novoCampo);
+        }
+    </script>
+		    <style>
+        /* Layout principal */
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* 🔹 Contêiner da Logo */
+		.logo-container {
+			display: flex;
+			justify-content: center; /* 🔹 Centraliza horizontalmente */
+			align-items: center;
+			width: 50%;
+			padding: 10px 0;
+			position: absolute; /* 🔹 Impede que ela sobreponha o menu ou o conteúdo */
+			top: 10px; /* 🔹 Ajusta a posição para evitar sobreposição */
+			left: 50%;
+			transform: translateX(-50%); /* 🔹 Mantém centralizado */
+			z-index: 1001;
+			background: none; /* 🔹 Remove qualquer fundo branco */
+			pointer-events: none; /* 🔹 Permite que elementos abaixo sejam clicáveis */
+		}
+
+        .logo-container img {
+            max-width: 125px; /* Tamanho máximo */
+            height: auto; /* Mantém proporção */
+			background: none; /* Remove qualquer fundo da imagem */
+        }
+
+        /* Ajuste no Menu Lateral */
+		.menu-lateral {
+			width: 200px;
+			height: 100vh; /* Garante que ocupe toda a altura da tela */
+			position: fixed;
+			top: 0; /* Começa no topo */
+			left: 0;
+			background-color: #343a40;
+			padding-top: 20px;
+			transition: width 0.3s ease-in-out;
+			z-index: 1000;
+			overflow-y: auto; /* Adiciona rolagem para evitar cortes */
+		}
+
+        .menu-lateral.recolhido {
+            width: 0px;
+        }
+
+        .menu-lateral a {
+            display: block;
+            color: white;
+            padding: 15px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .menu-lateral.recolhido a {
+            opacity: 0;
+        }
+
+        .menu-lateral a:hover {
+            background-color: #495057;
+        }
+
+        /* 🔹 Ajuste no Conteúdo */
+        .conteudo {
+            flex-grow: 1;
+            padding: 20px;
+            margin-left: 200px;
+            margin-top: 80px;
+            transition: margin-left 0.3s ease-in-out;
+            position: relative;
+            height: calc(100vh - 80px);
+            overflow: auto;
+        }
+
+        .conteudo.menu-recolhido {
+            margin-left: 60px;
+            width: calc(100% - 60px);
+        }
+
+        /* 🔹 Botão de recolher menu */
+        .toggle-btn {
+            position: fixed;
+            top: 70px;
+            left: 210px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            transition: left 0.3s ease-in-out;
+            z-index: 1002;
+        }
+
+        .toggle-btn.recolhido {
+            left: 70px;
+		}
+	</style>
+</head>
+<body>
+    <!-- Adicionar contêiner da logo fixo no topo -->
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa">
+    </div>
+    <div class="menu-lateral" id="menu">
+        <button class="toggle-btn" onclick="toggleMenu()">☰</button>
+        <a href="/">Menu Inicial</a>
+        <a href="/listaclientes">Lista de Clientes</a>
+		<a href="/inventario">Inventario</a>
+    </div>
+
+    <!-- Conteúdo da página -->
+    <div class="conteudo" id="conteudo">
+        <p></p>
+        <p><strong>Clique no botão ☰ para recolher ou expandir o menu.</strong></p>
+		
+    <div class="container mt">
+		<div class="d-flex gap-2">
+		</div>
+            <h1>Detalhes do Cliente</h1>
+    <p><strong>Nome:</strong> {{ cliente.nome }}</p>
+	<p><strong>CPF:</strong> {{ cliente.cpf or "CPF não registrado" }}</p>
+    <p><strong>Endereço:</strong> {{ cliente.endereco or "Endereço não registrado" }}</p>
+    <p><strong>Cidade:</strong> {{ cliente.cidade or "Cidade não registrada" }}</p>
+    <p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>	
+	<p><strong>Bairro:</strong> {{ cliente.bairro or "Bairro não registrado" }}</p>
+    <p><strong>CEP:</strong> {{ cliente.cep or "CEP não registrado" }}</p>
+
+    <!-- Telefones -->
+    <h2>Telefones</h2>
+    {% if telefones %}
+    <ul>
+        {% for telefone in telefones %}
+        <li>{{ telefone.numero }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Nenhum telefone registrado.</p>
+    {% endif %}
+
+		<!-- Formulário para Adicionar Telefones -->
+		<form action="/add_telefone/{{ cliente.id }}" method="POST">
+			<div id="telefones-container" class="mb-2">
+			<input type="text" name="numeros[]" class="form-control mb-2" placeholder="Digite o telefone" required>
+		</div>
+
+		<!-- Botões alinhados -->
+		<div class="d-flex gap-2">
+			<button type="button" class="btn btn-secondary" onclick="adicionarCampoTelefone()">Adicionar Telefone</button>
+			<button type="submit" class="btn btn-success">Salvar Telefones</button>
+		</div>
+		</form>
+<h3 class="mt-4">Carros do Cliente</h3>
+{% if carros %}
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Marca</th>
+            <th>Modelo</th>
+			<th>Motor</th>
+            <th>Ano</th>
+            <th>Placa</th>
+			<th>Quilometragem</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for carro in carros %}
+        <tr>
+            <td>{{ carro.marca }}</td>
+            <td>{{ carro.modelo }}</td>
+			<td>{{ carro.motor }}</td>
+            <td>{{ carro.ano }}</td>
+            <td>{{ carro.placa }}</td>
+			<td>{{ carro.quilometro }} KMs rodados</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Nenhum carro registrado para este cliente.</p>
+{% endif %}
+		<!-- Área para Adicionar Informações de Carros -->
+<h3 class="mt-4">Adicionar Informações do Carro</h3>
+<form action="/add_carros_cliente/{{ cliente.id }}" method="POST">
+    <div id="carros-container">
+        <div class="carro-form mb">
+            <input type="text" name="marca" class="form-control mb" placeholder="Marca">
+            <input type="text" name="modelo" class="form-control mb" placeholder="Modelo">
+			<input type="text" name="motor" class="form-control mb" placeholder="Motor">
+            <input type="number" name="ano" class="form-control mb" placeholder="Ano">
+            <input type="text" name="placa" class="form-control mb" placeholder="Placa">
+			<input type="number" name="quilometro" class="form-control mb" placeholder="Quilometragem">
+        </div>
+    </div>
+    <!-- Botão para Adicionar Mais Carros -->
+    <button type="button" class="btn btn-primary mb-2" onclick="adicionarCarro()">Adicionar mais um carro</button>
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success">Salvar</button>
+    </div>
+</form>
+
+<h3 class="mt-4">Atualizar Informações dos Carros</h3>
+{% if carros %}
+<form action="/update_carros_cliente/{{ cliente.id }}" method="POST">
+    {% for carro in carros %}
+    <div class="carro-form mb">
+        <input type="hidden" name="carro_id" value="{{ carro.id }}">
+        <input type="text" name="marca_{{ carro.id }}" class="form-control mb" placeholder="Marca" value="{{ carro.marca }}">
+        <input type="text" name="modelo_{{ carro.id }}" class="form-control mb" placeholder="Modelo" value="{{ carro.modelo }}">
+		<input type="text" name="motor_{{ carro.id }}" class="form-control mb" placeholder="Motor" value="{{ carro.motor }}">
+        <input type="number" name="ano_{{ carro.id }}" class="form-control mb" placeholder="Ano" value="{{ carro.ano }}">
+        <input type="text" name="placa_{{ carro.id }}" class="form-control mb" placeholder="Placa" value="{{ carro.placa }}">
+		<input type="number" name="quilometro_{{ carro.id }}" class="form-control mb" placeholder="Quilometragem" value="{{ carro.quilometro }}">
+    </div>
+    {% endfor %}
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-warning">Atualizar Carros</button>
+    </div>
+</form>
+{% else %}
+<p>Nenhum carro registrado para atualizar.</p>
+{% endif %}
+
+
+ <!-- Formulário para Atualizar o Endereço e Estado -->
+    <h3 class="mt-4">Atualizar CPF, Endereço e Estado</h3>
+    <form action="/update_dados_cliente/{{ cliente.id }}" method="POST">
+	<input type="text" name="cpf" class="form-control mb" placeholder="CPF" value="{{ cliente.cpf or '' }}">
+    <input type="text" name="endereco" class="form-control mb" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
+    <input type="text" name="cidade" class="form-control mb" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
+    <select name="estado" class="form-control mb">
+        <option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
+        <option value="AL" {% if cliente.estado == 'AL' %}selected{% endif %}>Alagoas</option>
+        <option value="AP" {% if cliente.estado == 'AP' %}selected{% endif %}>Amapá</option>
+        <option value="AM" {% if cliente.estado == 'AM' %}selected{% endif %}>Amazonas</option>
+        <option value="BA" {% if cliente.estado == 'BA' %}selected{% endif %}>Bahia</option>
+        <option value="CE" {% if cliente.estado == 'CE' %}selected{% endif %}>Ceará</option>
+        <option value="DF" {% if cliente.estado == 'DF' %}selected{% endif %}>Distrito Federal</option>
+        <option value="ES" {% if cliente.estado == 'ES' %}selected{% endif %}>Espírito Santo</option>
+        <option value="GO" {% if cliente.estado == 'GO' %}selected{% endif %}>Goiás</option>
+        <option value="MA" {% if cliente.estado == 'MA' %}selected{% endif %}>Maranhão</option>
+        <option value="MT" {% if cliente.estado == 'MT' %}selected{% endif %}>Mato Grosso</option>
+        <option value="MS" {% if cliente.estado == 'MS' %}selected{% endif %}>Mato Grosso do Sul</option>
+        <option value="MG" {% if cliente.estado == 'MG' %}selected{% endif %}>Minas Gerais</option>
+        <option value="PA" {% if cliente.estado == 'PA' %}selected{% endif %}>Pará</option>
+        <option value="PB" {% if cliente.estado == 'PB' %}selected{% endif %}>Paraíba</option>
+        <option value="PR" {% if cliente.estado == 'PR' %}selected{% endif %}>Paraná</option>
+        <option value="PE" {% if cliente.estado == 'PE' %}selected{% endif %}>Pernambuco</option>
+        <option value="PI" {% if cliente.estado == 'PI' %}selected{% endif %}>Piauí</option>
+        <option value="RJ" {% if cliente.estado == 'RJ' %}selected{% endif %}>Rio de Janeiro</option>
+        <option value="RN" {% if cliente.estado == 'RN' %}selected{% endif %}>Rio Grande do Norte</option>
+        <option value="RS" {% if cliente.estado == 'RS' %}selected{% endif %}>Rio Grande do Sul</option>
+        <option value="RO" {% if cliente.estado == 'RO' %}selected{% endif %}>Rondônia</option>
+        <option value="RR" {% if cliente.estado == 'RR' %}selected{% endif %}>Roraima</option>
+        <option value="SC" {% if cliente.estado == 'SC' %}selected{% endif %}>Santa Catarina</option>
+        <option value="SP" {% if cliente.estado == 'SP' %}selected{% endif %}>São Paulo</option>
+        <option value="SE" {% if cliente.estado == 'SE' %}selected{% endif %}>Sergipe</option>
+        <option value="TO" {% if cliente.estado == 'TO' %}selected{% endif %}>Tocantins</option>
+    </select>
+	<input type="text" name="bairro" class="form-control mb" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
+    <input type="text" name="cep" class="form-control mb" placeholder="CEP" value="{{ cliente.cep or ''}}">
+		<div class="d-flex gap-2">
+        <button type="submit" class="btn btn-warning">Atualizar</button>
+		</div>
+    </form>
+
+        <!-- Histórico do Cliente -->
+        <h2>Histórico de Serviços</h2>
+        {% if historicos %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for historico in historicos %}
+        <tr>
+            <td>{{ historico.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+            <td>{{ historico.descricao }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+        {% else %}
+        <p>Nenhum histórico registrado para este cliente.</p>
+        {% endif %}
+
+        <!-- Formulário para Adicionar ao Histórico -->
+        <form action="/add_historico/{{ cliente.id }}" method="POST" class="mt">
+            <h3>Adicionar ao Histórico</h3>
+            <input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control mb" required>
+            <button type="submit" class="btn btn-primary">Adicionar Histórico</button>
+        </form>
+
+        <!-- Pagamentos do Cliente -->
+        <h2 class="mt-4">Pagamentos</h2>
+        {% if pagamentos %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Valor (R$)</th>
+                    <th>Método</th>
+                    <th>Tipo</th>
+                    <th>Parcelas</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pagamento in pagamentos %}
+                <tr>
+                    <td>{{ pagamento.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                    <td>R$ {{ pagamento.valor }}</td>
+                    <td>{{ pagamento.metodo }}</td>
+                    <td>{{ pagamento.tipo_pagamento if pagamento.tipo_pagamento else 'N/A' }}</td>
+                    <td>
+                        {% if pagamento.tipo_pagamento == 'Parcelado' %}
+                            {{ pagamento.parcelas }}x
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Este cliente ainda não possui pagamentos registrados.</p>
+        {% endif %}
+
+        <!-- Formulário para Registrar Pagamento -->
+        <form action="/add_pagamento/{{ cliente.id }}" method="POST" class="mt-4">
+            <h3>Registrar Pagamento</h3>
+            <input type="number" step="0.01" name="valor" placeholder="Valor (R$)" class="form-control mb-2" required>
+            
+            <!-- Método de Pagamento -->
+            <select name="metodo" id="metodo" class="form-control mb" required onchange="toggleOpcaoPagamento()">
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                <option value="Cartão de Débito">Cartão de Débito</option>
+                <option value="Pix">Pix</option>
+            </select>
+
+            <!-- Tipo de Pagamento para Cartão de Crédito -->
+            <div id="opcaoCartao" style="display: none;">
+                <label for="tipo_cartao">Tipo de Pagamento:</label>
+                <select name="tipo_cartao" id="tipo_cartao" class="form-control mb" onchange="toggleParcelas()">
+                    <option value="À vista">À vista</option>
+                    <option value="Parcelado">Parcelado</option>
+                </select>
+                
+                <!-- Número de Parcelas -->
+                <div id="opcaoParcelado" style="display: none;">
+                    <label for="parcelas">Quantidade de Parcelas:</label>
+                    <input type="number" name="parcelas" id="parcelas" min="1" max="12" placeholder="Número de parcelas" class="form-control mb">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Registrar Pagamento</button>
+        </form>
+		
+		<form id="print-form">
+            <div>
+                <input type="checkbox" id="dados-pessoais" class="select-to-print">
+                <label for="dados-pessoais">Dados Pessoais</label>
+            </div>
+            <div>
+                <input type="checkbox" id="veiculos" class="select-to-print">
+                <label for="veiculos">Veículos</label>
+            </div>
+            <div>
+                <input type="checkbox" id="telefones" class="select-to-print">
+                <label for="telefones">Telefones</label>
+            </div>
+			<div>
+                <input type="checkbox" id="historicos" class="select-to-print">
+                <label for="historicos">Historico</label>
+            </div>
+			<div>
+                <input type="checkbox" id="pagamentos" class="select-to-print">
+                <label for="pagamentos">Pagamento</label>
+            </div>
+        </form>
+		
+		        <!-- Conteúdo do Cliente -->
+        <div id="conteudo-cliente">
+            <div id="dados-pessoais-content" class="print-section">
+                <h4>Dados Pessoais</h4>
+                <p><strong>Nome:</strong> {{ cliente.nome }}</p>
+                <p><strong>CPF:</strong> {{ cliente.cpf or 'N/A' }}</p>
+                <p><strong>Endereço:</strong> {{ cliente.endereco or 'N/A' }}</p>
+				<p><strong>Bairro:</strong> {{ cliente.bairro or 'N/A' }}</p>
+                <p><strong>Cidade:</strong> {{ cliente.cidade or 'N/A' }}</p>
+				<p><strong>Estado:</strong> {{ cliente.estado or 'N/A' }}</p>
+            </div>
+
+            <div id="veiculos-content" class="print-section">
+                <h4>Veículos</h4>                
+                    {% for carro in carros %}
+						<p><strong>Marca:</strong> {{ carro.marca }}</p>
+                        <p><strong>Modelo:</strong> {{ carro.modelo }}</p>
+						<p><strong>Motor:</strong> {{ carro.motor }}</p>
+						<p><strong>Ano:</strong> {{ carro.ano }}</p>
+                        <p><strong>Placa:</strong> {{ carro.placa }}</p> 
+						<p><strong>Quilometragem:</strong> {{ carro.quilometro }} KMs rodados</p> 
+                    {% endfor %}               
+            </div>
+
+            <div id="telefones-content" class="print-section">
+                <h4>Telefones</h4>                
+                    {% for telefone in telefones %}
+                    <p>{{ telefone.numero }}</p>
+                    {% endfor %}
+					</div>
+				<div id="historicos-content" class="print-section">
+                <h4>Histórico</h4>                
+                    {% for historico in historicos %}
+					<p>{{ historico.data.strftime ('%d/%m/%Y %H:%M'), historico.descricao }}</p>
+                    {% endfor %}  
+					</div>
+				<div id="pagamentos-content" class="print-section">
+				<h4>Pagamentos</h4>
+                <ul>
+                    {% for pagamento in pagamentos %}
+					<li>
+					<p>{{ pagamento.data.strftime('%d/%m/%Y %H:%M') }}</p>
+					<p>R$ {{ pagamento.valor }}</p>
+					<p>{{ pagamento.metodo }}</p>
+					<p>{{ pagamento.tipo_pagamento if pagamento.tipo_pagamento else 'N/A' }}</p>
+					<p>{% if pagamento.tipo_pagamento == 'Parcelado' %}
+                            {{ pagamento.parcelas }}x
+                        {% else %}
+                            -
+                        {% endif %}</p>
+					</li>
+					{% endfor %}
+                </ul>
+            </div>
+        </div>
+		
+		<!-- Botão para Imprimir -->
+        <button type="button" class="btn btn-primary" onclick="imprimirSelecionados()">Imprimir Selecionados</button>
+		<div class="d-flex gap-2">
+    </div>
+</div>
+    <script>
+        // Exibir ou ocultar o campo de opções do método de pagamento
+        function toggleOpcaoPagamento() {
+            const metodo = document.getElementById('metodo').value;
+            const opcaoCartao = document.getElementById('opcaoCartao');
+            
+            if (metodo === "Cartão de Crédito") {
+                opcaoCartao.style.display = "block";
+            } else {
+                opcaoCartao.style.display = "none";
+                document.getElementById('opcaoParcelado').style.display = "none";
+            }
+        }
+
+        // Exibir ou ocultar o número de parcelas
+        function toggleParcelas() {
+            const tipoCartao = document.getElementById('tipo_cartao').value;
+            const opcaoParcelado = document.getElementById('opcaoParcelado');
+            
+            if (tipoCartao === "Parcelado") {
+                opcaoParcelado.style.display = "block";
+            } else {
+                opcaoParcelado.style.display = "none";
+            }
+        }
+    function adicionarCarro() {
+        const carrosContainer = document.getElementById('carros-container');
+        const novoCarro = document.createElement('div');
+        novoCarro.className = 'carro-form mb-3';
+        novoCarro.innerHTML = `
+            <input type="text" name="marca" class="form-control mb-2" placeholder="Marca">
+            <input type="text" name="modelo" class="form-control mb-2" placeholder="Modelo">
+            <input type="number" name="ano" class="form-control mb-2" placeholder="Ano">
+            <input type="text" name="placa" class="form-control mb-2" placeholder="Placa">
+        `;
+        carrosContainer.appendChild(novoCarro);
+    }
+	// Função para o menu
+		function toggleMenu() {
+		let menu = document.getElementById("menu");
+		let conteudo = document.getElementById("conteudo");
+		let botao = document.querySelector(".toggle-btn");
+
+		if (menu.classList.contains("recolhido")) {
+			menu.classList.remove("recolhido");
+			conteudo.classList.remove("menu-recolhido");
+			botao.classList.remove("recolhido");
+	}
+		else {
+			menu.classList.add("recolhido");
+			conteudo.classList.add("menu-recolhido");
+			botao.classList.add("recolhido");
+		}
+	}
+	 // Função para imprimir os dados selecionados
+        function imprimirSelecionados() {
+            const checkboxes = document.querySelectorAll('.select-to-print');
+            const printContent = document.createElement('div');
+
+            // Verifica as seções selecionadas
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    const sectionId = checkbox.id + '-content';
+                    const sectionContent = document.getElementById(sectionId);
+
+                    if (sectionContent) {
+                        printContent.innerHTML += sectionContent.outerHTML;
+                    }
+                }
+            });
+
+            if (!printContent.innerHTML) {
+                alert('Selecione pelo menos uma seção para imprimir.');
+                return;
+            }
+
+            // Abre uma nova janela para impressão
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Impressão do cliente</title>
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+                    <style>
+                        body { font-family: Arial, sans-serif; }
+                        .print-section { margin-bottom: 15px; }
+                    </style>
+                </head>
+                <body>
+				<div align="center">
+				<img src="{{ url_for('static', filename='img/logo.png')  }}" width="150" height="auto">
+				<p><strong>CNPJ:</strong> 17.165.775/0001-10 <strong>WhatsApp:</strong> 55 99971-4234</p>
+				<\div>
+				<div align="left">
+                ${printContent.innerHTML}
+				<\div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+    </script>
+</body>
+</html>
