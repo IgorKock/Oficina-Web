@@ -19,10 +19,15 @@ def ajustar_para_brasilia(data_utc):
         fuso_brasilia = pytz.timezone('America/Sao_Paulo')
         return data_utc.astimezone(fuso_brasilia)
 
-@main.route('/inventario')
+@main.route('/inventario', methods=['GET'])
 def inventario():
-    pecas = Peca.query.all()  # Recupera todas as peças
-    return render_template('inventario.html', pecas=pecas)
+    query = request.args.get('query', '').lower()
+    pecas = db.session.query(Peca).all()
+
+    if query:
+        pecas = [peca for peca in pecas if query in peca.nome.lower() or query in peca.descricao.lower()]
+
+    return render_template('inventario.html', pecas=pecas, query=query)
 
 @main.route('/listaclientes')
 def client():
