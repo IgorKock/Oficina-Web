@@ -195,7 +195,7 @@
             <td>{{ carro.modelo }}</td>
 			<td>{{ carro.motor }}</td>
             <td>{{ carro.ano }}</td>
-            <td>{{ carro.placa }}</td>
+            <td>{{ carro.placa or "Placa não registrada" }}</td>
 			<td>{{ carro.quilometro }} KMs rodados</td>
         </tr>
         {% endfor %}
@@ -412,12 +412,13 @@
         <div id="conteudo-cliente">
             <div id="dados-pessoais-content" class="print-section">
                 <h4>Dados Pessoais</h4>
-                <p><strong>Nome:</strong> {{ cliente.nome }}</p>
-                <p><strong>CPF:</strong> {{ cliente.cpf or 'N/A' }}</p>
-                <p><strong>Endereço:</strong> {{ cliente.endereco or 'N/A' }}</p>
-				<p><strong>Bairro:</strong> {{ cliente.bairro or 'N/A' }}</p>
-                <p><strong>Cidade:</strong> {{ cliente.cidade or 'N/A' }}</p>
-				<p><strong>Estado:</strong> {{ cliente.estado or 'N/A' }}</p>
+				<p><strong>Nome:</strong> {{ cliente.nome }}</p>
+				<p><strong>CPF:</strong> {{ cliente.cpf or "CPF não registrado" }}</p>
+				<p><strong>Endereço:</strong> {{ cliente.endereco or "Endereço não registrado" }}</p>
+				<p><strong>Cidade:</strong> {{ cliente.cidade or "Cidade não registrada" }}</p>
+				<p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>	
+				<p><strong>Bairro:</strong> {{ cliente.bairro or "Bairro não registrado" }}</p>
+				<p><strong>CEP:</strong> {{ cliente.cep or "CEP não registrado" }}</p>
             </div>
 
             <div id="veiculos-content" class="print-section">
@@ -427,7 +428,7 @@
                         <p><strong>Modelo:</strong> {{ carro.modelo }}</p>
 						<p><strong>Motor:</strong> {{ carro.motor }}</p>
 						<p><strong>Ano:</strong> {{ carro.ano }}</p>
-                        <p><strong>Placa:</strong> {{ carro.placa }}</p> 
+                        <p><strong>Placa:</strong> {{ carro.placa or "Placa não registrada" }}</p> 
 						<p><strong>Quilometragem:</strong> {{ carro.quilometro }} KMs rodados</p> 
                     {% endfor %}               
             </div>
