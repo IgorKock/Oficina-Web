@@ -10,7 +10,7 @@
             const container = document.getElementById('telefones-container');
             const novoCampo = document.createElement('div');
             novoCampo.classList.add('mb-2');
-            novoCampo.innerHTML = `<input type="text" name="numeros[]" class="form-control" placeholder="Telefone adicional" required>`;
+            novoCampo.innerHTML = `Telefone adicional<br><input type="text" name="numeros[]" class="form-control" placeholder="Telefone adicional" required>`;
             container.appendChild(novoCampo);
         }
     </script>
@@ -136,6 +136,7 @@
 				
         <h1>Gerenciamento de Clientes</h1>
 		<form action="/listaclientes" method="GET" class="mb">
+		<label for="query">Buscar clientes por nome ou telefone</label>
     <div class="input-group">
         <input type="text" name="query" class="form-control" placeholder="Buscar clientes por nome ou telefone" value="{{ search_query }}">
         <button type="submit" class="btn btn-primary">Buscar</button>
@@ -175,7 +176,7 @@
                 <input type="text" name="nome" id="nome" class="form-control" placeholder="Nome" required>
             </div>
             <div id="telefones-container" class="mb">
-                <label for="telefones">Telefone(s)</label>
+                <label for="numeros[]">Telefone principal</label>
                 <input type="text" name="numeros[]" class="form-control mb-2" placeholder="Telefone principal" required>
             </div>
 			<div class="d-flex gap-2">

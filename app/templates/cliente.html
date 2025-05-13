@@ -12,7 +12,7 @@
             const novoCampo = document.createElement('div');
             novoCampo.classList.add('mb-2');
             novoCampo.innerHTML = `
-                <input type="text" name="numeros[]" class="form-control" placeholder="Digite o número adicional" required>
+                Digite o telefone adicional<input type="text" name="numeros[]" class="form-control" placeholder="Digite o telefone adicional" required>
             `;
             container.appendChild(novoCampo);
         }
@@ -165,6 +165,7 @@
 
 		<!-- Formulário para Adicionar Telefones -->
 		<form action="/add_telefone/{{ cliente.id }}" method="POST">
+		<label for="numeros[]">Digite um telefone</label>
 			<div id="telefones-container" class="mb-2">
 			<input type="text" name="numeros[]" class="form-control mb-2" placeholder="Digite o telefone" required>
 		</div>
@@ -209,12 +210,18 @@
 <form action="/add_carros_cliente/{{ cliente.id }}" method="POST">
     <div id="carros-container">
         <div class="carro-form mb">
+			<label for="marca">Marca</label>
             <input type="text" name="marca" class="form-control mb" placeholder="Marca">
+			<label for="modelo">Modelo</label>
             <input type="text" name="modelo" class="form-control mb" placeholder="Modelo">
+			<label for="motor">Motor</label>
 			<input type="text" name="motor" class="form-control mb" placeholder="Motor">
+			<label for="ano">Ano</label>
             <input type="number" name="ano" class="form-control mb" placeholder="Ano">
+			<label for="placa">Placa</label>
             <input type="text" name="placa" class="form-control mb" placeholder="Placa">
-			<input type="number" name="quilometro" class="form-control mb" placeholder="Quilometragem">
+			<label for="quilometragem">Quilometragem em KMs rodados</label>
+			<input type="number" name="quilometro" class="form-control mb-2" placeholder="Quilometragem">
         </div>
     </div>
     <!-- Botão para Adicionar Mais Carros -->
@@ -230,12 +237,18 @@
     {% for carro in carros %}
     <div class="carro-form mb">
         <input type="hidden" name="carro_id" value="{{ carro.id }}">
+		<label for="marca">Marca</label>
         <input type="text" name="marca_{{ carro.id }}" class="form-control mb" placeholder="Marca" value="{{ carro.marca }}">
+		<label for="modelo">Modelo</label>
         <input type="text" name="modelo_{{ carro.id }}" class="form-control mb" placeholder="Modelo" value="{{ carro.modelo }}">
+		<label for="motor">Motor</label>
 		<input type="text" name="motor_{{ carro.id }}" class="form-control mb" placeholder="Motor" value="{{ carro.motor }}">
+		<label for="ano">Ano</label>
         <input type="number" name="ano_{{ carro.id }}" class="form-control mb" placeholder="Ano" value="{{ carro.ano }}">
+		<label for="placa">Placa</label>
         <input type="text" name="placa_{{ carro.id }}" class="form-control mb" placeholder="Placa" value="{{ carro.placa }}">
-		<input type="number" name="quilometro_{{ carro.id }}" class="form-control mb" placeholder="Quilometragem" value="{{ carro.quilometro }}">
+		<label for="quilometragem">Quilometragem em KMs rodados</label>
+		<input type="number" name="quilometro_{{ carro.id }}" class="form-control mb-2" placeholder="Quilometragem" value="{{ carro.quilometro }}">
     </div>
     {% endfor %}
     <div class="d-flex gap-2">
@@ -250,9 +263,13 @@
  <!-- Formulário para Atualizar o Endereço e Estado -->
     <h3 class="mt-4">Atualizar CPF, Endereço e Estado</h3>
     <form action="/update_dados_cliente/{{ cliente.id }}" method="POST">
+	<label for="cpf">CPF</label>
 	<input type="text" name="cpf" class="form-control mb" placeholder="CPF" value="{{ cliente.cpf or '' }}">
+	<label for="endereco">Endereço</label>
     <input type="text" name="endereco" class="form-control mb" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
+	<label for="cidade">Cidade</label>
     <input type="text" name="cidade" class="form-control mb" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
+	<label for="estado">Eestado</label>
     <select name="estado" class="form-control mb">
         <option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
         <option value="AL" {% if cliente.estado == 'AL' %}selected{% endif %}>Alagoas</option>
@@ -282,8 +299,10 @@
         <option value="SE" {% if cliente.estado == 'SE' %}selected{% endif %}>Sergipe</option>
         <option value="TO" {% if cliente.estado == 'TO' %}selected{% endif %}>Tocantins</option>
     </select>
+	<label for="bairro">Bairro</label>
 	<input type="text" name="bairro" class="form-control mb" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
-    <input type="text" name="cep" class="form-control mb" placeholder="CEP" value="{{ cliente.cep or ''}}">
+	<label for="cep">CEP</label>
+    <input type="text" name="cep" class="form-control mb-2" placeholder="CEP" value="{{ cliente.cep or ''}}">
 		<div class="d-flex gap-2">
         <button type="submit" class="btn btn-warning">Atualizar</button>
 		</div>
@@ -315,7 +334,8 @@
         <!-- Formulário para Adicionar ao Histórico -->
         <form action="/add_historico/{{ cliente.id }}" method="POST" class="mt">
             <h3>Adicionar ao Histórico</h3>
-            <input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control mb" required>
+			<label for="descricao">Descrição do serviço</label>
+            <input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control mb-2" required>
             <button type="submit" class="btn btn-primary">Adicionar Histórico</button>
         </form>
 
@@ -357,10 +377,12 @@
         <!-- Formulário para Registrar Pagamento -->
         <form action="/add_pagamento/{{ cliente.id }}" method="POST" class="mt-4">
             <h3>Registrar Pagamento</h3>
+			<label for="valor">Valor em R$</label>
             <input type="number" step="0.01" name="valor" placeholder="Valor (R$)" class="form-control mb-2" required>
             
             <!-- Método de Pagamento -->
-            <select name="metodo" id="metodo" class="form-control mb" required onchange="toggleOpcaoPagamento()">
+			<label for="metodo">Método de Pagamento</label>
+            <select name="metodo" id="metodo" class="form-control mb-2" required onchange="toggleOpcaoPagamento()">
                 <option value="Dinheiro">Dinheiro</option>
                 <option value="Cartão de Crédito">Cartão de Crédito</option>
                 <option value="Cartão de Débito">Cartão de Débito</option>
@@ -370,7 +392,7 @@
             <!-- Tipo de Pagamento para Cartão de Crédito -->
             <div id="opcaoCartao" style="display: none;">
                 <label for="tipo_cartao">Tipo de Pagamento:</label>
-                <select name="tipo_cartao" id="tipo_cartao" class="form-control mb" onchange="toggleParcelas()">
+                <select name="tipo_cartao" id="tipo_cartao" class="form-control mb-2" onchange="toggleParcelas()">
                     <option value="À vista">À vista</option>
                     <option value="Parcelado">Parcelado</option>
                 </select>
@@ -378,7 +400,7 @@
                 <!-- Número de Parcelas -->
                 <div id="opcaoParcelado" style="display: none;">
                     <label for="parcelas">Quantidade de Parcelas:</label>
-                    <input type="number" name="parcelas" id="parcelas" min="1" max="12" placeholder="Número de parcelas" class="form-control mb">
+                    <input type="number" name="parcelas" id="parcelas" min="1" max="12" placeholder="Número de parcelas" class="form-control mb-2">
                 </div>
             </div>
 
@@ -498,12 +520,13 @@
     function adicionarCarro() {
         const carrosContainer = document.getElementById('carros-container');
         const novoCarro = document.createElement('div');
-        novoCarro.className = 'carro-form mb-3';
+        novoCarro.className = 'carro-form mb';
         novoCarro.innerHTML = `
-            <input type="text" name="marca" class="form-control mb-2" placeholder="Marca">
-            <input type="text" name="modelo" class="form-control mb-2" placeholder="Modelo">
-            <input type="number" name="ano" class="form-control mb-2" placeholder="Ano">
-            <input type="text" name="placa" class="form-control mb-2" placeholder="Placa">
+           Marca<br><input type="text" name="marca" class="form-control mb" placeholder="Marca">
+           Modelo<br><input type="text" name="modelo" class="form-control mb" placeholder="Modelo">
+           Ano<br><input type="number" name="ano" class="form-control mb" placeholder="Ano">
+           Placa<br><input type="text" name="placa" class="form-control mb" placeholder="Placa">
+		   Quilometragem em KMs rodados<br><input type="number" name="quilometro" class="form-control mb-2" placeholder="Quilometragem">
         `;
         carrosContainer.appendChild(novoCarro);
     }
