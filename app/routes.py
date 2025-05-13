@@ -56,8 +56,12 @@ def cliente(id):
     
 @main.route('/add', methods=['POST'])
 def add_cliente():
-    nome = request.form['nome']
-    numeros = request.form.getlist('numeros[]')  # Múltiplos números
+    nome = request.form['nome'].strip()
+    numeros = request.form.getlist('numeros[]')
+
+    cliente_existente = Cliente.query.filter_by(nome=nome).first()
+    if cliente_existente:
+        return redirect(url_for('main.client', error="Cliente já cadastrado"))
 
     novo_cliente = Cliente(nome=nome)
     db.session.add(novo_cliente)
@@ -69,6 +73,7 @@ def add_cliente():
             db.session.add(novo_telefone)
     db.session.commit()
     return redirect(url_for('main.client'))
+
 
 @main.route('/add_telefone/<int:cliente_id>', methods=['POST'])
 def add_telefone(cliente_id):
@@ -204,11 +209,18 @@ def add_pagamento(cliente_id):
 
 @main.route('/add_peca', methods=['POST'])
 def add_peca():
-    nome = request.form['nome']
-    descricao = request.form.get('descricao')  # Descrição é opcional
+    nome = request.form['nome'].strip()
+    descricao = request.form.get('descricao')
     quantidade = int(request.form['quantidade'])
     preco = float(request.form['preco'])
 
+    # 🔹 Verificar se a peça já existe
+    peca_existente = Peca.query.filter_by(nome=nome).first()
+    if peca_existente:
+        pecas = Peca.query.all()  # Mantém os dados do inventário visíveis
+        return render_template('inventario.html', pecas=pecas, error="Erro: Esta peça já está cadastrada!")
+
+    # 🔹 Criar nova peça
     nova_peca = Peca(nome=nome, descricao=descricao, quantidade=quantidade, preco=preco)
     db.session.add(nova_peca)
     db.session.commit()

@@ -13,6 +13,45 @@
             novoCampo.innerHTML = `Telefone adicional<br><input type="text" name="numeros[]" class="form-control" placeholder="Telefone adicional" required>`;
             container.appendChild(novoCampo);
         }
+       // Verificação de nome duplicado antes de enviar o formulário
+        function validarNomeDuplicado() {
+            let nomesExistentes = Array.from(document.querySelectorAll("td.nome-cliente")).map(td => td.innerText.trim());
+            let nomeInput = document.getElementById("nome");
+            let nomeDigitado = nomeInput.value.trim();
+            // Remover mensagens anteriores
+            let avisoExistente = document.getElementById("erro-nome");
+            if (avisoExistente) {
+                avisoExistente.remove();
+            }
+            if (nomesExistentes.includes(nomeDigitado)) {
+                // Criar aviso abaixo do campo
+                let errorDiv = document.createElement("div");
+                errorDiv.id = "erro-nome";
+                errorDiv.classList.add("alert", "alert-danger", "mt-2");
+                errorDiv.textContent = "Erro: Este nome já está cadastrado!";
+
+                nomeInput.insertAdjacentElement("afterend", errorDiv); // Exibir abaixo da caixa de texto
+                return false;
+            }
+            return true;
+        }
+
+        // Capturar erro da URL e exibir abaixo do campo de entrada
+        document.addEventListener("DOMContentLoaded", function () {
+            const params = new URLSearchParams(window.location.search);
+            const errorMessage = params.get("error");
+
+            if (errorMessage) {
+                const nomeInput = document.getElementById("nome"); // Seleciona o campo de entrada
+                const errorDiv = document.createElement("div");
+                errorDiv.id = "erro-nome";
+                errorDiv.classList.add("alert", "alert-danger", "mt-2");
+                errorDiv.textContent = errorMessage;
+                nomeInput.insertAdjacentElement("afterend", errorDiv); // Exibir abaixo da caixa de texto
+                // Remover o erro da URL sem recarregar a página
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
     </script>
 		    <style>
         /* Layout principal */
@@ -145,6 +184,7 @@
 
         <h2>Lista de Clientes</h2>
         <table class="table table-bordered">
+
             <thead>
                 <tr>
                     <th>ID</th>
@@ -170,20 +210,21 @@
         </table>
 
         <h2>Adicionar Novo Cliente</h2>
-        <form action="/add" method="POST">
-            <div class="mb">
-                <label for="nome">Nome</label>
-                <input type="text" name="nome" id="nome" class="form-control" placeholder="Nome" required>
-            </div>
-            <div id="telefones-container" class="mb">
-                <label for="numeros[]">Telefone principal</label>
-                <input type="text" name="numeros[]" class="form-control mb-2" placeholder="Telefone principal" required>
-            </div>
-			<div class="d-flex gap-2">
-            <button type="button" class="btn btn-secondary" onclick="adicionarCampoTelefone()">Adicionar Telefone</button>
-            <button type="submit" class="btn btn-success">Salvar Cliente</button>
-			</div>
-        </form>
+<form action="/add" method="POST" onsubmit="return validarNomeDuplicado()">
+    <div class="mb">
+        <label for="nome">Nome</label>
+        <input type="text" name="nome" id="nome" class="form-control" placeholder="Nome" required>
+    </div>
+    <div id="telefones-container" class="mb">
+        <label for="numeros[]">Telefone principal</label>
+        <input type="text" name="numeros[]" class="form-control mb-2" placeholder="Telefone principal" required>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary" onclick="adicionarCampoTelefone()">Adicionar Telefone</button>
+        <button type="submit" class="btn btn-success">Salvar Cliente</button>
+    </div>
+</form>
+
     </div>
 	<script>
 	function toggleMenu() {

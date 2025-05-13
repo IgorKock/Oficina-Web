@@ -6,6 +6,51 @@
     <title>Inventário de Peças</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 
+<script>
+function validarPecaDuplicada() {
+    let pecasExistentes = Array.from(document.querySelectorAll("td.nome-peca")).map(td => td.innerText.trim());
+    let nomeInput = document.getElementById("nome-peca");
+    let nomeDigitado = nomeInput.value.trim();
+
+    // Remover mensagens anteriores
+    let avisoExistente = document.getElementById("erro-peca");
+    if (avisoExistente) {
+        avisoExistente.remove();
+    }
+
+    if (pecasExistentes.includes(nomeDigitado)) {
+        // Criar aviso abaixo do campo
+        let errorDiv = document.createElement("div");
+        errorDiv.id = "erro-peca";
+        errorDiv.classList.add("alert", "alert-danger", "mt-2");
+        errorDiv.textContent = "Erro: Esta peça já está cadastrada!";
+
+        nomeInput.insertAdjacentElement("afterend", errorDiv); // Exibir abaixo da caixa de texto
+        return false;
+    }
+
+    return true;
+}
+document.addEventListener("DOMContentLoaded", function () {
+    const params = new URLSearchParams(window.location.search);
+    const errorMessage = params.get("error");
+
+    if (errorMessage) {
+        const nomeInput = document.getElementById("nome-peca"); // Seleciona o campo de entrada
+        const errorDiv = document.createElement("div");
+
+        errorDiv.id = "erro-peca";
+        errorDiv.classList.add("alert", "alert-danger", "mt-2");
+        errorDiv.textContent = errorMessage;
+
+        nomeInput.insertAdjacentElement("afterend", errorDiv); // Exibir abaixo da caixa de texto
+
+        // 🔹 Remover o erro da URL sem recarregar a página
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+});
+</script>
+
     <style>
         /* Layout principal */
         body {
@@ -139,9 +184,14 @@
 
         <!-- Formulário para Adicionar Nova Peça -->
         <h3 class="mt-2">Adicionar Nova Peça</h3>
-        <form action="/add_peca" method="POST" class="mb-2">
+        <form action="/add_peca" method="POST" onsubmit="return validarPecaDuplicada()">
 			<label for="nome">Peça</label>
             <input type="text" name="nome" class="form-control mb" placeholder="Nome da Peça" required>
+			{% if error %}
+				<div id="erro-peca" class="alert alert-danger mt-2">
+            {{ error }}
+				</div>
+			{% endif %}
 			<label for="descricao">Descrição (opcional)</label>
             <input type="text" name="descricao" class="form-control mb" placeholder="Descrição (opcional)">
 			<label for="quantidade">Quantidade</label>
