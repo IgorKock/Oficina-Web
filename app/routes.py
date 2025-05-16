@@ -58,12 +58,12 @@ def cliente(id):
 def add_cliente():
     nome = request.form['nome'].strip()
     numeros = request.form.getlist('numeros[]')
-
+    cpf = request.form.get('cpf', '').strip()
     cliente_existente = Cliente.query.filter_by(nome=nome).first()
     if cliente_existente:
         return redirect(url_for('main.client', error="Cliente já cadastrado"))
 
-    novo_cliente = Cliente(nome=nome)
+    novo_cliente = Cliente(nome=nome, cpf=cpf)
     db.session.add(novo_cliente)
     db.session.commit()
 

@@ -31,17 +31,17 @@
         /* 🔹 Contêiner da Logo */
 		.logo-container {
 			display: flex;
-			justify-content: center; /* 🔹 Centraliza horizontalmente */
+			justify-content: center; /* Centraliza horizontalmente */
 			align-items: center;
 			width: 50%;
 			padding: 10px 0;
-			position: absolute; /* 🔹 Impede que ela sobreponha o menu ou o conteúdo */
+			position: absolute; /* Impede que ela sobreponha o menu ou o conteúdo */
 			top: 10px; /* 🔹 Ajusta a posição para evitar sobreposição */
 			left: 50%;
-			transform: translateX(-50%); /* 🔹 Mantém centralizado */
+			transform: translateX(-50%); /* Mantém centralizado */
 			z-index: 1001;
-			background: none; /* 🔹 Remove qualquer fundo branco */
-			pointer-events: none; /* 🔹 Permite que elementos abaixo sejam clicáveis */
+			background: none; /* Remove qualquer fundo branco */
+			pointer-events: none; /* Permite que elementos abaixo sejam clicáveis */
 		}
 
         .logo-container img {
@@ -584,7 +584,7 @@
                 <body>
 				<div align="center">
 				<img src="{{ url_for('static', filename='img/logo.png')  }}" width="150" height="auto">
-				<p><strong>CNPJ:</strong> 17.165.775/0001-10 <strong>WhatsApp:</strong> 55 99971-4234</p>
+				<p><strong>CNPJ:</strong> Insira aqui <strong>WhatsApp:</strong> Insira aqui</p>
 				<\div>
 				<div align="left">
                 ${printContent.innerHTML}

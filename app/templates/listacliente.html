@@ -64,7 +64,7 @@
             overflow-x: hidden;
         }
 
-        /* 🔹 Contêiner da Logo */
+        /* Contêiner da Logo */
 		.logo-container {
 			display: flex;
 			justify-content: center; /* Centraliza horizontalmente */
@@ -189,24 +189,27 @@
                 <tr>
                     <th>ID</th>
                     <th>Nome</th>
+					<th>CPF</th>
                     <th>Telefones</th>
                     <th>Ações</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for cliente in clientes %}
-                <tr>
-                    <td>{{ cliente.id }}</td>
-                    <td>{{ cliente.nome }}</td>
-                    <td>
-                        {% for telefone in cliente.telefones %}
-                        <p>{{ telefone.numero }}</p>
-                        {% endfor %}
-                    </td>
-                    <td><a href="/cliente/{{ cliente.id }}" class="btn btn-info btn-sm">Detalhes</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
+<tbody>
+    {% for cliente in clientes %}
+    <tr>
+        <td>{{ cliente.id }}</td>
+        <td class="nome-cliente">{{ cliente.nome }}</td>
+        <td>{% if cliente.cpf %}{{ cliente.cpf }}{% endif %}</td>
+        <td>
+            {% for telefone in cliente.telefones %}
+                <p>{{ telefone.numero }}</p>
+            {% endfor %}
+        </td>
+        <td><a href="/cliente/{{ cliente.id }}" class="btn btn-info btn-sm">Detalhes</a></td>
+    </tr>
+    {% endfor %}
+</tbody>
+
         </table>
 
         <h2>Adicionar Novo Cliente</h2>
@@ -217,7 +220,11 @@
     </div>
     <div id="telefones-container" class="mb">
         <label for="numeros[]">Telefone principal</label>
-        <input type="text" name="numeros[]" class="form-control mb-2" placeholder="Telefone principal" required>
+        <input type="text" name="numeros[]" class="form-control mb" placeholder="Telefone principal" required>
+    </div>
+	    <div id="CPF-container" class="mb">
+        <label for="numeros[]">CPF</label>
+        <input type="text" name="cpf" class="form-control mb-2" placeholder="CPF" required>
     </div>
     <div class="d-flex gap-2">
         <button type="button" class="btn btn-secondary" onclick="adicionarCampoTelefone()">Adicionar Telefone</button>
