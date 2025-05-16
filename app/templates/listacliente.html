@@ -9,8 +9,8 @@
         function adicionarCampoTelefone() {
             const container = document.getElementById('telefones-container');
             const novoCampo = document.createElement('div');
-            novoCampo.classList.add('mb-2');
-            novoCampo.innerHTML = `Telefone adicional<br><input type="text" name="numeros[]" class="form-control" placeholder="Telefone adicional" required>`;
+            novoCampo.classList.add('mb');
+            novoCampo.innerHTML = `Telefone adicional<br><input type="text" name="numeros[]" class="form-control" placeholder="Telefone adicional">`;
             container.appendChild(novoCampo);
         }
        // Verificação de nome duplicado antes de enviar o formulário

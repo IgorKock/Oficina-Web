@@ -10,9 +10,9 @@
         function adicionarCampoTelefone() {
             const container = document.getElementById('telefones-container');
             const novoCampo = document.createElement('div');
-            novoCampo.classList.add('mb-2');
+            novoCampo.classList.add('mb');
             novoCampo.innerHTML = `
-                Digite o telefone adicional<input type="text" name="numeros[]" class="form-control" placeholder="Digite o telefone adicional" required>
+                Digite o telefone adicional<input type="text" name="numeros[]" class="form-control" placeholder="Digite o telefone adicional">
             `;
             container.appendChild(novoCampo);
         }
