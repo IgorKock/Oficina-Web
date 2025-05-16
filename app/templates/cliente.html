@@ -269,7 +269,7 @@
     <input type="text" name="endereco" class="form-control mb" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
 	<label for="cidade">Cidade</label>
     <input type="text" name="cidade" class="form-control mb" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
-	<label for="estado">Eestado</label>
+	<label for="estado">Estado</label>
     <select name="estado" class="form-control mb">
         <option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
         <option value="AL" {% if cliente.estado == 'AL' %}selected{% endif %}>Alagoas</option>
@@ -422,7 +422,7 @@
             </div>
 			<div>
                 <input type="checkbox" id="historicos" class="select-to-print">
-                <label for="historicos">Historico</label>
+                <label for="historicos">Historico de Serviços</label>
             </div>
 			<div>
                 <input type="checkbox" id="pagamentos" class="select-to-print">
@@ -462,7 +462,7 @@
                     {% endfor %}
 					</div>
 				<div id="historicos-content" class="print-section">
-                <h4>Histórico</h4>                
+                <h4>Histórico de Serviços</h4>                
                     {% for historico in historicos %}
 					<p>{{ historico.data.strftime ('%d/%m/%Y %H:%M'), historico.descricao }}</p>
                     {% endfor %}  
