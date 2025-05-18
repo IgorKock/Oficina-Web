@@ -12,23 +12,28 @@
             list-style: none;
             padding: 0;
             margin: 0;
+            border-bottom: 1px solid #dee2e6; /* Adiciona uma borda na parte inferior da navegação */
         }
 
         .nav-tab-item {
             padding: 10px 20px;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
+            border: 1px solid #dee2e6; /* Adiciona borda em todos os lados */
+            border-bottom: none; /* Remove a borda inferior para conectar com o conteúdo */
+            margin-right: 2px; /* Espaçamento entre as abas */
+            background-color: #f8f9fa; /* Um leve fundo cinza */
         }
 
         .nav-tab-item.active {
             border-bottom-color: #007bff; /* Cor da aba ativa */
+            background-color: #fff; /* Fundo branco para a aba ativa */
         }
 
         .tab-content {
             display: none;
             padding: 20px;
             border: 1px solid #dee2e6;
-            border-top: none;
+            border-top: none; /* Remove a borda superior para conectar com as abas */
         }
 
         .tab-content.active {
