@@ -327,29 +327,33 @@
                 <p>Nenhum telefone registrado.</p>
                 {% endif %}
 
-                <form action="/add_telefone/{{ cliente.id }}" method="POST">
-                    <label for="numeros[]">Digite um telefone</label>
-                    <div id="telefones-container" class="mb-2">
-                        <input type="text" name="numeros[]" class="form-control mb-2" placeholder="Digite o telefone">
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-secondary" onclick="adicionarCampoTelefone()">Adicionar Telefone</button>
-                        <button type="submit" class="btn btn-success">Salvar Telefones</button>
-                    </div>
-                </form>
+			<h3 class="mt-4">Atualizar Telefones</h3>
+			{% for telefone in telefones %}
+			<div class="mb-2">
+				<label for="numero">Número de Telefone</label>
+				<input type="text" name="numero" class="form-control" value="{{ telefone.numero }}">
+			</div>
+			<div class="d-flex gap-2">
 				<form action="/update_telefone/{{ telefone.id }}" method="POST">
-				<div class="mb-2">
-					<label for="numero">Número de Telefone</label>
-						<input type="text" name="numero" class="form-control" value="{{ telefone.numero }}">
-					</div>
-				<button type="submit" class="btn btn-warning">Atualizar Telefone</button>
+					<button type="submit" class="btn btn-warning">Atualizar Telefone</button>
 				</form>
-				<form action="/delete_telefone/{{ telefone.id }}" method="POST" class="mb">
+				<form action="/delete_telefone/{{ telefone.id }}" method="POST">
 					<button type="submit" class="btn btn-danger">Remover Telefone</button>
 				</form>
-				{% endfor %}
-            </div>
+			</div>
+			{% endfor %}
+
+			<form action="/add_telefone/{{ cliente.id }}" method="POST">
+				<label for="numeros[]">Digite um telefone</label>
+				<div id="telefones-container" class="mb-2">
+					<input type="text" name="numeros[]" class="form-control mb-2" placeholder="Digite o telefone">
+				</div>
+				<div class="d-flex gap-2">
+					<button type="button" class="btn btn-secondary" onclick="adicionarCampoTelefone()">Adicionar Telefone</button>
+					<button type="submit" class="btn btn-success">Salvar Telefone(s)</button>
+				</div>
+			</form>
+			</div>
 
             <div id="historico" class="tab-content">
                 <h4>Histórico de Serviços</h4>
