@@ -91,6 +91,24 @@ def add_telefone(cliente_id):
     #return redirect(url_for('main.listaclientes', id=cliente_id))
     return redirect(url_for('main.cliente', id=cliente_id))
 
+@main.route('/update_telefone/<int:telefone_id>', methods=['POST'])
+def update_telefone(telefone_id):
+    novo_numero = request.form.get('numero', '').strip()
+    
+    telefone = Telefone.query.get_or_404(telefone_id)
+    telefone.numero = novo_numero  # Atualiza o número no banco de dados
+    db.session.commit()
+
+    return redirect(url_for('main.cliente', id=telefone.cliente_id))
+
+@main.route('/delete_telefone/<int:telefone_id>', methods=['POST'])
+def delete_telefone(telefone_id):
+    telefone = Telefone.query.get_or_404(telefone_id)
+    db.session.delete(telefone)  # Remove o telefone do banco de dados
+    db.session.commit()
+
+    return redirect(url_for('main.cliente', id=telefone.cliente_id))
+
 @main.route('/update_dados_cliente/<int:cliente_id>', methods=['POST'])
 def update_dados_cliente(cliente_id):
     endereco = request.form['endereco']
