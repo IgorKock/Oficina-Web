@@ -231,35 +231,7 @@
                         <button type="submit" class="btn btn-warning">Atualizar</button>
                     </div>
                 </form>
-				<h4>Histórico de Serviços do cliente: {{ cliente.nome }} </h4>
-                {% if historicos %}
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Descrição</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for historico in historicos %}
-                        <tr>
-                            <td>{{ historico.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
-                            <td>{{ historico.descricao }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p>Nenhum histórico registrado para este cliente.</p>
-                {% endif %}
-
-                <form action="/add_historico/{{ cliente.id }}" method="POST" class="mt">
-                    <h3>Adicionar ao Histórico</h3>
-                    <label for="descricao">Descrição do serviço</label>
-                    <input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control mb-2" required>
-                    <button type="submit" class="btn btn-primary">Adicionar Histórico</button>
-                </form>
-				<h4>Quer imprimir os Dados Pessoais e o Histórico de Serviços do cliente {{ cliente.nome }}?</h4>
+				<h4>Quer imprimir os Dados Pessoais do cliente {{ cliente.nome }}?</h4>
 				<form id="print-form">
                 <div>
                     <input type="checkbox" id="dados-pessoais" class="select-to-print">
@@ -273,35 +245,72 @@
 
             <div id="veiculos" class="tab-content">
                 <h4>Carros do Cliente: {{ cliente.nome }} </h4>
-                {% if carros %}
+{% if carros %}
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Motor</th>
+            <th>Ano</th>
+            <th>Placa</th>
+            <th>Quilometragem</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for carro in carros %}
+        <tr>
+            <td>{{ carro.marca }}</td>
+            <td>{{ carro.modelo }}</td>
+            <td>{{ carro.motor }}</td>
+            <td>{{ carro.ano }}</td>
+            <td>{{ carro.placa }}</td>
+            <td>{{ carro.quilometro }}</td>
+        </tr>
+        {% if carro.historicos %}
+        <tr><td colspan="6"><h4>Histórico de Serviços</h4></td></tr>
+        <tr>
+            <td colspan="6">
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Marca</th>
-                            <th>Modelo</th>
-                            <th>Motor</th>
-                            <th>Ano</th>
-                            <th>Placa</th>
-                            <th>Quilometragem</th>
+                            <th>Data</th>
+                            <th>Descrição do Serviço</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for carro in carros %}
+                        {% for historico in carro.historicos %}
                         <tr>
-                            <td>{{ carro.marca }}</td>
-                            <td>{{ carro.modelo }}</td>
-                            <td>{{ carro.motor }}</td>
-                            <td>{{ carro.ano }}</td>
-                            <td>{{ carro.placa or "Placa não registrada" }}</td>
-                            <td>{{ carro.quilometro }} KMs rodados</td>
+                            <td>{{ historico.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                            <td>{{ historico.descricao }}</td>
                         </tr>
                         {% endfor %}
-                    </tbody>
+                    </tbody>					
                 </table>
-                {% else %}
-                <p>Nenhum carro registrado para este cliente.</p>
-                {% endif %}
-
+				
+            </td>
+        </tr>
+		<form action="/add_historico/{{ carro.id }}" method="POST">
+ 
+        {% else %}
+        <tr><td colspan="6">Nenhum histórico de serviço registrado para este veículo.</td></tr>
+        {% endif %}
+		<tr>
+    <td colspan="6">
+        <form action="/add_historico/{{ carro.id }}" method="POST">
+            <h5>Adicionar Histórico de Serviço</h5>
+            <label for="descricao">Descrição do serviço</label>
+            <input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control mb-2" required>
+            <button type="submit" class="btn btn-primary">Adicionar Histórico</button>
+        </form>
+    </td>
+</tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Nenhum carro registrado.</p>
+{% endif %}
                 <h3 class="mt-4">Adicionar Informações do Carro</h3>
                 <form action="/add_carros_cliente/{{ cliente.id }}" method="POST">
                     <div id="carros-container">
@@ -422,6 +431,8 @@
                 <table class="table table-bordered">
                     <thead>
                         <tr>
+						    <th>Veículo</th> <!-- Nome do carro -->
+							<th>Serviço Realizado</th> <!-- O que foi feito no histórico -->
                             <th>Data</th>
                             <th>Valor (R$)</th>
                             <th>Método</th>
@@ -432,6 +443,20 @@
                     <tbody>
                         {% for pagamento in pagamentos %}
                         <tr>
+						<td>
+                    {% for carro in carros %}
+                        {% if pagamento.carro_id == carro.id %}
+                            {{ carro.marca }} - {{ carro.modelo }}
+                        {% endif %}
+                    {% endfor %}
+					</td>
+					<td>
+                    {% for historico in historicos %}
+                        {% if pagamento.historico_id == historico.id %}
+                            {{ historico.descricao }}
+                        {% endif %}
+                    {% endfor %}
+					</td>
                             <td>{{ pagamento.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
                             <td>R$ {{ pagamento.valor }}</td>
                             <td>{{ pagamento.metodo }}</td>
@@ -450,34 +475,39 @@
                 {% else %}
                 <p>Este cliente ainda não possui pagamentos registrados.</p>
                 {% endif %}
+{% for carro in carros %}
+    <h3>Registrar pagamento para: {{ carro.marca }} - {{ carro.modelo }}</h3>
+    
+    {% for historico in carro.historicos %}
+        <form action="/add_pagamento/{{ carro.id }}/{{ historico.id }}" method="POST" class="mt-4">
+            <label for="valor">Valor (R$)</label>
+            <input type="number" step="0.01" name="valor" placeholder="Valor (R$)" class="form-control mb-2" required>
+            
+            <label for="metodo">Método de Pagamento</label>
+            <select name="metodo" class="form-control mb-2" required onchange="toggleOpcaoPagamento()">
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                <option value="Cartão de Débito">Cartão de Débito</option>
+                <option value="Pix">Pix</option>
+            </select>
 
-                <form action="/add_pagamento/{{ cliente.id }}" method="POST" class="mt-4">
-                    <h3>Registrar Pagamento</h3>
-                    <label for="valor">Valor em R$</label>
-                    <input type="number" step="0.01" name="valor" placeholder="Valor (R$)" class="form-control mb-2" required>
-                    
-                    <label for="metodo">Método de Pagamento</label>
-                    <select name="metodo" id="metodo" class="form-control mb-2" required onchange="toggleOpcaoPagamento()">
-                        <option value="Dinheiro">Dinheiro</option>
-                        <option value="Cartão de Crédito">Cartão de Crédito</option>
-                        <option value="Cartão de Débito">Cartão de Débito</option>
-                        <option value="Pix">Pix</option>
-                    </select>
+            <div id="opcaoCartao" style="display: none;">
+                <label for="tipo_cartao">Tipo de Pagamento:</label>
+                <select name="tipo_cartao" id="tipo_cartao" class="form-control mb-2" onchange="toggleParcelas()">
+                    <option value="À vista">À vista</option>
+                    <option value="Parcelado">Parcelado</option>
+                </select>
 
-                    <div id="opcaoCartao" style="display: none;">
-                        <label for="tipo_cartao">Tipo de Pagamento:</label>
-                        <select name="tipo_cartao" id="tipo_cartao" class="form-control mb-2" onchange="toggleParcelas()">
-                            <option value="À vista">À vista</option>
-                            <option value="Parcelado">Parcelado</option>
-                        </select>
-                        
-                        <div id="opcaoParcelado" style="display: none;">
-                            <label for="parcelas">Quantidade de Parcelas:</label>
-                            <input type="number" name="parcelas" id="parcelas" min="1" max="12" placeholder="Número de parcelas" class="form-control mb-2">
-                        </div>
-                    </div>
+                <div id="opcaoParcelado" style="display: none;">
+                    <label for="parcelas">Parcelas:</label>
+                    <input type="number" name="parcelas" min="1" max="12" placeholder="Número de parcelas" class="form-control mb-2">
+                </div>
+            </div>
 
-                    <button type="submit" class="btn btn-primary">Registrar Pagamento</button>
+            <button type="submit" class="btn btn-primary">Registrar Pagamento</button>
+        </form>
+    {% endfor %}
+{% endfor %}
                 </form>
 				<h4>Quer imprimir o histórico de pagamentos?</h4>
 				<form id="print-form">
@@ -511,67 +541,106 @@
                     <label for="pagamentos">Pagamento</label>
                 </div>
             </form>
-			
+			<button type="button" class="btn btn-primary mt-2" onclick="imprimirSelecionados()">Imprimir Selecionados</button>
              <div id="conteudo-cliente">
                 <div id="dados-pessoais-content" class="print-section">
                     <h4>Dados Pessoais</h4>
                     <p><strong>Nome:</strong> {{ cliente.nome }}</p>
-                    <p><strong>CPF:</strong> {{ cliente.cpf or "CPF não registrado" }}</p>
+					<p><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "Apelido ou Nome Social não registrado" }}</p>
+					<p><strong>CPF:</strong> {{ cliente.cpf or "CPF não registrado" }}</p>
                     <p><strong>Endereço:</strong> {{ cliente.endereco or "Endereço não registrado" }}</p>
                     <p><strong>Cidade:</strong> {{ cliente.cidade or "Cidade não registrada" }}</p>
                     <p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>  
                     <p><strong>Bairro:</strong> {{ cliente.bairro or "Bairro não registrado" }}</p>
                     <p><strong>CEP:</strong> {{ cliente.cep or "CEP não registrado" }}</p>
-					<h4>Historico de Serviços do cliente: {{ cliente.nome }}</h4>             
-                    {% for historico in historicos %}
-                    <p>{{ historico.data.strftime ('%d/%m/%Y %H:%M'), historico.descricao }}</p>
-                    {% endfor %} 
                 </div>
-
+			</div>	
                 <div id="veiculos-content" class="print-section">
                     <h4>Veículos do cliente: {{ cliente.nome }} </h4>              
-                    {% for carro in carros %}
-                        <p><strong>Marca:</strong> {{ carro.marca }}</p>
-                        <p><strong>Modelo:</strong> {{ carro.modelo }}</p>
-                        <p><strong>Motor:</strong> {{ carro.motor }}</p>
-                        <p><strong>Ano:</strong> {{ carro.ano }}</p>
-                        <p><strong>Placa:</strong> {{ carro.placa or "Placa não registrada" }}</p> 
-                        <p><strong>Quilometragem:</strong> {{ carro.quilometro }} KMs rodados</p> 
-                    {% endfor %}               
-                </div>
+{% for carro in carros %}
+    <div class="mb-4">
+	<h4>Veículo {{ loop.index }}</h4>
+        <p><strong>Marca:</strong> {{ carro.marca }}</p>
+        <p><strong>Modelo:</strong> {{ carro.modelo }}</p>
+        <p><strong>Motor:</strong> {{ carro.motor }}</p>
+        <p><strong>Ano:</strong> {{ carro.ano }}</p>
+        <p><strong>Placa:</strong> {{ carro.placa or "Placa não registrada" }}</p> 
+        <p><strong>Quilometragem:</strong> {{ carro.quilometro }} KMs rodados</p> 
 
+        <h5>Histórico de Serviços</h5>
+        {% if carro.historicos %}
+            <ul>
+                {% for historico in carro.historicos %}
+                    <li>
+                        <strong>{{ historico.data.strftime('%d/%m/%Y %H:%M') }}</strong> — {{ historico.descricao }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Nenhum histórico registrado para este veículo.</p>
+        {% endif %}
+    </div>
+{% endfor %}
+</div>
+                <div id="pagamentos-content" class="print-section">
+    <h2>Pagamentos do cliente: {{ cliente.nome }}</h2>
+
+    {% if pagamentos %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Veículo</th> <!-- Nome do carro -->
+                <th>Serviço Realizado</th> <!-- O que foi feito no histórico -->
+                <th>Data</th>
+                <th>Valor (R$)</th>
+                <th>Método</th>
+                <th>Tipo</th>
+                <th>Parcelas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pagamento in pagamentos %}
+            <tr>
+                <td>
+                    {% for carro in carros %}
+                        {% if pagamento.carro_id == carro.id %}
+                            {{ carro.marca }} - {{ carro.modelo }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for historico in historicos %}
+                        {% if pagamento.historico_id == historico.id %}
+                            {{ historico.descricao }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>{{ pagamento.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                <td>R$ {{ pagamento.valor }}</td>
+                <td>{{ pagamento.metodo }}</td>
+                <td>{{ pagamento.tipo_pagamento if pagamento.tipo_pagamento else 'N/A' }}</td>
+                <td>
+                    {% if pagamento.tipo_pagamento == 'Parcelado' %}
+                        {{ pagamento.parcelas }}x
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Este cliente ainda não possui pagamentos registrados.</p>
+    {% endif %}
+</div>
                 <div id="telefones-content" class="print-section">
                     <h4>Telefones do cliente: {{ cliente.nome }} </h4>         
                     {% for telefone in telefones %}
                     <p>{{ telefone.numero }}</p>
                     {% endfor %}
                 </div>
-
-                <div id="pagamentos-content" class="print-section">
-                    <h4>Pagamentos do cliente: {{ cliente.nome }} </h4>
-                    <ul>
-                    {% for pagamento in pagamentos %}
-                        <li>
-                        <p>{{ pagamento.data.strftime('%d/%m/%Y %H:%M') }}</p>
-                        <p>R$ {{ pagamento.valor }}</p>
-                        <p>{{ pagamento.metodo }}</p>
-                        <p>{{ pagamento.tipo_pagamento if pagamento.tipo_pagamento else 'N/A' }}</p>
-                        <p>{% if pagamento.tipo_pagamento == 'Parcelado' %}
-                                {{ pagamento.parcelas }}x
-                            {% else %}
-                                -
-                            {% endif %}</p>
-                        </li>
-                    {% endfor %}
-                </ul>
-                </div>
             </div>
-
-            <button type="button" class="btn btn-primary" onclick="imprimirSelecionados()">Imprimir Selecionados</button>
-            <div class="d-flex gap-2">
-            </div>
-		</div>
-        </div>
     </div>
 
     <script>

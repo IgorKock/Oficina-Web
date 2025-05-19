@@ -59,8 +59,11 @@ class Historico(db.Model):
     __tablename__ = 'historicos'
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
-    data = db.Column(db.DateTime, nullable=False)  # Garante que o campo data é obrigatório
+    carro_id = db.Column(db.Integer, db.ForeignKey('carros.id'), nullable=False)  # 🔹 Associando ao carro
+    data = db.Column(db.DateTime, nullable=False)  
     descricao = db.Column(db.String(200), nullable=False)
+
+    carro = db.relationship('Carro', backref='historicos')  # 🔹 Relacionamento com Carro
 
 # Evento para o modelo Historico
 @listens_for(Historico, 'before_insert')
@@ -72,11 +75,16 @@ class Pagamento(db.Model):
     __tablename__ = 'pagamentos'
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
-    data = db.Column(db.DateTime, default=db.func.current_timestamp())  # Armazena em UTC
+    carro_id = db.Column(db.Integer, db.ForeignKey('carros.id'), nullable=False)  # 🔹 Associando ao veículo
+    historico_id = db.Column(db.Integer, db.ForeignKey('historicos.id'), nullable=False)  # 🔹 Associando ao serviço
+    data = db.Column(db.DateTime, default=db.func.current_timestamp())  
     valor = db.Column(db.Float, nullable=False)
     metodo = db.Column(db.String(50), nullable=False)
     tipo_pagamento = db.Column(db.String(20), nullable=True)
     parcelas = db.Column(db.Integer, nullable=True)
+
+    carro = db.relationship('Carro', backref='pagamentos')
+    historico = db.relationship('Historico', backref='pagamentos')
 
 # Evento para o modelo Pagamento
 @listens_for(Pagamento, 'before_insert')

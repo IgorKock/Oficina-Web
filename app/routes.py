@@ -132,24 +132,22 @@ def update_dados_cliente(cliente_id):
     return redirect(url_for('main.cliente', id=cliente_id))
     #return redirect(url_for('main.listaclientes', id=cliente_id))
 
-@main.route('/add_historico/<int:cliente_id>', methods=['POST'])
-def add_historico(cliente_id):
+@main.route('/add_historico/<int:carro_id>', methods=['POST'])
+def add_historico(carro_id):
     descricao = request.form['descricao']
+    carro = Carro.query.get_or_404(carro_id)
 
     # Obtém o horário atual no fuso horário de Brasília
     fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-    hora_brasilia = datetime.now(fuso_brasilia)
+    hora_brasilia = datetime.now(fuso_brasilia) - timedelta(hours=3)
 
-    # Subtrai 3 horas diretamente
-    hora_brasilia_menos_3 = hora_brasilia - timedelta(hours=3)
-
-    # Cria o registro no banco de dados
-    novo_historico = Historico(cliente_id=cliente_id, descricao=descricao, data=hora_brasilia_menos_3)
+    # 🔹 Criando o registro no banco vinculado ao carro e ao cliente
+    novo_historico = Historico(cliente_id=carro.cliente_id, carro_id=carro.id, descricao=descricao, data=hora_brasilia)
     db.session.add(novo_historico)
     db.session.commit()
 
-    return redirect(url_for('main.cliente', id=cliente_id))
-    #return redirect(url_for('main.listaclientes', id=cliente_id))
+    return redirect(url_for('main.cliente', id=carro.cliente_id))
+
 
 @main.route('/add_carros_cliente/<int:cliente_id>', methods=['POST'])
 def add_carros(cliente_id):
@@ -195,37 +193,37 @@ def update_carros(cliente_id):
     return redirect(url_for('main.cliente', id=cliente_id))
     #return redirect(url_for('main.listaclientes', id=cliente_id))
 
-@main.route('/add_pagamento/<int:cliente_id>', methods=['POST'])
-def add_pagamento(cliente_id):
-    valor = float(request.form['valor'])  # Pega o valor do pagamento
-    metodo = request.form['metodo']  # Método de pagamento
-    tipo_pagamento = request.form.get('tipo_cartao')  # Tipo: À vista ou Parcelado
-    parcelas = request.form.get('parcelas')  # Número de parcelas (opcional)
+@main.route('/add_pagamento/<int:carro_id>/<int:historico_id>', methods=['POST'])
+def add_pagamento(carro_id, historico_id):
+    valor = float(request.form['valor'])  
+    metodo = request.form['metodo']
+    tipo_pagamento = request.form.get('tipo_cartao')  
+    parcelas = request.form.get('parcelas')  
 
     if parcelas:
         parcelas = int(parcelas)
 
-    # Obter o horário atual no fuso de Brasília
     fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-    hora_brasilia = datetime.now(fuso_brasilia)
+    hora_brasilia = datetime.now(fuso_brasilia) - timedelta(hours=3)
 
-    # Subtrair 3 horas diretamente
-    hora_brasilia_menos_3 = hora_brasilia - timedelta(hours=3)
+    carro = Carro.query.get_or_404(carro_id)
+    historico = Historico.query.get_or_404(historico_id)
 
-    # Criar o registro com o horário ajustado
     novo_pagamento = Pagamento(
-        cliente_id=cliente_id,
+        cliente_id=carro.cliente_id,
+        carro_id=carro.id,
+        historico_id=historico.id,
         valor=valor,
         metodo=metodo,
         tipo_pagamento=tipo_pagamento,
         parcelas=parcelas,
-        data=hora_brasilia_menos_3
+        data=hora_brasilia
     )
+    
     db.session.add(novo_pagamento)
     db.session.commit()
 
-    # Redirecionar para a página de detalhes do cliente
-    return redirect(url_for('main.cliente', id=cliente_id))
+    return redirect(url_for('main.cliente', id=carro.cliente_id))
     #return redirect(url_for('main.listaclientes', id=cliente_id))
 
 @main.route('/add_peca', methods=['POST'])
