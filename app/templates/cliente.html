@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes do Cliente</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
-    <style>
+	<style>
         /* Estilos das abas */
         .nav-tabs {
             display: flex;
@@ -168,7 +168,6 @@
                 <li class="nav-tab-item active" onclick="openTab('dados-pessoais')">Dados Pessoais</li>
                 <li class="nav-tab-item" onclick="openTab('veiculos')">Veículos</li>
                 <li class="nav-tab-item" onclick="openTab('telefones')">Telefones</li>
-                <li class="nav-tab-item" onclick="openTab('historico')">Histórico de Serviços</li>
                 <li class="nav-tab-item" onclick="openTab('pagamentos')">Pagamentos</li>
 				<li class="nav-tab-item" onclick="openTab('print')">Imprimir</li>
             </ul>
@@ -176,6 +175,7 @@
             <div id="dados-pessoais" class="tab-content active">
                 <h4>Dados Pessoais</h4>
                 <p><strong>Nome:</strong> {{ cliente.nome }}</p>
+				<p><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "Apelido não registrado" }}</p>
                 <p><strong>CPF:</strong> {{ cliente.cpf or "CPF não registrado" }}</p>
                 <p><strong>Endereço:</strong> {{ cliente.endereco or "Endereço não registrado" }}</p>
                 <p><strong>Cidade:</strong> {{ cliente.cidade or "Cidade não registrada" }}</p>
@@ -183,8 +183,10 @@
                 <p><strong>Bairro:</strong> {{ cliente.bairro or "Bairro não registrado" }}</p>
                 <p><strong>CEP:</strong> {{ cliente.cep or "CEP não registrado" }}</p>
                 
-                <h3 class="mt-4">Atualizar CPF, Endereço e Estado</h3>
+                <h3 class="mt-4">Atualizar Apelido (Nome Social), CPF, Endereço e Estado</h3>
                 <form action="/update_dados_cliente/{{ cliente.id }}" method="POST">
+					<label for ="apelido">Apelido ou Nome Social</label>
+					<input type="text" name="apelido" class="form-control mb" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
                     <label for="cpf">CPF</label>
                     <input type="text" name="cpf" class="form-control mb" placeholder="CPF" value="{{ cliente.cpf or '' }}">
                     <label for="endereco">Endereço</label>
@@ -229,10 +231,48 @@
                         <button type="submit" class="btn btn-warning">Atualizar</button>
                     </div>
                 </form>
+				<h4>Histórico de Serviços do cliente: {{ cliente.nome }} </h4>
+                {% if historicos %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for historico in historicos %}
+                        <tr>
+                            <td>{{ historico.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                            <td>{{ historico.descricao }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>Nenhum histórico registrado para este cliente.</p>
+                {% endif %}
+
+                <form action="/add_historico/{{ cliente.id }}" method="POST" class="mt">
+                    <h3>Adicionar ao Histórico</h3>
+                    <label for="descricao">Descrição do serviço</label>
+                    <input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control mb-2" required>
+                    <button type="submit" class="btn btn-primary">Adicionar Histórico</button>
+                </form>
+				<h4>Quer imprimir os Dados Pessoais e o Histórico de Serviços do cliente {{ cliente.nome }}?</h4>
+				<form id="print-form">
+                <div>
+                    <input type="checkbox" id="dados-pessoais" class="select-to-print">
+                    <label for="dados-pessoais">Sim</label>
+				</div>
+				</form>
+				<button type="button" class="btn btn-primary" onclick="imprimirSelecionados()">Imprimir</button>
+				<div class="d-flex gap-2">
+				</div>
             </div>
 
             <div id="veiculos" class="tab-content">
-                <h4>Carros do Cliente</h4>
+                <h4>Carros do Cliente: {{ cliente.nome }} </h4>
                 {% if carros %}
                 <table class="table table-bordered">
                     <thead>
@@ -313,19 +353,30 @@
                 {% else %}
                 <p>Nenhum carro registrado para atualizar.</p>
                 {% endif %}
+				<h4>Quer imprimir as informações do Veículo?</h4>
+				<form id="print-form">
+                <div>
+                    <input type="checkbox" id="veiculos" class="select-to-print">
+                    <label for="veiculos">Sim</label>
+				</div>
+				</form>
+				<button type="button" class="btn btn-primary" onclick="imprimirSelecionados()">Imprimir</button>
+				<div class="d-flex gap-2">
+				</div>
+			</div>
             </div>
 
-            <div id="telefones" class="tab-content">
-                <h4>Telefones</h4>
-                {% if telefones %}
-                <ul>
-                    {% for telefone in telefones %}
-                    <li>{{ telefone.numero }}</li>
-					{% endfor %}
-                </ul>
-                {% else %}
-                <p>Nenhum telefone registrado.</p>
-                {% endif %}
+			<div id="telefones" class="tab-content">
+			<h4>Telefones do cliente: {{ cliente.nome }} </h4>
+			{% if telefones %}
+			<ul>
+				{% for telefone in telefones %}
+					<li>{{ telefone.numero }}</li>
+				{% endfor %}
+			</ul>
+			{% else %}
+				<p>Nenhum telefone registrado.</p>
+			{% endif %}
 
 			<h3 class="mt-4">Atualizar Telefones</h3>
 			{% for telefone in telefones %}
@@ -353,41 +404,20 @@
 					<button type="submit" class="btn btn-success">Salvar Telefone(s)</button>
 				</div>
 			</form>
+			<h4>Quer imprimir os telefones?</h4>
+				<form id="print-form">
+                <div>
+                    <input type="checkbox" id="telefones" class="select-to-print">
+                    <label for="telefones">Sim</label>
+				</div>
+				</form>
+				<button type="button" class="btn btn-primary" onclick="imprimirSelecionados()">Imprimir</button>
+				<div class="d-flex gap-2">
+				</div>
 			</div>
 
-            <div id="historico" class="tab-content">
-                <h4>Histórico de Serviços</h4>
-                {% if historicos %}
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Descrição</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for historico in historicos %}
-                        <tr>
-                            <td>{{ historico.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
-                            <td>{{ historico.descricao }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p>Nenhum histórico registrado para este cliente.</p>
-                {% endif %}
-
-                <form action="/add_historico/{{ cliente.id }}" method="POST" class="mt">
-                    <h3>Adicionar ao Histórico</h3>
-                    <label for="descricao">Descrição do serviço</label>
-                    <input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control mb-2" required>
-                    <button type="submit" class="btn btn-primary">Adicionar Histórico</button>
-                </form>
-            </div>
-
             <div id="pagamentos" class="tab-content">
-                <h2>Pagamentos</h2>
+                <h2>Pagamentos do cliente: {{ cliente.nome }} </h2>
                 {% if pagamentos %}
                 <table class="table table-bordered">
                     <thead>
@@ -449,6 +479,16 @@
 
                     <button type="submit" class="btn btn-primary">Registrar Pagamento</button>
                 </form>
+				<h4>Quer imprimir o histórico de pagamentos?</h4>
+				<form id="print-form">
+                <div>
+                    <input type="checkbox" id="pagamentos" class="select-to-print">
+                    <label for="pagamentos">Sim</label>
+				</div>
+				</form>
+				<button type="button" class="btn btn-primary" onclick="imprimirSelecionados()">Imprimir</button>
+				<div class="d-flex gap-2">
+				</div>
             </div>
 			
 			<div id="print" class="tab-content">
@@ -467,10 +507,6 @@
                     <label for="telefones">Telefones</label>
                 </div>
                 <div>
-                    <input type="checkbox" id="historicos" class="select-to-print">
-                    <label for="historicos">Historico de Serviços</label>
-                </div>
-                <div>
                     <input type="checkbox" id="pagamentos" class="select-to-print">
                     <label for="pagamentos">Pagamento</label>
                 </div>
@@ -486,10 +522,14 @@
                     <p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>  
                     <p><strong>Bairro:</strong> {{ cliente.bairro or "Bairro não registrado" }}</p>
                     <p><strong>CEP:</strong> {{ cliente.cep or "CEP não registrado" }}</p>
+					<h4>Historico de Serviços do cliente: {{ cliente.nome }}</h4>             
+                    {% for historico in historicos %}
+                    <p>{{ historico.data.strftime ('%d/%m/%Y %H:%M'), historico.descricao }}</p>
+                    {% endfor %} 
                 </div>
 
                 <div id="veiculos-content" class="print-section">
-                    <h4>Veículos</h4>              
+                    <h4>Veículos do cliente: {{ cliente.nome }} </h4>              
                     {% for carro in carros %}
                         <p><strong>Marca:</strong> {{ carro.marca }}</p>
                         <p><strong>Modelo:</strong> {{ carro.modelo }}</p>
@@ -501,21 +541,14 @@
                 </div>
 
                 <div id="telefones-content" class="print-section">
-                    <h4>Telefones</h4>         
+                    <h4>Telefones do cliente: {{ cliente.nome }} </h4>         
                     {% for telefone in telefones %}
                     <p>{{ telefone.numero }}</p>
                     {% endfor %}
                 </div>
 
-                <div id="historicos-content" class="print-section">
-                    <h4>Historico de Serviços</h4>             
-                    {% for historico in historicos %}
-                    <p>{{ historico.data.strftime ('%d/%m/%Y %H:%M'), historico.descricao }}</p>
-                    {% endfor %}  
-                </div>
-
                 <div id="pagamentos-content" class="print-section">
-                    <h4>Pagamentos</h4>
+                    <h4>Pagamentos do cliente: {{ cliente.nome }} </h4>
                     <ul>
                     {% for pagamento in pagamentos %}
                         <li>

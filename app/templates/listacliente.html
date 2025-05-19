@@ -189,6 +189,7 @@
                 <tr>
                     <th>ID</th>
                     <th>Nome</th>
+					<th>Apelido</th>
 					<th>CPF</th>
                     <th>Telefones</th>
                     <th>Ações</th>
@@ -199,6 +200,7 @@
     <tr>
         <td>{{ cliente.id }}</td>
         <td class="nome-cliente">{{ cliente.nome }}</td>
+		<td>{% if cliente.apelido %}{{ cliente.apelido}}{% endif %}</td>
         <td>{% if cliente.cpf %}{{ cliente.cpf }}{% endif %}</td>
         <td>
             {% for telefone in cliente.telefones %}
@@ -218,11 +220,15 @@
         <label for="nome">Nome</label>
         <input type="text" name="nome" id="nome" class="form-control" placeholder="Nome" required>
     </div>
+	<div id="apelido-container" class="mb">
+        <label for="apelido">Apelido ou Nome Social</label>
+        <input type="text" name="apelido" class="form-control mb-2" placeholder="Apelido ou Nome Social">
+    </div>
     <div id="telefones-container" class="mb">
         <label for="numeros[]">Telefone principal</label>
         <input type="text" name="numeros[]" class="form-control mb" placeholder="Telefone principal">
     </div>
-	    <div id="CPF-container" class="mb">
+	<div id="CPF-container" class="mb">
         <label for="numeros[]">CPF</label>
         <input type="text" name="cpf" class="form-control mb-2" placeholder="CPF">
     </div>

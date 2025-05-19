@@ -59,11 +59,12 @@ def add_cliente():
     nome = request.form['nome'].strip()
     numeros = request.form.getlist('numeros[]')
     cpf = request.form.get('cpf', '').strip()
+    apelido = request.form['apelido'].strip()
     cliente_existente = Cliente.query.filter_by(nome=nome).first()
     if cliente_existente:
         return redirect(url_for('main.client', error="Cliente já cadastrado"))
 
-    novo_cliente = Cliente(nome=nome, cpf=cpf)
+    novo_cliente = Cliente(nome=nome, cpf=cpf, apelido=apelido)
     db.session.add(novo_cliente)
     db.session.commit()
 
@@ -117,6 +118,7 @@ def update_dados_cliente(cliente_id):
     bairro = request.form['bairro']
     cep = request.form['cep']
     cpf = request.form['cpf']
+    apelido = request.form['apelido']
     cliente = Cliente.query.get_or_404(cliente_id)
     cliente.cpf = cpf
     cliente.endereco = endereco
@@ -124,6 +126,7 @@ def update_dados_cliente(cliente_id):
     cliente.estado = estado
     cliente.cep = cep
     cliente.bairro = bairro
+    cliente.apelido = apelido
     db.session.commit()
 
     return redirect(url_for('main.cliente', id=cliente_id))

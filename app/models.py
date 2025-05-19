@@ -43,7 +43,8 @@ class Cliente(db.Model):
     cidade = db.Column(db.String(100), nullable=True)  # Cidade do cliente
     cep = db.Column(db.String(10), nullable=True)  # CEP do cliente
     bairro = db.Column(db.String(200), nullable=True)  # Bairro do cliente
-    cpf = db.Column(db.String(14), nullable=True)
+    cpf = db.Column(db.String(14), nullable=True) # CPF do cliente
+    apelido = db.Column(db.String(500)) # Apelido/Nome Social do cliente
     telefones = db.relationship('Telefone', backref='cliente', lazy=True)
     historicos = db.relationship('Historico', backref='cliente', lazy=True)
     pagamentos = db.relationship('Pagamento', backref='cliente', lazy=True)
