@@ -176,7 +176,8 @@ document.addEventListener("DOMContentLoaded", function () {
         <p><strong>Clique no botão ☰ para recolher ou expandir o menu.</strong></p>
 		<h1>Inventário</h1>
 		<form action="/inventario" method="GET" class="mb">
-    <div class="input-group">
+		<label for="query">Buscar peças</label>
+	<div class="input-group">
         <input type="text" name="query" class="form-control" placeholder="Buscar peças" value="{{ search_query }}">
         <button type="submit" class="btn btn-primary">Buscar</button>
     </div>

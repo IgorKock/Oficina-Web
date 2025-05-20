@@ -268,7 +268,7 @@
             <td>{{ carro.quilometro }}</td>
         </tr>
         {% if carro.historicos %}
-        <tr><td colspan="6"><h4>Histórico de Serviços</h4></td></tr>
+        <tr><td colspan="6"><h4>Histórico de Serviços do veículo: {{ carro.marca }} {{ carro.modelo }}</h4></td></tr>
         <tr>
             <td colspan="6">
                 <table class="table table-bordered">
@@ -373,7 +373,6 @@
 				<div class="d-flex gap-2">
 				</div>
 			</div>
-            </div>
 
 			<div id="telefones" class="tab-content">
 			<h4>Telefones do cliente: {{ cliente.nome }} </h4>
@@ -446,7 +445,7 @@
 						<td>
                     {% for carro in carros %}
                         {% if pagamento.carro_id == carro.id %}
-                            {{ carro.marca }} - {{ carro.modelo }}
+                            {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}
                         {% endif %}
                     {% endfor %}
 					</td>
@@ -476,36 +475,39 @@
                 <p>Este cliente ainda não possui pagamentos registrados.</p>
                 {% endif %}
 {% for carro in carros %}
-    <h3>Registrar pagamento para: {{ carro.marca }} - {{ carro.modelo }}</h3>
-    
     {% for historico in carro.historicos %}
-        <form action="/add_pagamento/{{ carro.id }}/{{ historico.id }}" method="POST" class="mt-4">
+        {% if not historico.tem_pagamento %}
+        <form id="form_pagamento_{{ historico.id }}" action="/add_pagamento/{{ carro.id }}/{{ historico.id }}" method="POST">
+            <h3>Registrar pagamento para: {{ carro.marca }} - {{ carro.modelo }}</h3>
+            <p><strong>Serviço realizado:</strong> {{ historico.descricao }}</p>
             <label for="valor">Valor (R$)</label>
             <input type="number" step="0.01" name="valor" placeholder="Valor (R$)" class="form-control mb-2" required>
-            
             <label for="metodo">Método de Pagamento</label>
-            <select name="metodo" class="form-control mb-2" required onchange="toggleOpcaoPagamento()">
-                <option value="Dinheiro">Dinheiro</option>
-                <option value="Cartão de Crédito">Cartão de Crédito</option>
-                <option value="Cartão de Débito">Cartão de Débito</option>
-                <option value="Pix">Pix</option>
-            </select>
+<label for="metodo">Método de Pagamento</label>
+<select name="metodo" class="form-control mb-2" required onchange="toggleOpcaoPagamento(event)">
+    <option value="Dinheiro">Dinheiro</option>
+    <option value="Cartão de Crédito">Cartão de Crédito</option>
+    <option value="Cartão de Débito">Cartão de Débito</option>
+    <option value="Pix">Pix</option>
+</select>
 
-            <div id="opcaoCartao" style="display: none;">
-                <label for="tipo_cartao">Tipo de Pagamento:</label>
-                <select name="tipo_cartao" id="tipo_cartao" class="form-control mb-2" onchange="toggleParcelas()">
-                    <option value="À vista">À vista</option>
-                    <option value="Parcelado">Parcelado</option>
-                </select>
+<div class="opcaoCartao" style="display: none;">
+    <label for="tipo_cartao">Tipo de Pagamento:</label>
+    <select name="tipo_cartao" class="form-control mb-2" onchange="toggleParcelas(event)">
+        <option value="À vista">À vista</option>
+        <option value="Parcelado">Parcelado</option>
+    </select>
 
-                <div id="opcaoParcelado" style="display: none;">
-                    <label for="parcelas">Parcelas:</label>
-                    <input type="number" name="parcelas" min="1" max="12" placeholder="Número de parcelas" class="form-control mb-2">
-                </div>
-            </div>
-
+    <div class="opcaoParcelado" style="display: none;">
+        <label for="parcelas">Número de Parcelas:</label>
+        <input type="number" name="parcelas" min="1" max="12" placeholder="Número de parcelas" class="form-control mb-2">
+    </div>
+</div>
             <button type="submit" class="btn btn-primary">Registrar Pagamento</button>
         </form>
+        {% else %}
+        <p style="color: green;"><strong>Pagamento já registrado para o serviço "{{ historico.descricao }}"</strong></p>
+        {% endif %}
     {% endfor %}
 {% endfor %}
                 </form>
@@ -554,7 +556,13 @@
                     <p><strong>Bairro:</strong> {{ cliente.bairro or "Bairro não registrado" }}</p>
                     <p><strong>CEP:</strong> {{ cliente.cep or "CEP não registrado" }}</p>
                 </div>
-			</div>	
+                <div id="telefones-content" class="print-section">
+                    <h4>Telefones do cliente: {{ cliente.nome }} </h4>         
+                    {% for telefone in telefones %}
+                    <p>{{ telefone.numero }}</p>
+                    {% endfor %}
+                </div>
+            </div>			
                 <div id="veiculos-content" class="print-section">
                     <h4>Veículos do cliente: {{ cliente.nome }} </h4>              
 {% for carro in carros %}
@@ -604,7 +612,7 @@
                 <td>
                     {% for carro in carros %}
                         {% if pagamento.carro_id == carro.id %}
-                            {{ carro.marca }} - {{ carro.modelo }}
+                            {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}
                         {% endif %}
                     {% endfor %}
                 </td>
@@ -634,15 +642,9 @@
     <p>Este cliente ainda não possui pagamentos registrados.</p>
     {% endif %}
 </div>
-                <div id="telefones-content" class="print-section">
-                    <h4>Telefones do cliente: {{ cliente.nome }} </h4>         
-                    {% for telefone in telefones %}
-                    <p>{{ telefone.numero }}</p>
-                    {% endfor %}
-                </div>
-            </div>
     </div>
-
+</div>
+            </div>
     <script>
         // Função para abrir a aba
         function openTab(tabName) {
@@ -671,29 +673,31 @@
         }
 
         // Exibir ou ocultar o campo de opções do método de pagamento
-        function toggleOpcaoPagamento() {
-            const metodo = document.getElementById('metodo').value;
-            const opcaoCartao = document.getElementById('opcaoCartao');
-            
-            if (metodo === "Cartão de Crédito") {
-                opcaoCartao.style.display = "block";
-            } else {
-                opcaoCartao.style.display = "none";
-                document.getElementById('opcaoParcelado').style.display = "none";
-            }
-        }
+		function toggleOpcaoPagamento(event) {
+			const selectMetodo = event.target;
+			const form = selectMetodo.closest("form");
+			const opcaoCartao = form.querySelector(".opcaoCartao");
+			
+			if (selectMetodo.value === "Cartão de Crédito") {
+				opcaoCartao.style.display = "block";
+			} else {
+				opcaoCartao.style.display = "none";
+				form.querySelector(".opcaoParcelado").style.display = "none";
+			}
+		}
 
         // Exibir ou ocultar o número de parcelas
-        function toggleParcelas() {
-            const tipoCartao = document.getElementById('tipo_cartao').value;
-            const opcaoParcelado = document.getElementById('opcaoParcelado');
-            
-            if (tipoCartao === "Parcelado") {
-                opcaoParcelado.style.display = "block";
-            } else {
-                opcaoParcelado.style.display = "none";
-            }
-        }
+		function toggleParcelas(event) {
+			const selectTipoCartao = event.target;
+			const form = selectTipoCartao.closest("form");
+			const opcaoParcelado = form.querySelector(".opcaoParcelado");
+			
+			if (selectTipoCartao.value === "Parcelado") {
+				opcaoParcelado.style.display = "block";
+			} else {
+				opcaoParcelado.style.display = "none";
+				}
+			}
 
         function adicionarCarro() {
             const carrosContainer = document.getElementById('carros-container');
@@ -774,6 +778,15 @@
             printWindow.document.close();
             printWindow.print();
         }
+		
+		function ocultarFormulario(historicoId) {
+			setTimeout(() => {
+				const form = document.getElementById(`form_pagamento_${historicoId}`);
+					if (form) {
+						form.style.display = "none";
+					}
+			}, 500); // Tempo suficiente para que o formulário seja enviado antes de desaparecer
+		}
 
         // Inicializar a aba padrão
         window.onload = function() {

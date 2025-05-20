@@ -48,7 +48,8 @@ def cliente(id):
     # Ajustar os horários dos históricos e pagamentos para o fuso de Brasília
     for historico in historicos:
         historico.data = ajustar_para_brasilia(historico.data)
-
+        historico.tem_pagamento = any(pagamento.historico_id == historico.id for pagamento in pagamentos)
+        
     for pagamento in pagamentos:
         pagamento.data = ajustar_para_brasilia(pagamento.data)
 
