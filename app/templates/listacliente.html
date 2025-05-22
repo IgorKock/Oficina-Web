@@ -66,16 +66,16 @@
 
         /* Contêiner da Logo */
 		.logo-container {
-			display: flex;
+			display: flex !important;
 			justify-content: center; /* Centraliza horizontalmente */
 			align-items: center;
 			width: 50%;
 			padding: 10px 0;
-			position: absolute; /* Impede que ela sobreponha o menu ou o conteúdo */
+			position: fixed !important; /* Mantém a logo fixa */
 			top: 10px; /* Ajusta a posição para evitar sobreposição */
 			left: 50%;
 			transform: translateX(-50%); /* Mantém centralizado */
-			z-index: 1001;
+			z-index: 999;
 			background: none; /* Remove qualquer fundo branco */
 			pointer-events: none; /* Permite que elementos abaixo sejam clicáveis */
 		}
@@ -141,21 +141,132 @@
         /* Botão de recolher menu */
         .toggle-btn {
             position: fixed;
-            top: 70px;
-            left: 210px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 3px;
-            transition: left 0.3s ease-in-out;
-            z-index: 1002;
+			top: 10px;
+			left: 200px; /* Ajuste inicial para desktop */
+			background-color: #007bff;
+			color: white;
+			padding: 8px 12px; /* Corrige tamanho do botão */
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			z-index: 1002;
+			transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
+			width: auto; /* Evita que o botão cresça */
         }
 
         .toggle-btn.recolhido {
             left: 70px;
 		}
+		
+		@media (min-width: 769px) {
+			.logo-container {
+				display: flex !important; /* Mantém a logo visível no desktop */
+			}
+		}
+		
+				/* Ajustes para telas menores que 768px (tablets e celulares) */
+	@media (max-width: 768px) {
+    .menu-lateral {
+        width: 60px; /* Diminui o tamanho do menu lateral */
+    }
+
+    .conteudo {
+        margin-left: 60px; /* Ajusta espaço do conteúdo */
+    }
+
+    .nav-tabs {
+        flex-direction: column; /* Transforma abas em coluna */
+    }
+	
+	.logo-container {
+        transition: opacity 0.3s ease-in-out;
+    }
+    .logo-container img {
+        max-width: 80px; /* Reduz tamanho da logo */
+    }
+
+    .toggle-btn {
+        left: 10px !important; /* Mantém botão visível */
+        position: fixed;
+        top: 10px;
+        z-index: 1001;
+    }
+	
+    .menu-lateral:not(.recolhido) ~ .logo-container {
+        display: none !important; /* Agora a logo some corretamente apenas no mobile */
+        pointer-events: none; /* Evita que a área da logo bloqueie interações */
+    }
+
+    .menu-lateral.recolhido ~ .logo-container {
+        display: flex !important; /* Exibe a logo corretamente ao recolher o menu */
+        pointer-events: all;
+    }
+	
+    /* Ajusta o botão de menu para se mover quando ativo */
+    .menu-lateral.recolhido ~ .toggle-btn {
+        left: 15px;
+    }
+}
+
+/* Ajustes para telas menores que 480px (celulares pequenos) */
+@media (max-width: 480px) {
+    .menu-lateral {
+        width: 100%; /* Ocupa toda a tela ao abrir */
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: #343a40;
+        z-index: 999;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Centraliza os elementos */
+		padding-bottom: 50px; /* Espaço extra para o botão */
+    }
+
+    .menu-lateral.recolhido {
+        transform: translateX(-100%); /* Faz o menu deslizar para fora */
+    }
+
+    .conteudo {
+        margin-left: 0;
+        width: 100%;
+        padding: 10px; /* Ajusta margens */
+    }
+
+    .nav-tabs {
+        font-size: 14px; /* Ajusta tamanho da fonte */
+    }
+
+    .toggle-btn {
+		width: 100px !important; /* Define um tamanho fixo para o botão */
+        font-size: 12px; /* Reduz o tamanho da fonte */
+        padding: 6px 10px; /* Ajusta proporções do botão */
+    }
+	
+	.menu-lateral:not(.recolhido) ~ .logo-container {
+        opacity: 0; /* Faz a logo desaparecer quando o menu está ativo */
+        pointer-events: none; /* Evita que a área da logo bloqueie interações */
+    }
+
+    .menu-lateral.recolhido ~ .logo-container {
+        opacity: 1; /* Exibe a logo novamente quando o menu é recolhido */
+        pointer-events: all;
+    }
+	
+	.menu-lateral.recolhido ~ .logo-container {
+        display: flex !important; /* Exibe a logo corretamente ao recolher o menu */
+    }
+	
+    table {
+        font-size: 12px; /* Ajusta tabelas para melhor leitura */
+    }
+
+    th, td {
+        padding: 5px; /* Reduz espaço interno das células */
+    }
+		
 	</style>
 </head>
 <body>
@@ -163,8 +274,8 @@
     <div class="logo-container">
         <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa">
     </div>
+	<button class="toggle-btn" onclick="toggleMenu()">☰</button>
 	    <div class="menu-lateral" id="menu">
-        <button class="toggle-btn" onclick="toggleMenu()">☰</button>
         <a href="/">Menu Inicial</a>
         <a href="/inventario">Inventário</a>
     </div>
@@ -240,22 +351,25 @@
 
     </div>
 	<script>
-	function toggleMenu() {
-		let menu = document.getElementById("menu");
-		let conteudo = document.getElementById("conteudo");
-		let botao = document.querySelector(".toggle-btn");
+function toggleMenu() {
+    let menu = document.getElementById("menu");
+    let logo = document.querySelector(".logo-container");
+    let botao = document.querySelector(".toggle-btn");
 
-		if (menu.classList.contains("recolhido")) {
-			menu.classList.remove("recolhido");
-			conteudo.classList.remove("menu-recolhido");
-			botao.classList.remove("recolhido");
-	}
-		else {
-			menu.classList.add("recolhido");
-			conteudo.classList.add("menu-recolhido");
-			botao.classList.add("recolhido");
-		}
-	}
+    if (menu.classList.contains("recolhido")) {
+        menu.classList.remove("recolhido");
+
+        if (window.innerWidth <= 768) {
+            logo.style.display = "none"; /* Oculta a logo no mobile apenas quando o menu estiver expandido */
+        }
+    } else {
+        menu.classList.add("recolhido");
+
+        if (window.innerWidth <= 768) {
+            logo.style.display = "flex"; /* Exibe a logo novamente no mobile ao recolher */
+        }
+    }
+}
 	</script>
 </body>
 </html>
