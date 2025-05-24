@@ -52,18 +52,18 @@
 
         /* Contêiner da Logo */
         .logo-container {
-            display: flex !important; /* Garante que fique visível */
-            justify-content: center; /* Centraliza horizontalmente */
-            align-items: center;
-            width: 50%;
-            padding: 10px 0;
-            position: fixed !important; /* Mantém a logo fixa */
-            top: 10px; /* Ajusta a posição para evitar sobreposição */
-            left: 50%;
-            transform: translateX(-50%); /* Mantém centralizado */
-            z-index: 1001;
-            background: none; /* Remove qualquer fundo branco */
-            pointer-events: none; /* Permite que elementos abaixo sejam clicáveis */
+            display: flex !important;
+			justify-content: center; /* Centraliza horizontalmente */
+			align-items: center;
+			width: 50%;
+			padding: 10px 0;
+			position: fixed !important; /* Mantém a logo fixa */
+			top: 10px; /* Ajusta a posição para evitar sobreposição */
+			left: 50%;
+			transform: translateX(-50%); /* Mantém centralizado */
+			z-index: 999;
+			background: none; /* Remove qualquer fundo branco */
+			pointer-events: none; /* Permite que elementos abaixo sejam clicáveis */
         }
 
         .logo-container img {
@@ -168,7 +168,7 @@
     }
 	
 	.logo-container {
-        transition: opacity 0.3s ease-in-out;
+        transition: none !important; /* Remove qualquer efeito de animação */
     }
     .logo-container img {
         max-width: 80px; /* Reduz tamanho da logo */
@@ -182,13 +182,25 @@
     }
 	
     .menu-lateral:not(.recolhido) ~ .logo-container {
-        display: none !important; /* Agora a logo some corretamente apenas no mobile */
-        pointer-events: none; /* Evita que a área da logo bloqueie interações */
+        position: absolute !important; /* Mantém a logo abaixo do menu */
+        top: 100%; /* Move a logo para baixo do menu */
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex !important;
+        pointer-events: none; /* Evita bloqueio de cliques */
+        transition: none !important; /* Remove qualquer animação */
+        opacity: 1 !important; /* Garante que a logo permaneça visível */
     }
 
     .menu-lateral.recolhido ~ .logo-container {
-        opacity: 1; /* Exibe a logo novamente quando o menu é recolhido */
+        position: fixed !important; /* Mantém a logo fixa quando o menu está recolhido */
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex !important;
         pointer-events: all;
+        transition: none !important; /* Remove qualquer animação */
+        opacity: 1 !important; /* Garante que a logo permaneça visível */
     }
 	
     /* Ajusta o botão de menu para se mover quando ativo */
@@ -264,7 +276,7 @@
         <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa">
     </div>
 	<button class="toggle-btn" onclick="toggleMenu()">☰</button>
-    <div class="menu-lateral" id="menu">
+    <div class="menu-lateral recolhido" id="menu">
         <a href="/">Menu Inicial</a>
         <a href="/listaclientes">Lista de Clientes</a>
         <a href="/inventario">Inventário</a>
@@ -494,7 +506,7 @@
 			{% if telefones %}
 			<ul>
 				{% for telefone in telefones %}
-					<li>{{ telefone.numero }}</li>
+					<li>Telefone {{ loop.index }}: {{ telefone.numero }}</li>
 				{% endfor %}
 			</ul>
 			{% else %}
@@ -523,7 +535,7 @@
 					<input type="text" name="numeros[]" class="form-control mb-2" placeholder="Digite o telefone">
 				</div>
 				<div class="d-flex gap-2">
-					<button type="button" class="btn btn-secondary" onclick="adicionarCampoTelefone()">Adicionar Telefone</button>
+					<button type="button" class="btn btn-secondary" onclick="adicionarCampoTelefone()">Adicionar mais de um Telefone</button>
 					<button type="submit" class="btn btn-success">Salvar Telefone(s)</button>
 				</div>
 			</form>
@@ -674,7 +686,7 @@
                 <div id="telefones-content" class="print-section">
                     <h4>Telefones do cliente: {{ cliente.nome }} </h4>         
                     {% for telefone in telefones %}
-                    <p>{{ telefone.numero }}</p>
+                    <p><strong>Telefone {{ loop.index }}:</strong> {{ telefone.numero }}</p>
                     {% endfor %}
                 </div>
             </div>			
@@ -829,37 +841,27 @@
         }
 
         // Função para o menu
-function toggleMenu() {
-    let menu = document.getElementById("menu");
-    let logo = document.querySelector(".logo-container");
+		function toggleMenu() {
+			let menu = document.getElementById("menu");
+			let botao = document.querySelector(".toggle-btn");
 
-    if (menu.classList.contains("recolhido")) {
-        menu.classList.remove("recolhido");
-
-        if (window.innerWidth <= 768) {
-            logo.style.opacity = "0"; /* Oculta a logo no mobile apenas quando o menu estiver expandido */
-            logo.style.pointerEvents = "none"; /* Evita bloqueio de cliques */
-        }
-    } else {
-        menu.classList.add("recolhido");
-
-        if (window.innerWidth <= 768) {
-            logo.style.opacity = "1"; /* Exibe a logo novamente no mobile ao recolher */
-            logo.style.pointerEvents = "auto";
-        }
-    }
-}
-        
-        // Inicializar a aba padrão
+			if (menu.classList.contains("recolhido")) {
+				menu.classList.remove("recolhido");
+			} else {
+				menu.classList.add("recolhido");
+			}
+		}        
+        // Menu fechado no mobile
         window.onload = function() {
             let menu = document.getElementById("menu");
 			let logo = document.querySelector(".logo-container");
-
-			// Se o menu NÃO estiver recolhido ao carregar e for mobile, oculta a logo
-			if (!menu.classList.contains("recolhido") && window.innerWidth <= 768) {
-				logo.style.opacity = "0"; /* Oculta a logo */
-				logo.style.pointerEvents = "none"; /* Evita que a área da logo bloqueie interações */
+			
+			if (window.innerWidth <= 768) {
+				menu.classList.add("recolhido"); // Mantém o menu fechado ao carregar no mobile
+			} else {
+				menu.classList.remove("recolhido"); // No desktop, garante que o menu esteja aberto
 			}
+
         };		
 		 // Função para imprimir os dados selecionados
         function imprimirSelecionados() {

@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     <!-- Menu lateral fixo -->
 	<button class="toggle-btn" onclick="toggleMenu()">☰</button>
-    <div class="menu-lateral" id="menu">
+    <div class="menu-lateral recolhido" id="menu">
         <a href="/">Menu Inicial</a>
         <a href="/listaclientes">Lista de Clientes</a>
     </div>
@@ -364,32 +364,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
     <!-- JavaScript para alternar estado do menu -->
     <script>
-        function toggleMenu() {
-    let menu = document.getElementById("menu");
-    let logo = document.querySelector(".logo-container");
-    let botao = document.querySelector(".toggle-btn");
+		function toggleMenu() {
+			let menu = document.getElementById("menu");
+			let botao = document.querySelector(".toggle-btn");
 
-    if (menu.classList.contains("recolhido")) {
-        menu.classList.remove("recolhido");
+			if (menu.classList.contains("recolhido")) {
+				menu.classList.remove("recolhido");
+			} else {
+				menu.classList.add("recolhido");
+			}
+		}
 
-        if (window.innerWidth <= 768) {
-            logo.style.opacity = "0"; /* Oculta a logo no mobile apenas quando o menu está expandido */
-            logo.style.pointerEvents = "none";
-        }
+		// Correção para iniciar a página com o menu fechado no mobile
+		window.onload = function() {
+			let menu = document.getElementById("menu");
 
-        botao.style.display = "block"; /* Garante que o botão permaneça visível */
-    } else {
-        menu.classList.add("recolhido");
-
-        if (window.innerWidth <= 768) {
-            logo.style.opacity = "1"; /* Exibe a logo novamente no mobile ao recolher */
-            logo.style.pointerEvents = "auto";
-        }
-
-        botao.style.display = "block"; /* Impede que o botão desapareça */
-    }
-}
+			if (window.innerWidth <= 768) {
+				menu.classList.add("recolhido"); // Mantém o menu fechado ao carregar
+			} else {
+				menu.classList.remove("recolhido"); // No desktop, garante que o menu esteja aberto
+			}
+		};
     </script>
-
 </body>
 </html>
