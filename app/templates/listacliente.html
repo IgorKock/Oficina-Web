@@ -84,7 +84,7 @@
 		}
 
         .logo-container img {
-            max-width: 125px; /* Tamanho máximo */
+            max-width: 75px; /* Tamanho máximo */
             height: auto; /* Mantém proporção */
 			background: none; /* Remove qualquer fundo da imagem */
         }
@@ -156,7 +156,23 @@
 			transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
 			width: auto; /* Evita que o botão cresça */
         }
-
+		
+		/* Estilo para os cards */
+        .card {
+			background-color: #f8f9fa; /* Cor de fundo suave */
+            border-radius: 0.75rem; /* Cantos mais arredondados para os cards */
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Sombra suave */
+        }
+		
+        .card-header {
+            background-color: #e9ecef; /* Cor de fundo para o cabeçalho do card */
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+            border-top-left-radius: 0.75rem; /* Mantém o arredondamento */
+            border-top-right-radius: 0.75rem; /* Mantém o arredondamento */
+            font-weight: bold; /* Texto em negrito */
+            padding: 1rem 1.25rem; /* Espaçamento */
+        }
+		
         .toggle-btn.recolhido {
             left: 70px;
 		}
@@ -284,10 +300,13 @@
     </div>
     <!-- Conteúdo da página -->
     <div class="conteudo" id="conteudo">
+	<div class="card mb-4">
+        <div class="card-header">
+			<h1>Lista de Clientes</h1>
+		</div>
         <p></p>
         <p><strong>Clique no botão ☰ para recolher ou expandir o menu.</strong></p>
 				
-        <h1>Gerenciamento de Clientes</h1>
 		<form action="/listaclientes" method="GET" class="mb">
 		<label for="query">Buscar clientes por nome ou telefone</label>
     <div class="input-group">
@@ -295,8 +314,6 @@
         <button type="submit" class="btn btn-primary">Buscar</button>
     </div>
 </form>
-
-        <h2>Lista de Clientes</h2>
         <table class="table table-bordered">
 
             <thead>
@@ -313,7 +330,7 @@
     {% for cliente in clientes %}
     <tr>
         <td>{{ cliente.id }}</td>
-        <td class="nome-cliente">{{ cliente.nome }}</td>
+        <td>{{ cliente.nome }}</td>
 		<td>{% if cliente.apelido %}{{ cliente.apelido}}{% endif %}</td>
         <td>{% if cliente.cpf %}{{ cliente.cpf }}{% endif %}</td>
         <td>
@@ -325,10 +342,13 @@
     </tr>
     {% endfor %}
 </tbody>
-
         </table>
-
-        <h2>Adicionar Novo Cliente</h2>
+</div>
+<div class="card mb-4">
+		<div class="card-header">
+			<h1>Adicionar Novo Cliente</h1>
+		</div>
+		<div class="card-body">
 <form action="/add" method="POST" onsubmit="return validarNomeDuplicado()">
     <div class="mb">
         <label for="nome">Nome</label>
@@ -338,21 +358,23 @@
         <label for="apelido">Apelido ou Nome Social</label>
         <input type="text" name="apelido" class="form-control mb-2" placeholder="Apelido ou Nome Social">
     </div>
-    <div id="telefones-container" class="mb">
+    <div id="telefones-container" class="mb-2">
         <label for="numeros[]">Telefone principal</label>
         <input type="text" name="numeros[]" class="form-control mb" placeholder="Telefone principal">
+		<button class="btn btn-outline-primary" type="button" onclick="adicionarCampoTelefone()"><i class="bi bi-plus-circle mb-1"></i> Adicionar Telefone Extra
+        </button>
     </div>
 	<div id="CPF-container" class="mb">
         <label for="numeros[]">CPF</label>
         <input type="text" name="cpf" class="form-control mb-2" placeholder="CPF">
     </div>
     <div class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary" onclick="adicionarCampoTelefone()">Adicionar um Telefone Adicional</button>
         <button type="submit" class="btn btn-success">Salvar Cliente</button>
     </div>
 </form>
-
+</div>
     </div>
+	</div>
 	<script>
 		// Função para o menu
 		function toggleMenu() {

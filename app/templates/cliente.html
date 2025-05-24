@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes do Cliente - OficinaWeb</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+	 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 	<style>
         /* Estilos das abas */
         .nav-tabs {
@@ -13,38 +13,48 @@
             list-style: none;
             padding: 0;
             margin: 0;
-            border-bottom: 1px solid #dee2e6; /* Adiciona uma borda na parte inferior da navegação */
+            border-bottom: 1px solid #dee2e6;
         }
 
         .nav-tab-item {
             padding: 10px 20px;
             cursor: pointer;
-            border: 1px solid #dee2e6; /* Adiciona borda em todos os lados */
-            border-bottom: none; /* Remove a borda inferior para conectar com o conteúdo */
-            margin-right: 2px; /* Espaçamento entre as abas */
-            background-color: #f8f9fa; /* Um leve fundo cinza */
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+            margin-right: 2px;
+            background-color: #f8f9fa;
+			border-top-left-radius: 0.25rem;
+			border-top-right-radius: 0.25rem;
         }
 
         .nav-tab-item.active {
-            border-bottom-color: #007bff; /* Cor da aba ativa */
-            background-color: #fff; /* Fundo branco para a aba ativa */
+            border-bottom-color: #007bff;
+            background-color: #fff;
         }
 
         .tab-content {
             display: none;
             padding: 20px;
             border: 1px solid #dee2e6;
-            border-top: none; /* Remove a borda superior para conectar com as abas */
+            border-top: none;
+			border-bottom-left-radius: 0.25rem;
+			border-bottom-right-radius: 0.25rem;
         }
 
         .tab-content.active {
             display: block;
         }
 
+        /* Esconde as seções de impressão por padrão dentro da aba 'Imprimir' */
+        /* Elas serão mostradas via JavaScript quando os checkboxes forem marcados */
+        #print .print-section {
+            display: none;
+        }
+
         /* Layout principal */
         body {
-			font-family: 'Exo', sans-serif; /* Usando a fonte Inter conforme instrução */
-            background-color: #f8f9fa; /* Cor de fundo suave */
+			font-family: 'Exo', sans-serif;
+            background-color: #f8f9fa;
             display: flex;
             flex-direction: column;
             height: 100vh;
@@ -56,37 +66,37 @@
         /* Contêiner da Logo */
         .logo-container {
             display: flex !important;
-			justify-content: center; /* Centraliza horizontalmente */
+            justify-content: center;
 			align-items: center;
 			width: 50%;
 			padding: 10px 0;
-			position: fixed !important; /* Mantém a logo fixa */
-			top: 10px; /* Ajusta a posição para evitar sobreposição */
+			position: fixed !important;
+			top: 10px;
 			left: 50%;
-			transform: translateX(-50%); /* Mantém centralizado */
+			transform: translateX(-50%);
 			z-index: 999;
-			background: none; /* Remove qualquer fundo branco */
-			pointer-events: none; /* Permite que elementos abaixo sejam clicáveis */
+			background: none;
+			pointer-events: none;
         }
 
         .logo-container img {
-            max-width: 125px; /* Tamanho máximo */
-            height: auto; /* Mantém proporção */
-            background: none; /* Remove qualquer fundo da imagem */
+            max-width: 125px;
+            height: auto;
+            background: none;
         }
 
         /* Ajuste no Menu Lateral */
         .menu-lateral {
             width: 200px;
-            height: 100vh; /* Garante que ocupe toda a altura da tela */
+            height: 100vh;
             position: fixed;
-            top: 0; /* Começa no topo */
+            top: 0;
             left: 0;
             background-color: #343a40;
             padding-top: 20px;
             transition: width 0.3s ease-in-out;
             z-index: 1000;
-            overflow-y: auto; /* Adiciona rolagem para evitar cortes */
+            overflow-y: auto;
         }
 
         .menu-lateral.recolhido {
@@ -131,79 +141,94 @@
         .toggle-btn {
 			position: fixed;
 			top: 10px;
-			left: 200px; /* Ajuste inicial para desktop */
+			left: 200px;
 			background-color: #007bff;
 			color: white;
-			padding: 8px 12px; /* Corrige tamanho do botão */
+			padding: 8px 12px;
 			border: none;
 			border-radius: 4px;
 			cursor: pointer;
 			z-index: 1002;
 			transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
-			width: auto; /* Evita que o botão cresça */
+            width: auto;
+        }
+
+		.card {
+			background-color: #f8f9fa;
+            border-radius: 0.75rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+		
+        .card-header {
+            background-color: #e9ecef;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+            border-top-left-radius: 0.75rem;
+            border-top-right-radius: 0.75rem;
+            font-weight: bold;
+            padding: 1rem 1.25rem;
         }
 
         .toggle-btn.recolhido {
             left: 70px;
         }
 		.menu-lateral.recolhido + .toggle-btn {
-			left: 10px; /* Move botão para perto da borda ao recolher */
+			left: 10px;
 		}
 		
 		@media (min-width: 769px) {
 			.logo-container {
-				display: flex !important; /* Mantém a logo visível no desktop */
+				display: flex !important;
 			}
 		}
 		
 		/* Ajustes para telas menores que 768px (tablets e celulares) */
 	@media (max-width: 768px) {
     .menu-lateral {
-        width: 60px; /* Diminui o tamanho do menu lateral */
+        width: 60px;
     }
 
     .conteudo {
-        margin-left: 60px; /* Ajusta espaço do conteúdo */
+        margin-left: 60px;
     }
 
     .nav-tabs {
-        flex-direction: column; /* Transforma abas em coluna */
+        flex-direction: column;
     }
 	
 	.logo-container {
-        transition: none !important; /* Remove qualquer efeito de animação */
+        transition: none !important;
     }
     .logo-container img {
-        max-width: 80px; /* Reduz tamanho da logo */
+        max-width: 80px;
     }
 
     .toggle-btn {
-        left: 10px !important; /* Mantém botão visível */
+        left: 10px !important;
         position: fixed;
         top: 10px;
         z-index: 1001;
     }
 	
     .menu-lateral:not(.recolhido) ~ .logo-container {
-        position: absolute !important; /* Mantém a logo abaixo do menu */
-        top: 100%; /* Move a logo para baixo do menu */
+        position: absolute !important;
+        top: 100%;
         left: 50%;
         transform: translateX(-50%);
         display: flex !important;
-        pointer-events: none; /* Evita bloqueio de cliques */
-        transition: none !important; /* Remove qualquer animação */
-        opacity: 1 !important; /* Garante que a logo permaneça visível */
+        pointer-events: none;
+        transition: none !important;
+        opacity: 1 !important;
     }
 
     .menu-lateral.recolhido ~ .logo-container {
-        position: fixed !important; /* Mantém a logo fixa quando o menu está recolhido */
+        position: fixed !important;
         top: 10px;
         left: 50%;
         transform: translateX(-50%);
         display: flex !important;
         pointer-events: all;
-        transition: none !important; /* Remove qualquer animação */
-        opacity: 1 !important; /* Garante que a logo permaneça visível */
+        transition: none !important;
+        opacity: 1 !important;
     }
 	
     /* Ajusta o botão de menu para se mover quando ativo */
@@ -215,7 +240,7 @@
 /* Ajustes para telas menores que 480px (celulares pequenos) */
 @media (max-width: 480px) {
     .menu-lateral {
-        width: 100%; /* Ocupa toda a tela ao abrir */
+        width: 100%;
         height: 100vh;
         position: absolute;
         top: 0;
@@ -225,53 +250,51 @@
         padding: 10px;
         display: flex;
         flex-direction: column;
-        align-items: center; /* Centraliza os elementos */
-		padding-bottom: 50px; /* Espaço extra para o botão */
+        align-items: center;
+		padding-bottom: 50px;
     }
 
     .menu-lateral.recolhido {
-        transform: translateX(-100%); /* Faz o menu deslizar para fora */
+        transform: translateX(-100%);
     }
 
     .conteudo {
         margin-left: 0;
         width: 100%;
-        padding: 10px; /* Ajusta margens */
+        padding: 10px;
     }
 
     .nav-tabs {
-        font-size: 14px; /* Ajusta tamanho da fonte */
+        font-size: 14px;
     }
 
     .toggle-btn {
-		width: 100px !important; /* Define um tamanho fixo para o botão */
-        font-size: 12px; /* Reduz o tamanho da fonte */
-        padding: 6px 10px; /* Ajusta proporções do botão */
+		width: 100px !important;
+        font-size: 12px;
+        padding: 6px 10px;
     }
 	
 	.menu-lateral:not(.recolhido) ~ .logo-container {
-        opacity: 0; /* Faz a logo desaparecer quando o menu está ativo */
-        pointer-events: none; /* Evita que a área da logo bloqueie interações */
+        opacity: 0;
+        pointer-events: none;
     }
 
     .menu-lateral.recolhido ~ .logo-container {
-        opacity: 1; /* Exibe a logo novamente quando o menu é recolhido */
+        opacity: 1;
         pointer-events: all;
     }
 	
 	.menu-lateral.recolhido ~ .logo-container {
-        display: flex !important; /* Exibe a logo corretamente ao recolher o menu */
+        display: flex !important;
     }
 	
     table {
-        font-size: 12px; /* Ajusta tabelas para melhor leitura */
+        font-size: 12px;
     }
 
     th, td {
-        padding: 5px; /* Reduz espaço interno das células */
+        padding: 5px;
     }
-}
-		
     </style>
 </head>
 <body>
@@ -286,13 +309,16 @@
     </div>
 
     <div class="conteudo" id="conteudo">
+	
+        <div class="card-header">
+			<h1>Detalhes do Cliente</h1>
+		</div>
         <p></p>
         <p><strong>Clique no botão ☰ para recolher ou expandir o menu.</strong></p>
 
         <div class="container mt">
             <div class="d-flex gap-2">
             </div>
-            <h1>Detalhes do Cliente</h1>
 
             <ul class="nav-tabs">
                 <li class="nav-tab-item active" onclick="openTab('dados-pessoais')">Dados Pessoais</li>
@@ -301,209 +327,212 @@
                 <li class="nav-tab-item" onclick="openTab('pagamentos')">Pagamentos</li>
 				<li class="nav-tab-item" onclick="openTab('print')">Imprimir</li>
             </ul>
-
-            <div id="dados-pessoais" class="tab-content active">
-                <h4>Dados Pessoais</h4>
-                <p><strong>Nome:</strong> {{ cliente.nome }}</p>
-				<p><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "Apelido não registrado" }}</p>
-                <p><strong>CPF:</strong> {{ cliente.cpf or "CPF não registrado" }}</p>
-                <p><strong>Endereço:</strong> {{ cliente.endereco or "Endereço não registrado" }}</p>
-                <p><strong>Cidade:</strong> {{ cliente.cidade or "Cidade não registrada" }}</p>
-                <p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>  
-                <p><strong>Bairro:</strong> {{ cliente.bairro or "Bairro não registrado" }}</p>
-                <p><strong>CEP:</strong> {{ cliente.cep or "CEP não registrado" }}</p>
-                
-                <h3 class="mt-4">Atualizar Apelido (Nome Social), CPF, Endereço e Estado</h3>
-                <form action="/update_dados_cliente/{{ cliente.id }}" method="POST">
-					<label for ="apelido">Apelido ou Nome Social</label>
-					<input type="text" name="apelido" class="form-control mb" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
-                    <label for="cpf">CPF</label>
-                    <input type="text" name="cpf" class="form-control mb" placeholder="CPF" value="{{ cliente.cpf or '' }}">
-                    <label for="endereco">Endereço</label>
-                    <input type="text" name="endereco" class="form-control mb" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
-                    <label for="cidade">Cidade</label>
-                    <input type="text" name="cidade" class="form-control mb" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
-                    <label for="estado">Estado</label>
-                    <select name="estado" class="form-control mb">
-                        <option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
-                        <option value="AL" {% if cliente.estado == 'AL' %}selected{% endif %}>Alagoas</option>
-                        <option value="AP" {% if cliente.estado == 'AP' %}selected{% endif %}>Amapá</option>
-                        <option value="AM" {% if cliente.estado == 'AM' %}selected{% endif %}>Amazonas</option>
-                        <option value="BA" {% if cliente.estado == 'BA' %}selected{% endif %}>Bahia</option>
-                        <option value="CE" {% if cliente.estado == 'CE' %}selected{% endif %}>Ceará</option>
-                        <option value="DF" {% if cliente.estado == 'DF' %}selected{% endif %}>Distrito Federal</option>
-                        <option value="ES" {% if cliente.estado == 'ES' %}selected{% endif %}>Espírito Santo</option>
-                        <option value="GO" {% if cliente.estado == 'GO' %}selected{% endif %}>Goiás</option>
-                        <option value="MA" {% if cliente.estado == 'MA' %}selected{% endif %}>Maranhão</option>
-                        <option value="MT" {% if cliente.estado == 'MT' %}selected{% endif %}>Mato Grosso</option>
-                        <option value="MS" {% if cliente.estado == 'MS' %}selected{% endif %}>Mato Grosso do Sul</option>
-                        <option value="MG" {% if cliente.estado == 'MG' %}selected{% endif %}>Minas Gerais</option>
-                        <option value="PA" {% if cliente.estado == 'PA' %}selected{% endif %}>Pará</option>
-                        <option value="PB" {% if cliente.estado == 'PB' %}selected{% endif %}>Paraíba</option>
-                        <option value="PR" {% if cliente.estado == 'PR' %}selected{% endif %}>Paraná</option>
-                        <option value="PE" {% if cliente.estado == 'PE' %}selected{% endif %}>Pernambuco</option>
-                        <option value="PI" {% if cliente.estado == 'PI' %}selected{% endif %}>Piauí</option>
-                        <option value="RJ" {% if cliente.estado == 'RJ' %}selected{% endif %}>Rio de Janeiro</option>
-                        <option value="RN" {% if cliente.estado == 'RN' %}selected{% endif %}>Rio Grande do Norte</option>
-                        <option value="RS" {% if cliente.estado == 'RS' %}selected{% endif %}>Rio Grande do Sul</option>
-                        <option value="RO" {% if cliente.estado == 'RO' %}selected{% endif %}>Rondônia</option>
-                        <option value="RR" {% if cliente.estado == 'RR' %}selected{% endif %}>Roraima</option>
-                        <option value="SC" {% if cliente.estado == 'SC' %}selected{% endif %}>Santa Catarina</option>
-                        <option value="SP" {% if cliente.estado == 'SP' %}selected{% endif %}>São Paulo</option>
-                        <option value="SE" {% if cliente.estado == 'SE' %}selected{% endif %}>Sergipe</option>
-                        <option value="TO" {% if cliente.estado == 'TO' %}selected{% endif %}>Tocantins</option>
-                    </select>
-                    <label for="bairro">Bairro</label>
-                    <input type="text" name="bairro" class="form-control mb" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
-                    <label for="cep">CEP</label>
-                    <input type="text" name="cep" class="form-control mb-2" placeholder="CEP" value="{{ cliente.cep or ''}}">
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-warning">Atualizar</button>
-                    </div>
-                </form>
-				<h4>Quer imprimir os Dados Pessoais do cliente {{ cliente.nome }}?</h4>
-				<form id="print-form">
-                <div>
-                    <input type="checkbox" id="dados-pessoais" class="select-to-print">
-                    <label for="dados-pessoais">Sim</label>
-				</div>
-				</form>
-				<button type="button" class="btn btn-primary" onclick="imprimirSelecionados()">Imprimir</button>
-				<div class="d-flex gap-2">
-				</div>
+			<div class="card mb-4">
+                <div id="dados-pessoais" class="tab-content active">
+                    <h4>Dados Pessoais</h4>
+                    <p><strong>Nome:</strong> {{ cliente.nome }}</p>
+					<p><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "Apelido não registrado" }}</p>
+                    <p><strong>CPF:</strong> {{ cliente.cpf or "CPF não registrado" }}</p>
+                    <p><strong>Endereço:</strong> {{ cliente.endereco or "Endereço não registrado" }}</p>
+                    <p><strong>Cidade:</strong> {{ cliente.cidade or "Cidade não registrada" }}</p>
+                    <p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>  
+                    <p><strong>Bairro:</strong> {{ cliente.bairro or "Bairro não registrado" }}</p>
+                    <p><strong>CEP:</strong> {{ cliente.cep or "CEP não registrado" }}</p>
+					<div class="card mb-4">
+                    <h3 class="mt-4">Atualizar Apelido (Nome Social), CPF, Endereço e Estado</h3>
+                    <form action="/update_dados_cliente/{{ cliente.id }}" method="POST">
+						<label for ="apelido">Apelido ou Nome Social</label>
+						<input type="text" name="apelido" class="form-control mb" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
+                        <label for="cpf">CPF</label>
+                        <input type="text" name="cpf" class="form-control mb" placeholder="CPF" value="{{ cliente.cpf or '' }}">
+                        <label for="endereco">Endereço</label>
+                        <input type="text" name="endereco" class="form-control mb" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
+                        <label for="cidade">Cidade</label>
+                        <input type="text" name="cidade" class="form-control mb" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
+                        <label for="estado">Estado</label>
+                        <select name="estado" class="form-control mb">
+                            <option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
+                            <option value="AL" {% if cliente.estado == 'AL' %}selected{% endif %}>Alagoas</option>
+                            <option value="AP" {% if cliente.estado == 'AP' %}selected{% endif %}>Amapá</option>
+                            <option value="AM" {% if cliente.estado == 'AM' %}selected{% endif %}>Amazonas</option>
+                            <option value="BA" {% if cliente.estado == 'BA' %}selected{% endif %}>Bahia</option>
+                            <option value="CE" {% if cliente.estado == 'CE' %}selected{% endif %}>Ceará</option>
+                            <option value="DF" {% if cliente.estado == 'DF' %}selected{% endif %}>Distrito Federal</option>
+                            <option value="ES" {% if cliente.estado == 'ES' %}selected{% endif %}>Espírito Santo</option>
+                            <option value="GO" {% if cliente.estado == 'GO' %}selected{% endif %}>Goiás</option>
+                            <option value="MA" {% if cliente.estado == 'MA' %}selected{% endif %}>Maranhão</option>
+                            <option value="MT" {% if cliente.estado == 'MT' %}selected{% endif %}>Mato Grosso</option>
+                            <option value="MS" {% if cliente.estado == 'MS' %}selected{% endif %}>Mato Grosso do Sul</option>
+                            <option value="MG" {% if cliente.estado == 'MG' %}selected{% endif %}>Minas Gerais</option>
+                            <option value="PA" {% if cliente.estado == 'PA' %}selected{% endif %}>Pará</option>
+                            <option value="PB" {% if cliente.estado == 'PB' %}selected{% endif %}>Paraíba</option>
+                            <option value="PR" {% if cliente.estado == 'PR' %}selected{% endif %}>Paraná</option>
+                            <option value="PE" {% if cliente.estado == 'PE' %}selected{% endif %}>Pernambuco</option>
+                            <option value="PI" {% if cliente.estado == 'PI' %}selected{% endif %}>Piauí</option>
+                            <option value="RJ" {% if cliente.estado == 'RJ' %}selected{% endif %}>Rio de Janeiro</option>
+                            <option value="RN" {% if cliente.estado == 'RN' %}selected{% endif %}>Rio Grande do Norte</option>
+                            <option value="RS" {% if cliente.estado == 'RS' %}selected{% endif %}>Rio Grande do Sul</option>
+                            <option value="RO" {% if cliente.estado == 'RO' %}selected{% endif %}>Rondônia</option>
+                            <option value="RR" {% if cliente.estado == 'RR' %}selected{% endif %}>Roraima</option>
+                            <option value="SC" {% if cliente.estado == 'SC' %}selected{% endif %}>Santa Catarina</option>
+                            <option value="SP" {% if cliente.estado == 'SP' %}selected{% endif %}>São Paulo</option>
+                            <option value="SE" {% if cliente.estado == 'SE' %}selected{% endif %}>Sergipe</option>
+                            <option value="TO" {% if cliente.estado == 'TO' %}selected{% endif %}>Tocantins</option>
+                        </select>
+                        <label for="bairro">Bairro</label>
+                        <input type="text" name="bairro" class="form-control mb" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
+                        <label for="cep">CEP</label>
+                        <input type="text" name="cep" class="form-control mb-2" placeholder="CEP" value="{{ cliente.cep or ''}}">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning">Atualizar</button>
+                        </div>
+                    </form>
+					</div>
+					<div class="card mb-4">
+			    <div class="mt-4">
+                <h3 class="mb-3">Quer imprimir essa aba?</h3>
+                <div class="mb">
+                    <input type="checkbox" id="checkbox-print-dados-pessoais-local" class="select-to-print">
+                    <label for="checkbox-print-dados-pessoais-local">Sim</label>
+                </div>
+                <button type="button" class="btn btn-primary mt-2" onclick="imprimirSelecionados()">Imprimir</button>
             </div>
-
-            <div id="veiculos" class="tab-content">
-                <h4>Carros do Cliente: {{ cliente.nome }} </h4>
-{% if carros %}
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Marca</th>
-            <th>Modelo</th>
-            <th>Motor</th>
-            <th>Ano</th>
-            <th>Placa</th>
-            <th>Quilometragem</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for carro in carros %}
-        <tr>
-            <td>{{ carro.marca }}</td>
-            <td>{{ carro.modelo }}</td>
-            <td>{{ carro.motor }}</td>
-            <td>{{ carro.ano }}</td>
-            <td>{{ carro.placa }}</td>
-            <td>{{ carro.quilometro }} KMs rodados</td>
-        </tr>
-        {% if carro.historicos %}
-        <tr><td colspan="6"><h4>Histórico de Serviços do veículo: {{ carro.marca }} {{ carro.modelo }}</h4></td></tr>
-        <tr>
-            <td colspan="6">
+			</div>
+				</div>
+			</div>
+			<div class="card mb-4">
+                <div id="veiculos" class="tab-content">
+                    <h4>Carros do Cliente: {{ cliente.nome }} </h4>
+                {% if carros %}
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Data</th>
-                            <th>Descrição do Serviço</th>
+                            <th>Marca</th>
+                            <th>Modelo</th>
+                            <th>Motor</th>
+                            <th>Ano</th>
+                            <th>Placa</th>
+                            <th>Quilometragem</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for historico in carro.historicos %}
+                        {% for carro in carros %}
                         <tr>
-                            <td>{{ historico.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
-                            <td>{{ historico.descricao }}</td>
+                            <td>{{ carro.marca }}</td>
+                            <td>{{ carro.modelo }}</td>
+                            <td>{{ carro.motor }}</td>
+                            <td>{{ carro.ano }}</td>
+                            <td>{{ carro.placa }}</td>
+                            <td>{{ carro.quilometro }} KMs rodados</td>
+                        </tr>
+                        {% if carro.historicos %}
+                        <tr><td colspan="6"><h4>Histórico de Serviços do veículo: {{ carro.marca }} {{ carro.modelo }}</h4></td></tr>
+                        <tr>
+                            <td colspan="6">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Descrição do Serviço</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for historico in carro.historicos %}
+                                        <tr>
+                                            <td>{{ historico.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                                            <td>{{ historico.descricao }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>					
+                                </table>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="6">Nenhum histórico de serviço registrado para este veículo.</td></tr>
+                        {% endif %}
+                        <tr>
+                            <td colspan="6">
+                                <form action="/add_historico/{{ carro.id }}" method="POST">
+                                    <h4>Adicionar Histórico de Serviço</h4>
+                                    <label for="descricao">Descrição do serviço</label>
+                                    <input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control mb-2" required>
+                                    <button type="submit" class="btn btn-primary">Adicionar Histórico</button>
+                                </form>
+                            </td>
                         </tr>
                         {% endfor %}
-                    </tbody>					
+                    </tbody>
                 </table>
-				
-            </td>
-        </tr>
-		<form action="/add_historico/{{ carro.id }}" method="POST">
- 
-        {% else %}
-        <tr><td colspan="6">Nenhum histórico de serviço registrado para este veículo.</td></tr>
-        {% endif %}
-		<tr>
-    <td colspan="6">
-        <form action="/add_historico/{{ carro.id }}" method="POST">
-            <h5>Adicionar Histórico de Serviço</h5>
-            <label for="descricao">Descrição do serviço</label>
-            <input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control mb-2" required>
-            <button type="submit" class="btn btn-primary">Adicionar Histórico</button>
-        </form>
-    </td>
-</tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>Nenhum carro registrado.</p>
-{% endif %}
-                <h3 class="mt-4">Adicionar Informações do Carro</h3>
-                <form action="/add_carros_cliente/{{ cliente.id }}" method="POST">
-                    <div id="carros-container">
-                        <div class="carro-form mb">
-                            <label for="marca">Marca</label>
-                            <input type="text" name="marca" class="form-control mb" placeholder="Marca">
-                            <label for="modelo">Modelo</label>
-                            <input type="text" name="modelo" class="form-control mb" placeholder="Modelo">
-                            <label for="motor">Motor</label>
-                            <input type="text" name="motor" class="form-control mb" placeholder="Motor">
-                            <label for="ano">Ano</label>
-                            <input type="number" name="ano" class="form-control mb" placeholder="Ano">
-                            <label for="placa">Placa</label>
-                            <input type="text" name="placa" class="form-control mb" placeholder="Placa">
-                            <label for="quilometragem">Quilometragem em KMs rodados</label>
-                            <input type="number" name="quilometro" class="form-control mb-2" placeholder="Quilometragem">
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-primary mb-2" onclick="adicionarCarro()">Adicionar mais um carro</button>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-success">Salvar</button>
-                    </div>
-                </form>
-
-                <h3 class="mt-4">Atualizar Informações dos Carros</h3>
-                {% if carros %}
-                <form action="/update_carros_cliente/{{ cliente.id }}" method="POST">
-                    {% for carro in carros %}
-                    <div class="carro-form mb">
-                        <input type="hidden" name="carro_id" value="{{ carro.id }}">
-                        <label for="marca">Marca</label>
-                        <input type="text" name="marca_{{ carro.id }}" class="form-control mb" placeholder="Marca" value="{{ carro.marca }}">
-                        <label for="modelo">Modelo</label>
-                        <input type="text" name="modelo_{{ carro.id }}" class="form-control mb" placeholder="Modelo" value="{{ carro.modelo }}">
-                        <label for="motor">Motor</label>
-                        <input type="text" name="motor_{{ carro.id }}" class="form-control mb" placeholder="Motor" value="{{ carro.motor }}">
-                        <label for="ano">Ano</label>
-                        <input type="number" name="ano_{{ carro.id }}" class="form-control mb" placeholder="Ano" value="{{ carro.ano }}">
-                        <label for="placa">Placa</label>
-                        <input type="text" name="placa_{{ carro.id }}" class="form-control mb" placeholder="Placa" value="{{ carro.placa }}">
-                        <label for="quilometragem">Quilometragem em KMs rodados</label>
-                        <input type="number" name="quilometro_{{ carro.id }}" class="form-control mb-2" placeholder="Quilometragem" value="{{ carro.quilometro }}">
-                    </div>
-                    {% endfor %}
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-warning">Atualizar Carros</button>
-                    </div>
-                </form>
                 {% else %}
-                <p>Nenhum carro registrado para atualizar.</p>
+                <p>Nenhum carro registrado.</p>
                 {% endif %}
-				<h4>Quer imprimir as informações do Veículo?</h4>
-				<form id="print-form">
-                <div>
-                    <input type="checkbox" id="veiculos" class="select-to-print">
-                    <label for="veiculos">Sim</label>
+				<div class="card mb-4">
+                    <h4>Adicionar Informações do Carro</h4>
+                    <form action="/add_carros_cliente/{{ cliente.id }}" method="POST">
+                        <div id="carros-container">
+                            <div class="carro-form mb">
+                                <label for="marca">Marca</label>
+                                <input type="text" name="marca" class="form-control mb" placeholder="Marca">
+                                <label for="modelo">Modelo</label>
+                                <input type="text" name="modelo" class="form-control mb" placeholder="Modelo">
+                                <label for="motor">Motor</label>
+                                <input type="text" name="motor" class="form-control mb" placeholder="Motor">
+                                <label for="ano">Ano</label>
+                                <input type="number" name="ano" class="form-control mb" placeholder="Ano">
+                                <label for="placa">Placa</label>
+                                <input type="text" name="placa" class="form-control mb" placeholder="Placa">
+                                <label for="quilometragem">Quilometragem em KMs rodados</label>
+                                <input type="number" name="quilometro" class="form-control mb-2" placeholder="Quilometragem">
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary mb-2" onclick="adicionarCarro()">Adicionar mais um carro</button>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">Salvar</button>
+                        </div>
+                    </form>
 				</div>
-				</form>
-				<button type="button" class="btn btn-primary" onclick="imprimirSelecionados()">Imprimir</button>
-				<div class="d-flex gap-2">
+				<div class="card mb-4">
+                    <h4>Atualizar Informações dos Carros</h4>
+                    {% if carros %}
+                    <form action="/update_carros_cliente/{{ cliente.id }}" method="POST">
+                        {% for carro in carros %}
+                        <div class="carro-form mb">
+                            <input type="hidden" name="carro_id" value="{{ carro.id }}">
+                            <label for="marca">Marca</label>
+                            <input type="text" name="marca_{{ carro.id }}" class="form-control mb" placeholder="Marca" value="{{ carro.marca }}">
+                            <label for="modelo">Modelo</label>
+                            <input type="text" name="modelo_{{ carro.id }}" class="form-control mb" placeholder="Modelo" value="{{ carro.modelo }}">
+                            <label for="motor">Motor</label>
+                            <input type="text" name="motor_{{ carro.id }}" class="form-control mb" placeholder="Motor" value="{{ carro.motor }}">
+                            <label for="ano">Ano</label>
+                            <input type="number" name="ano_{{ carro.id }}" class="form-control mb" placeholder="Ano" value="{{ carro.ano }}">
+                            <label for="placa">Placa</label>
+                            <input type="text" name="placa_{{ carro.id }}" class="form-control mb" placeholder="Placa" value="{{ carro.placa }}">
+                            <label for="quilometragem">Quilometragem em KMs rodados</label>
+                            <input type="number" name="quilometro_{{ carro.id }}" class="form-control mb-2" placeholder="Quilometragem" value="{{ carro.quilometro }}">
+                        </div>
+                        {% endfor %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning">Atualizar Carros</button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <p>Nenhum carro registrado para atualizar.</p>
+                    {% endif %}
 				</div>
+				<div class="card mb-4">
+			    <div class="mt-4">
+                <h3 class="mb-3">Quer imprimir essa aba?</h3>
+                <div class="mb">
+                    <input type="checkbox" id="checkbox-print-veiculos-local" class="select-to-print">
+                    <label for="checkbox-print-veiculos-local">Sim</label>
+                </div>
+                <button type="button" class="btn btn-primary mt-2" onclick="imprimirSelecionados()">Imprimir</button>
+            </div>
 			</div>
-
+			</div>
+			</div>
+			<div class="card mb-4">
 			<div id="telefones" class="tab-content">
 			<h4>Telefones do cliente: {{ cliente.nome }} </h4>
 			{% if telefones %}
@@ -515,7 +544,7 @@
 			{% else %}
 				<p>Nenhum telefone registrado.</p>
 			{% endif %}
-
+			<div class="card mb-4">
 			<h3 class="mt-4">Atualizar Telefones</h3>
 			{% for telefone in telefones %}
 			<div class="mb-2">
@@ -531,38 +560,40 @@
 				</form>
 			</div>
 			{% endfor %}
-
+			</div>
+			<div class="card mb-4">
+			<h3 class="mt-4">Adcionar Telefones</h3>
 			<form action="/add_telefone/{{ cliente.id }}" method="POST">
 				<label for="numeros[]">Digite um telefone</label>
 				<div id="telefones-container" class="mb-2">
-					<input type="text" name="numeros[]" class="form-control mb-2" placeholder="Digite o telefone">
+					<input type="text" name="numeros[]" class="form-control mb" placeholder="Digite o Telefone">
+					<button class="btn btn-outline-primary" type="button" onclick="adicionarCampoTelefone()"><i class="bi bi-plus-circle mb-1"></i> Adicionar Telefone Extra
+					</button>
 				</div>
 				<div class="d-flex gap-2">
-					<button type="button" class="btn btn-secondary" onclick="adicionarCampoTelefone()">Adicionar mais de um Telefone</button>
 					<button type="submit" class="btn btn-success">Salvar Telefone(s)</button>
 				</div>
 			</form>
-			<h4>Quer imprimir os telefones?</h4>
-				<form id="print-form">
-                <div>
-                    <input type="checkbox" id="telefones" class="select-to-print">
-                    <label for="telefones">Sim</label>
-				</div>
-				</form>
-				<button type="button" class="btn btn-primary" onclick="imprimirSelecionados()">Imprimir</button>
-				<div class="d-flex gap-2">
-				</div>
 			</div>
-
+				<div class="card mb-4">
+			    <div class="mt-4">
+                <h3 class="mb-3">Quer imprimir essa aba?</h3>
+                <div class="mb">
+                    <input type="checkbox" id="checkbox-print-telefones-local" class="select-to-print">
+                    <label for="checkbox-print-telefones-local">Sim</label>
+                </div>
+                <button type="button" class="btn btn-primary mt-2" onclick="imprimirSelecionados()">Imprimir</button>
+            </div>
+			</div>
+			</div>
+			<div class="card mb-4">
             <div id="pagamentos" class="tab-content">
                 <h2>Pagamentos do cliente: {{ cliente.nome }} </h2>
                 {% if pagamentos %}
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-						    <th>Veículo</th> <!-- Nome do carro -->
-							<th>Serviço Realizado</th> <!-- O que foi feito no histórico -->
-                            <th>Data</th>
+						    <th>Veículo</th> <th>Serviço Realizado</th> <th>Data</th>
                             <th>Valor (R$)</th>
                             <th>Método</th>
                             <th>Tipo</th>
@@ -573,19 +604,19 @@
                         {% for pagamento in pagamentos %}
                         <tr>
 						<td>
-                    {% for carro in carros %}
-                        {% if pagamento.carro_id == carro.id %}
-                            {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}
-                        {% endif %}
-                    {% endfor %}
-					</td>
-					<td>
-                    {% for historico in historicos %}
-                        {% if pagamento.historico_id == historico.id %}
-                            {{ historico.descricao }}
-                        {% endif %}
-                    {% endfor %}
-					</td>
+                            {% for carro in carros %}
+                                {% if pagamento.carro_id == carro.id %}
+                                    {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}
+                                {% endif %}
+                            {% endfor %}
+						</td>
+						<td>
+                            {% for historico in historicos %}
+                                {% if pagamento.historico_id == historico.id %}
+                                    {{ historico.descricao }}
+                                {% endif %}
+                            {% endfor %}
+						</td>
                             <td>{{ pagamento.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
                             <td>R$ {{ pagamento.valor }}</td>
                             <td>{{ pagamento.metodo }}</td>
@@ -604,6 +635,7 @@
                 {% else %}
                 <p>Este cliente ainda não possui pagamentos registrados.</p>
                 {% endif %}
+				<div class="card mb-4">
 {% for carro in carros %}
     {% for historico in carro.historicos %}
         {% if not historico.tem_pagamento %}
@@ -613,26 +645,25 @@
             <label for="valor">Valor (R$)</label>
             <input type="number" step="0.01" name="valor" placeholder="Valor (R$)" class="form-control mb-2" required>
             <label for="metodo">Método de Pagamento</label>
-<label for="metodo">Método de Pagamento</label>
-<select name="metodo" class="form-control mb-2" required onchange="toggleOpcaoPagamento(event)">
-    <option value="Dinheiro">Dinheiro</option>
-    <option value="Cartão de Crédito">Cartão de Crédito</option>
-    <option value="Cartão de Débito">Cartão de Débito</option>
-    <option value="Pix">Pix</option>
-</select>
+            <select name="metodo" class="form-control mb-2" required onchange="toggleOpcaoPagamento(event)">
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                <option value="Cartão de Débito">Cartão de Débito</option>
+                <option value="Pix">Pix</option>
+            </select>
 
-<div class="opcaoCartao" style="display: none;">
-    <label for="tipo_cartao">Tipo de Pagamento:</label>
-    <select name="tipo_cartao" class="form-control mb-2" onchange="toggleParcelas(event)">
-        <option value="À vista">À vista</option>
-        <option value="Parcelado">Parcelado</option>
-    </select>
+            <div class="opcaoCartao" style="display: none;">
+                <label for="tipo_cartao">Tipo de Pagamento:</label>
+                <select name="tipo_cartao" class="form-control mb-2" onchange="toggleParcelas(event)">
+                    <option value="À vista">À vista</option>
+                    <option value="Parcelado">Parcelado</option>
+                </select>
 
-    <div class="opcaoParcelado" style="display: none;">
-        <label for="parcelas">Número de Parcelas:</label>
-        <input type="number" name="parcelas" min="1" max="12" placeholder="Número de parcelas" class="form-control mb-2">
-    </div>
-</div>
+                <div class="opcaoParcelado" style="display: none;">
+                    <label for="parcelas">Número de Parcelas:</label>
+                    <input type="number" name="parcelas" min="1" max="12" placeholder="Número de parcelas" class="form-control mb-2">
+                </div>
+            </div>
             <button type="submit" class="btn btn-primary">Registrar Pagamento</button>
         </form>
         {% else %}
@@ -640,42 +671,42 @@
         {% endif %}
     {% endfor %}
 {% endfor %}
-                </form>
-				<h4>Quer imprimir o histórico de pagamentos?</h4>
-				<form id="print-form">
-                <div>
-                    <input type="checkbox" id="pagamentos" class="select-to-print">
-                    <label for="pagamentos">Sim</label>
-				</div>
-				</form>
-				<button type="button" class="btn btn-primary" onclick="imprimirSelecionados()">Imprimir</button>
-				<div class="d-flex gap-2">
-				</div>
             </div>
-			
+			<div class="card mb-4">
+            <div class="mt-4">
+                <h3 class="mb-3">Quer imprimir essa aba?</h3>
+                <div class="mb">
+                    <input type="checkbox" id="checkbox-print-pagamentos-local" class="select-to-print">
+                    <label for="checkbox-print-pagamentos-local">Sim</label>
+                </div>
+                <button type="button" class="btn btn-primary mt-2" onclick="imprimirSelecionados()">Imprimir</button>
+            </div>
+			</div>
+			</div>
+			</div>
+			<div class="card mb-4">
 			<div id="print" class="tab-content">
 			 <h4>Escolha o que imprimir</h4>
              <form id="print-form">
                 <div>
-                    <input type="checkbox" id="dados-pessoais" class="select-to-print">
-                    <label for="dados-pessoais">Dados Pessoais</label>
+                    <input type="checkbox" id="checkbox-print-dados-pessoais" class="select-to-print">
+                    <label for="checkbox-print-dados-pessoais">Dados Pessoais</label>
                 </div>
                 <div>
-                    <input type="checkbox" id="veiculos" class="select-to-print">
-                    <label for="veiculos">Veículos</label>
+                    <input type="checkbox" id="checkbox-print-veiculos" class="select-to-print">
+                    <label for="checkbox-print-veiculos">Veículos</label>
                 </div>
                 <div>
-                    <input type="checkbox" id="telefones" class="select-to-print">
-                    <label for="telefones">Telefones</label>
+                    <input type="checkbox" id="checkbox-print-telefones" class="select-to-print">
+                    <label for="checkbox-print-telefones">Telefones</label>
                 </div>
                 <div>
-                    <input type="checkbox" id="pagamentos" class="select-to-print">
-                    <label for="pagamentos">Pagamento</label>
+                    <input type="checkbox" id="checkbox-print-pagamentos" class="select-to-print">
+                    <label for="checkbox-print-pagamentos">Pagamento</label>
                 </div>
             </form>
-			<button type="button" class="btn btn-primary mt-2" onclick="imprimirSelecionados()">Imprimir Selecionados</button>
-             <div id="conteudo-cliente">
-                <div id="dados-pessoais-content" class="print-section">
+            <div id="print-sections-container">
+                <div id="print-section-dados-pessoais" class="print-section">
                     <h4>Dados Pessoais</h4>
                     <p><strong>Nome:</strong> {{ cliente.nome }}</p>
 					<p><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "Apelido ou Nome Social não registrado" }}</p>
@@ -686,94 +717,94 @@
                     <p><strong>Bairro:</strong> {{ cliente.bairro or "Bairro não registrado" }}</p>
                     <p><strong>CEP:</strong> {{ cliente.cep or "CEP não registrado" }}</p>
                 </div>
-                <div id="telefones-content" class="print-section">
+                <div id="print-section-telefones" class="print-section">
                     <h4>Telefones do cliente: {{ cliente.nome }} </h4>         
                     {% for telefone in telefones %}
-                    <p><strong>Telefone {{ loop.index }}:</strong> {{ telefone.numero }}</p>
+                        <p><strong>Telefone {{ loop.index }}:</strong> {{ telefone.numero }}</p>
                     {% endfor %}
                 </div>
-            </div>			
-                <div id="veiculos-content" class="print-section">
+                <div id="print-section-veiculos" class="print-section">
                     <h4>Veículos do cliente: {{ cliente.nome }} </h4>              
-{% for carro in carros %}
-    <div class="mb-4">
-	<h4>Veículo {{ loop.index }}</h4>
-        <p><strong>Marca:</strong> {{ carro.marca }}</p>
-        <p><strong>Modelo:</strong> {{ carro.modelo }}</p>
-        <p><strong>Motor:</strong> {{ carro.motor }}</p>
-        <p><strong>Ano:</strong> {{ carro.ano }}</p>
-        <p><strong>Placa:</strong> {{ carro.placa or "Placa não registrada" }}</p> 
-        <p><strong>Quilometragem:</strong> {{ carro.quilometro }} KMs rodados</p> 
-
-        <h5>Histórico de Serviços</h5>
-        {% if carro.historicos %}
-            <ul>
-                {% for historico in carro.historicos %}
-                    <li>
-                        <strong>{{ historico.data.strftime('%d/%m/%Y %H:%M') }}</strong> — {{ historico.descricao }}
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>Nenhum histórico registrado para este veículo.</p>
-        {% endif %}
-    </div>
-{% endfor %}
-</div>
-                <div id="pagamentos-content" class="print-section">
-    <h2>Pagamentos do cliente: {{ cliente.nome }}</h2>
-
-    {% if pagamentos %}
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Veículo</th> <!-- Nome do carro -->
-                <th>Serviço Realizado</th> <!-- O que foi feito no histórico -->
-                <th>Data</th>
-                <th>Valor (R$)</th>
-                <th>Método</th>
-                <th>Tipo</th>
-                <th>Parcelas</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for pagamento in pagamentos %}
-            <tr>
-                <td>
                     {% for carro in carros %}
-                        {% if pagamento.carro_id == carro.id %}
-                            {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}
-                        {% endif %}
+                        <div class="mb-4">
+                            <h4>Veículo {{ loop.index }}</h4>
+                            <p><strong>Marca:</strong> {{ carro.marca }}</p>
+                            <p><strong>Modelo:</strong> {{ carro.modelo }}</p>
+                            <p><strong>Motor:</strong> {{ carro.motor }}</p>
+                            <p><strong>Ano:</strong> {{ carro.ano }}</p>
+                            <p><strong>Placa:</strong> {{ carro.placa or "Placa não registrada" }}</p> 
+                            <p><strong>Quilometragem:</strong> {{ carro.quilometro }} KMs rodados</p> 
+
+                            <h5>Histórico de Serviços</h5>
+                            {% if carro.historicos %}
+                                <ul>
+                                    {% for historico in carro.historicos %}
+                                        <li>
+                                            <strong>{{ historico.data.strftime('%d/%m/%Y %H:%M') }}</strong> — {{ historico.descricao }}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>Nenhum histórico registrado para este veículo.</p>
+                            {% endif %}
+                        </div>
                     {% endfor %}
-                </td>
-                <td>
-                    {% for historico in historicos %}
-                        {% if pagamento.historico_id == historico.id %}
-                            {{ historico.descricao }}
-                        {% endif %}
-                    {% endfor %}
-                </td>
-                <td>{{ pagamento.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
-                <td>R$ {{ pagamento.valor }}</td>
-                <td>{{ pagamento.metodo }}</td>
-                <td>{{ pagamento.tipo_pagamento if pagamento.tipo_pagamento else 'N/A' }}</td>
-                <td>
-                    {% if pagamento.tipo_pagamento == 'Parcelado' %}
-                        {{ pagamento.parcelas }}x
+                </div>
+                <div id="print-section-pagamentos" class="print-section">
+                    <h2>Pagamentos do cliente: {{ cliente.nome }}</h2>
+
+                    {% if pagamentos %}
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Veículo</th> <th>Serviço Realizado</th> <th>Data</th>
+                                <th>Valor (R$)</th>
+                                <th>Método</th>
+                                <th>Tipo</th>
+                                <th>Parcelas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pagamento in pagamentos %}
+                            <tr>
+                                <td>
+                                    {% for carro in carros %}
+                                        {% if pagamento.carro_id == carro.id %}
+                                            {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {% for historico in historicos %}
+                                        {% if pagamento.historico_id == historico.id %}
+                                            {{ historico.descricao }}
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>{{ pagamento.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                                <td>R$ {{ pagamento.valor }}</td>
+                                <td>{{ pagamento.metodo }}</td>
+                                <td>{{ pagamento.tipo_pagamento if pagamento.tipo_pagamento else 'N/A' }}</td>
+                                <td>
+                                    {% if pagamento.tipo_pagamento == 'Parcelado' %}
+                                        {{ pagamento.parcelas }}x
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                     {% else %}
-                        -
+                    <p>Este cliente ainda não possui pagamentos registrados.</p>
                     {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>Este cliente ainda não possui pagamentos registrados.</p>
-    {% endif %}
-</div>
-    </div>
-</div>
+                </div>
+            </div>
+			<button type="button" class="btn btn-primary mt-2" onclick="imprimirSelecionados()">Imprimir Selecionados</button>
+			</div>
+			</div>
+            </div>
             </div>
     <script>
         // Função para abrir a aba
@@ -789,7 +820,34 @@
             }
             document.getElementById(tabName).style.display = "block";
             event.currentTarget.className += " active";
+
+            // Lógica específica para a aba de impressão
+            if (tabName === 'print') {
+                // Esconde todas as seções de impressão dentro da aba 'Imprimir' por padrão
+                document.querySelectorAll('#print .print-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                // Desmarca todos os checkboxes de seleção de impressão
+                document.querySelectorAll('.select-to-print').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+            }
         }
+
+        // Função para alternar a visibilidade das seções de impressão com base nos checkboxes
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkboxes = document.querySelectorAll('.select-to-print');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', (event) => {
+                    const originalSectionName = event.target.id.replace('checkbox-print-', '').replace('-local', ''); // Ajustado para IDs locais
+                    const sectionIdToToggle = 'print-section-' + originalSectionName;
+                    const section = document.getElementById(sectionIdToToggle);
+                    if (section) {
+                        section.style.display = event.target.checked ? 'block' : 'none';
+                    }
+                });
+            });
+        });
 
         // Função para adicionar novos campos de telefone
         function adicionarCampoTelefone() {
@@ -826,8 +884,8 @@
 				opcaoParcelado.style.display = "block";
 			} else {
 				opcaoParcelado.style.display = "none";
-				}
 			}
+		}
 
         function adicionarCarro() {
             const carrosContainer = document.getElementById('carros-container');
@@ -857,16 +915,17 @@
         // Menu fechado no mobile
         window.onload = function() {
             let menu = document.getElementById("menu");
-			let logo = document.querySelector(".logo-container");
+            let logo = document.querySelector(".logo-container");
 			
 			if (window.innerWidth <= 768) {
-				menu.classList.add("recolhido"); // Mantém o menu fechado ao carregar no mobile
+				menu.classList.add("recolhido");
 			} else {
-				menu.classList.remove("recolhido"); // No desktop, garante que o menu esteja aberto
+				menu.classList.remove("recolhido");
 			}
 
-        };		
-		 // Função para imprimir os dados selecionados
+        };
+
+        // Função para imprimir os dados selecionados da aba "Imprimir"
         function imprimirSelecionados() {
             const checkboxes = document.querySelectorAll('.select-to-print');
             const printContent = document.createElement('div');
@@ -874,15 +933,15 @@
             // Verifica as seções selecionadas
             checkboxes.forEach(checkbox => {
                 if (checkbox.checked) {
-                    const sectionId = checkbox.id + '-content';
-                    const sectionContent = document.getElementById(sectionId);
+                    const originalSectionName = checkbox.id.replace('checkbox-print-', '').replace('-local', ''); // Ajustado para IDs locais
+                    const sectionIdToPrint = 'print-section-' + originalSectionName;
+                    const sectionContent = document.getElementById(sectionIdToPrint);
 
                     if (sectionContent) {
                         printContent.innerHTML += sectionContent.outerHTML;
                     }
                 }
             });
-
             if (!printContent.innerHTML) {
                 alert('Selecione pelo menos uma seção para imprimir.');
                 return;
@@ -897,7 +956,58 @@
                     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
                     <style>
                         body { font-family: Arial, sans-serif; }
-                        .print-section { margin-bottom: 15px; }
+                        .print-section { margin-bottom: 15px; display: block !important; }
+                    </style>
+                </head>
+                <body>
+                <div align="center">
+                <img src="{{ url_for('static', filename='img/logo.png')  }}" width="150" height="auto">
+                <p><strong>CNPJ:</strong> 17.165.775/0001-10 <strong>WhatsApp:</strong> 55 99971-4234</p>
+                </div>
+                <div align="left">
+                    ${printContent.innerHTML}
+                </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // FUNÇÃO: Imprimir o conteúdo de uma aba específica
+        function imprimirAba(tabId) {
+            const tabContent = document.getElementById(tabId);
+            if (!tabContent) {
+                alert('Conteúdo da aba não encontrado para impressão.');
+                return;
+            }
+
+            // Clona o conteúdo da aba para não modificar o original
+            const contentToPrint = tabContent.cloneNode(true);
+
+            // Remove o botão de impressão do conteúdo clonado para não imprimi-lo
+            const printButton = contentToPrint.querySelector('.btn-info[onclick*="imprimirAba"]');
+            if (printButton) {
+                printButton.remove();
+            }
+            // Remove o novo bloco de impressão local se ele existir no clone
+            const localPrintBlock = contentToPrint.querySelector('.mt-4 > h3.mb-3 + div.mb-3 + button.btn-primary');
+            if (localPrintBlock && localPrintBlock.parentNode) {
+                localPrintBlock.parentNode.removeChild(localPrintBlock);
+            }
+
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Impressão da Aba - ${tabId.replace('-', ' ').toUpperCase()}</title>
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        h4, h5, p, ul, li { margin-bottom: 10px; }
                     </style>
                 </head>
                 <body>
@@ -906,7 +1016,7 @@
                 <p><strong>CNPJ:</strong> Insira aqui <strong>WhatsApp:</strong> Insira aqui</p>
                 </div>
                 <div align="left">
-                ${printContent.innerHTML}
+                    ${contentToPrint.innerHTML}
                 </div>
                 </body>
                 </html>
@@ -921,10 +1031,8 @@
 					if (form) {
 						form.style.display = "none";
 					}
-			}, 500); // Tempo suficiente para que o formulário seja enviado antes de desaparecer
+			}, 500);
 		}
-
-
     </script>
 </body>
 </html>

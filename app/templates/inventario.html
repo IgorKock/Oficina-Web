@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 
         .logo-container img {
-            max-width: 125px; /* Tamanho máximo */
+            max-width: 75px; /* Tamanho máximo */
             height: auto; /* Mantém proporção */
 			background: none; /* Remove qualquer fundo da imagem */
         }
@@ -157,6 +157,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         .toggle-btn.recolhido {
             left: 70px;
+        }
+		
+		/* Estilo para os cards */
+        .card {
+			background-color: #f8f9fa; /* Cor de fundo suave */
+            border-radius: 0.75rem; /* Cantos mais arredondados para os cards */
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Sombra suave */
+        }
+		
+        .card-header {
+            background-color: #e9ecef; /* Cor de fundo para o cabeçalho do card */
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+            border-top-left-radius: 0.75rem; /* Mantém o arredondamento */
+            border-top-right-radius: 0.75rem; /* Mantém o arredondamento */
+            font-weight: bold; /* Texto em negrito */
+            padding: 1rem 1.25rem; /* Espaçamento */
         }
 		
 		.menu-lateral.recolhido + .toggle-btn {
@@ -290,9 +306,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     <!-- Conteúdo da página -->
     <div class="conteudo" id="conteudo">
+	<div class="card mb-4">
+	<div class="card-header">
+			<h1>Inventário</h1>
+	</div>
+	<h3 class="mt-2">Buscar Peças</h3>
 		<p></p>
         <p><strong>Clique no botão ☰ para recolher ou expandir o menu.</strong></p>
-		<h1>Inventário</h1>
 		<form action="/inventario" method="GET" class="mb">
 		<label for="query">Buscar peças</label>
 	<div class="input-group">
@@ -300,8 +320,9 @@ document.addEventListener("DOMContentLoaded", function () {
         <button type="submit" class="btn btn-primary">Buscar</button>
     </div>
 </form>
-
+</div>
         <!-- Formulário para Adicionar Nova Peça -->
+		<div class="card mb-4">
         <h3 class="mt-2">Adicionar Nova Peça</h3>
         <form action="/add_peca" method="POST" onsubmit="return validarPecaDuplicada()">
 			<label for="nome">Peça</label>
@@ -319,8 +340,9 @@ document.addEventListener("DOMContentLoaded", function () {
             <input type="number" step="0.01" name="preco" class="form-control mb-2" placeholder="Preço por unidade em R$" required>
             <button type="submit" class="btn btn-primary mb">Adicionar</button>
         </form>
-
+		</div>
         <!-- Tabela de Peças -->
+		<div class="card mb-4">
         <h3 class="mt-2">Peças no Inventário</h3>
         {% if pecas %}
         <table class="table table-bordered">
@@ -364,7 +386,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <p>Nenhuma peça encontrada no inventário.</p>
         {% endif %}
     </div>
-
+	</div>
     <!-- JavaScript para alternar estado do menu -->
     <script>
 		function toggleMenu() {
