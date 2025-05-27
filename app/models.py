@@ -45,6 +45,7 @@ class Cliente(db.Model):
     bairro = db.Column(db.String(200), nullable=True)  # Bairro do cliente
     cpf = db.Column(db.String(14), nullable=True) # CPF do cliente
     apelido = db.Column(db.String(500)) # Apelido/Nome Social do cliente
+    cnpj = db.Column(db.String(20), nullable=True) # CNPJ do cliente
     telefones = db.relationship('Telefone', backref='cliente', lazy=True)
     historicos = db.relationship('Historico', backref='cliente', lazy=True)
     pagamentos = db.relationship('Pagamento', backref='cliente', lazy=True)

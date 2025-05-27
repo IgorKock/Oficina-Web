@@ -60,6 +60,7 @@ def add_cliente():
     nome = request.form['nome'].strip()
     numeros = request.form.getlist('numeros[]')
     cpf = request.form.get('cpf', '').strip()
+    cnpj = request.form.get('cnpj', '').strip()
     apelido = request.form['apelido'].strip()
     cliente_existente = Cliente.query.filter_by(nome=nome).first()
     if cliente_existente:
@@ -119,9 +120,11 @@ def update_dados_cliente(cliente_id):
     bairro = request.form['bairro']
     cep = request.form['cep']
     cpf = request.form['cpf']
+    cnpj = request.form['cnpj']
     apelido = request.form['apelido']
     cliente = Cliente.query.get_or_404(cliente_id)
     cliente.cpf = cpf
+    cliente.cnpj = cnpj
     cliente.endereco = endereco
     cliente.cidade = cidade
     cliente.estado = estado

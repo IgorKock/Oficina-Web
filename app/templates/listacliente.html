@@ -322,6 +322,7 @@
                     <th>Nome</th>
 					<th>Apelido ou Nome Social</th>
 					<th>CPF</th>
+					<th>CNPJ</th>
                     <th>Telefones</th>
                     <th>Ações</th>
                 </tr>
@@ -333,6 +334,7 @@
         <td>{{ cliente.nome }}</td>
 		<td>{% if cliente.apelido %}{{ cliente.apelido}}{% endif %}</td>
         <td>{% if cliente.cpf %}{{ cliente.cpf }}{% endif %}</td>
+		<td>{% if cliente.cnpj %}{{ cliente.cnpj }}{% endif %}</td>
         <td>
             {% for telefone in cliente.telefones %}
                 <p>{{ telefone.numero }}</p>
@@ -365,8 +367,12 @@
         </button>
     </div>
 	<div id="CPF-container" class="mb">
-        <label for="numeros[]">CPF</label>
+        <label for="cpf">CPF</label>
         <input type="text" name="cpf" class="form-control mb-2" placeholder="CPF">
+    </div>
+	<div id="CNPJ-container" class="mb">
+        <label for="cnpj">CNPJ</label>
+        <input type="text" name="CNPJ" class="form-control mb-2" placeholder="CPF">
     </div>
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-success">Salvar Cliente</button>
