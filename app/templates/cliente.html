@@ -75,7 +75,7 @@
 			left: 50%;
 			transform: translateX(-50%);
 			z-index: 999;
-			background: none;
+            background: none;
 			pointer-events: none;
         }
 
@@ -140,7 +140,7 @@
         /* Botão de recolher menu */
         .toggle-btn {
 			position: fixed;
-			top: 10px;
+            top: 10px;
 			left: 200px;
 			background-color: #007bff;
 			color: white;
@@ -149,7 +149,7 @@
 			border-radius: 4px;
 			cursor: pointer;
 			z-index: 1002;
-			transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
+            transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
             width: auto;
         }
 
@@ -178,7 +178,7 @@
 		@media (min-width: 769px) {
 			.logo-container {
 				display: flex !important;
-			}
+            }
 		}
 		
 		/* Ajustes para telas menores que 768px (tablets e celulares) */
@@ -251,7 +251,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-		padding-bottom: 50px;
+        padding-bottom: 50px;
     }
 
     .menu-lateral.recolhido {
@@ -334,15 +334,35 @@
 					<p><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "Apelido não registrado" }}</p>
                     <p><strong>CPF:</strong> {{ cliente.cpf or "CPF não registrado" }}</p>
 					<p><strong>CNPJ:</strong> {{ cliente.cnpj or "CNPJ não registrado" }}</p>
-					{% for endereco in cliente.endereco.split(';') %}
-						<p><strong>Endereço {{ loop.index }}:</strong> {{ endereco.strip() or "Endereço não registrado" }}</p>
-					{% endfor %}
-					{% for bairro in cliente.bairro.split(';') %}
-						<p><strong>Bairro {{ loop.index }}:</strong> {{ bairro.strip() or "Bairro não registrado" }}</p>
-					{% endfor %}
-                    <p><strong>Cidade:</strong> {{ cliente.cidade or "Cidade não registrada" }}</p>
-                    <p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>  
-                    <p><strong>CEP:</strong> {{ cliente.cep or "CEP não registrado" }}</p>
+					{% if cliente.endereco %}
+						{% for endereco in cliente.endereco.split(';') %}
+							<p><strong>Endereço {{ loop.index }}:</strong> {{ endereco.strip() }}</p>
+						{% endfor %}
+					{% else %}
+						<p><strong>Endereço:</strong> Endereço não registrado</p>
+					{% endif %}
+					{% if cliente.bairro %}
+						{% for bairro in cliente.bairro.split(';') %}
+							<p><strong>Bairro {{ loop.index }}:</strong> {{ bairro.strip() }}</p>
+						{% endfor %}
+					{% else %}
+						<p><strong>Bairro:</strong> Bairro não registrado</p>
+					{% endif %}
+					{% if cliente.cidade %}
+						{% for cidade in cliente.cidade.split(';') %}
+							<p><strong>Cidade {{ loop.index }}:</strong> {{ cidade.strip() }}</p>
+						{% endfor %}
+					{% else %}
+						<p><strong>Cidade:</strong> Cidade não registrado</p>
+					{% endif %}
+					<p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>
+					{% if cliente.cep %}
+						{% for cep in cliente.cep.split(';') %}
+							<p><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
+						{% endfor %}
+					{% else %}
+						<p><strong>CEP:</strong> CEP não registrado</p>
+					{% endif %}
 					<div class="card mb-4">
                     <h3 class="mt-4">Atualizar Apelido (Nome Social), CPF, Endereço e Estado</h3>
                     <form action="/update_dados_cliente/{{ cliente.id }}" method="POST">
@@ -354,15 +374,14 @@
                         <input type="text" name="cnpj" class="form-control mb" placeholder="CNPJ" value="{{ cliente.cnpj or '' }}">
                         <div id="enderecos-container">
 						<label for="endereco">Endereço</label>
-						<input type="text" name="enderecos[]" class="form-control mb" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
+						<input type="text" name="endereco[]" class="form-control mb" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
 						<label for="bairro">Bairro</label>
 						<input type="text" name="bairro[]" class="form-control mb" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
-						<button type="button" class="btn btn-outline-primary mt-2" onclick="adicionarCampoEndereco()">
-							<i class="bi bi-plus-circle"></i> Adicionar outro endereço
-						</button>
+						<label for="cidade">Cidade</label>
+                        <input type="text" name="cidade[]" class="form-control mb" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
+						<label for="cep">CEP</label>
+                        <input type="text" name="cep[]" class="form-control mb-2" placeholder="CEP" value="{{ cliente.cep or ''}}">
 						</div>
-                        <label for="cidade">Cidade</label>
-                        <input type="text" name="cidade" class="form-control mb" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
                         <label for="estado">Estado</label>
                         <select name="estado" class="form-control mb">
                             <option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
@@ -393,11 +412,12 @@
                             <option value="SE" {% if cliente.estado == 'SE' %}selected{% endif %}>Sergipe</option>
                             <option value="TO" {% if cliente.estado == 'TO' %}selected{% endif %}>Tocantins</option>
                         </select>
-                        <label for="cep">CEP</label>
-                        <input type="text" name="cep" class="form-control mb-2" placeholder="CEP" value="{{ cliente.cep or ''}}">
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-warning">Atualizar</button>
                         </div>
+						<button type="button" class="btn btn-outline-primary mt-2" onclick="adicionarCampoEndereco()">
+							<i class="bi bi-plus-circle"></i> Adicionar outro endereço
+						</button>
                     </form>
 					</div>
 					<div class="card mb-4">
@@ -415,7 +435,7 @@
 			<div class="card mb-4">
                 <div id="veiculos" class="tab-content">
                     <h4>Carros do Cliente: {{ cliente.nome }} </h4>
-                {% if carros %}
+                    {% if carros %}
                 <table class="table table-bordered">
                     <thead>
                         <tr>
@@ -438,7 +458,7 @@
                             <td>{{ carro.quilometro }} KMs rodados</td>
                         </tr>
                         {% if carro.historicos %}
-                        <tr><td colspan="6"><h4>Histórico de Serviços do veículo: {{ carro.marca }} {{ carro.modelo }}</h4></td></tr>
+                            <tr><td colspan="6"><h4>Histórico de Serviços do veículo: {{ carro.marca }} {{ carro.modelo }}</h4></td></tr>
                         <tr>
                             <td colspan="6">
                                 <table class="table table-bordered">
@@ -629,7 +649,7 @@
                                 {% endif %}
                             {% endfor %}
 						</td>
-                            <td>{{ pagamento.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                        <td>{{ pagamento.data.strftime('%d/%m/%Y %H:%M:%S') }}</td>
                             <td>R$ {{ pagamento.valor }}</td>
                             <td>{{ pagamento.metodo }}</td>
                             <td>{{ pagamento.tipo_pagamento if pagamento.tipo_pagamento else 'N/A' }}</td>
@@ -724,15 +744,36 @@
 					<p><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "Apelido ou Nome Social não registrado" }}</p>
 					<p><strong>CPF:</strong> {{ cliente.cpf or "CPF não registrado" }}</p>
 					<p><strong>CNPJ:</strong> {{ cliente.cnpj or "CNPJ não registrado" }}</p>
-                    {% for endereco in cliente.endereco.split(';') %}
-						<p><strong>Endereço {{ loop.index }}:</strong> {{ endereco.strip() or "Endereço não registrado" }}</p>
-					{% endfor %}
-					{% for bairro in cliente.bairro.split(';') %}
-						<p><strong>Bairro {{ loop.index }}:</strong> {{ bairro.strip() or "Bairro não registrado" }}</p>
-					{% endfor %}
-                    <p><strong>Cidade:</strong> {{ cliente.cidade or "Cidade não registrada" }}</p>
-                    <p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>  
-                    <p><strong>CEP:</strong> {{ cliente.cep or "CEP não registrado" }}</p>
+					{% if cliente.endereco %}
+						{% for endereco in cliente.endereco.split(';') %}
+							<p><strong>Endereço {{ loop.index }}:</strong> {{ endereco.strip() }}</p>
+						{% endfor %}
+					{% else %}
+						<p><strong>Endereço:</strong> Endereço não registrado</p>
+					{% endif %}
+					{% if cliente.bairro %}
+						{% for bairro in cliente.bairro.split(';') %}
+							<p><strong>Bairro {{ loop.index }}:</strong> {{ bairro.strip() }}</p>
+						{% endfor %}
+					{% else %}
+						<p><strong>Bairro:</strong> Bairro não registrado</p>
+					{% endif %}
+					{% if cliente.cidade %}
+						{% for cidade in cliente.cidade.split(';') %}
+							<p><strong>Cidade {{ loop.index }}:</strong> {{ cidade.strip() }}</p>
+						{% endfor %}
+					{% else %}
+						<p><strong>Cidade:</strong> Cidade não registrado</p>
+					{% endif %}
+					<p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>
+					{% if cliente.cep %}
+						{% for cep in cliente.cep.split(';') %}
+							<p><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
+						{% endfor %}
+					{% else %}
+						<p><strong>CEP:</strong> CEP não registrado</p>
+					{% endif %}
+                    <p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>
                 </div>
                 <div id="print-section-telefones" class="print-section">
                     <h4>Telefones do cliente: {{ cliente.nome }} </h4>         
@@ -837,7 +878,6 @@
             }
             document.getElementById(tabName).style.display = "block";
             event.currentTarget.className += " active";
-
             // Lógica específica para a aba de impressão
             if (tabName === 'print') {
                 // Esconde todas as seções de impressão dentro da aba 'Imprimir' por padrão
@@ -865,7 +905,6 @@
                 });
             });
         });
-
         // Função para adicionar novos campos de telefone
         function adicionarCampoTelefone() {
             const container = document.getElementById('telefones-container');
@@ -882,18 +921,21 @@
 			const container = document.getElementById('enderecos-container');
 			const novoCampo = document.createElement('div');
 			novoCampo.classList.add('mb');
-			novoCampo.innerHTML = `
-				Digite o endereço adicional<input type="text" name="enderecos[]" class="form-control" placeholder="Endereço adicional">
-				Digite o bairro adicional<input type="text" name="bairro" class="form-control" placeholder="Bairro adicional">
+            novoCampo.innerHTML = `
+				Digite o Endereço adicional<input type="text" name="endereco[]" class="form-control" placeholder="Endereço adicional">
+				Digite o Bairro adicional<input type="text" name="bairro[]" class="form-control" placeholder="Bairro adicional">
+				Digite a Cidade adicional<input type="text" name="cidade[]" class="form-control" placeholder="Cidade adicional">
+				
+				Digite o CEP adicional<input type="text" name="cep[]" class="form-control" placeholder="CEP adicional">
 			`;
 			container.appendChild(novoCampo);
-		}
+        }
 
 		
         // Exibir ou ocultar o campo de opções do método de pagamento
 		function toggleOpcaoPagamento(event) {
 			const selectMetodo = event.target;
-			const form = selectMetodo.closest("form");
+            const form = selectMetodo.closest("form");
 			const opcaoCartao = form.querySelector(".opcaoCartao");
 			
 			if (selectMetodo.value === "Cartão de Crédito") {
@@ -907,7 +949,7 @@
         // Exibir ou ocultar o número de parcelas
 		function toggleParcelas(event) {
 			const selectTipoCartao = event.target;
-			const form = selectTipoCartao.closest("form");
+            const form = selectTipoCartao.closest("form");
 			const opcaoParcelado = form.querySelector(".opcaoParcelado");
 			
 			if (selectTipoCartao.value === "Parcelado") {
@@ -934,7 +976,7 @@
         // Função para o menu
 		function toggleMenu() {
 			let menu = document.getElementById("menu");
-			let botao = document.querySelector(".toggle-btn");
+            let botao = document.querySelector(".toggle-btn");
 
 			if (menu.classList.contains("recolhido")) {
 				menu.classList.remove("recolhido");
@@ -992,7 +1034,7 @@
                 <body>
                 <div align="center">
                 <img src="{{ url_for('static', filename='img/logo.png')  }}" width="150" height="auto">
-                <p><strong>CNPJ:</strong> Insira aqui <strong>WhatsApp:</strong> Insira aqui</p>
+                <p><strong>CNPJ:</strong> 17.165.775/0001-10 <strong>WhatsApp:</strong> 55 99971-4234</p>
                 </div>
                 <div align="left">
                     ${printContent.innerHTML}
@@ -1014,7 +1056,6 @@
 
             // Clona o conteúdo da aba para não modificar o original
             const contentToPrint = tabContent.cloneNode(true);
-
             // Remove o botão de impressão do conteúdo clonado para não imprimi-lo
             const printButton = contentToPrint.querySelector('.btn-info[onclick*="imprimirAba"]');
             if (printButton) {
@@ -1043,7 +1084,7 @@
                 <body>
                 <div align="center">
                 <img src="{{ url_for('static', filename='img/logo.png')  }}" width="150" height="auto">
-                <p><strong>CNPJ:</strong> 17.165.775/0001-10 <strong>WhatsApp:</strong> 55 99971-4234</p>
+                <p><strong>CNPJ:</strong> Insira aqui <strong>WhatsApp:</strong> Insira aqui</p>
                 </div>
                 <div align="left">
                     ${contentToPrint.innerHTML}

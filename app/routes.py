@@ -114,22 +114,32 @@ def delete_telefone(telefone_id):
 
 @main.route('/update_dados_cliente/<int:cliente_id>', methods=['POST'])
 def update_dados_cliente(cliente_id):
-    endereco = request.form['endereco']
-    cidade = request.form['cidade']
+
+    enderecos_list = request.form.getlist('endereco[]')
+    endereco_str = ';'.join(e.strip() for e in enderecos_list if e.strip())
+
+    bairros_list = request.form.getlist('bairro[]')
+    bairro_str = ';'.join(b.strip() for b in bairros_list if b.strip())
+
+    cidade_list = request.form.getlist('cidade[]')
+    cidade_str = ';'.join(b.strip() for b in cidade_list if b.strip())
+
+    cep_list = request.form.getlist('cep[]')
+    cep_str = ';'.join(b.strip() for b in cep_list if b.strip())
+    
     estado = request.form['estado']
-    bairro = request.form['bairro']
-    cep = request.form['cep']
     cpf = request.form['cpf']
     cnpj = request.form['cnpj']
     apelido = request.form['apelido']
+
     cliente = Cliente.query.get_or_404(cliente_id)
     cliente.cpf = cpf
     cliente.cnpj = cnpj
-    cliente.endereco = endereco
-    cliente.cidade = cidade
+    cliente.endereco = endereco_str
+    cliente.cidade = cidade_str
     cliente.estado = estado
-    cliente.cep = cep
-    cliente.bairro = bairro
+    cliente.cep = cep_str
+    cliente.bairro = bairro_str
     cliente.apelido = apelido
     db.session.commit()
 
