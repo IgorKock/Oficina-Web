@@ -380,7 +380,10 @@
 						<label for="cidade">Cidade</label>
                         <input type="text" name="cidade[]" class="form-control mb" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
 						<label for="cep">CEP</label>
-                        <input type="text" name="cep[]" class="form-control mb-2" placeholder="CEP" value="{{ cliente.cep or ''}}">
+                        <input type="text" name="cep[]" class="form-control mb" placeholder="CEP" value="{{ cliente.cep or ''}}">
+						<button type="button" class="btn btn-outline-primary mt" onclick="adicionarCampoEndereco()">
+							<i class="bi bi-plus-circle"></i> Adicionar outro endereço
+						</button>
 						</div>
                         <label for="estado">Estado</label>
                         <select name="estado" class="form-control mb">
@@ -415,9 +418,6 @@
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-warning">Atualizar</button>
                         </div>
-						<button type="button" class="btn btn-outline-primary mt-2" onclick="adicionarCampoEndereco()">
-							<i class="bi bi-plus-circle"></i> Adicionar outro endereço
-						</button>
                     </form>
 					</div>
 					<div class="card mb-4">
