@@ -140,7 +140,7 @@
         /* Botão de recolher menu */
         .toggle-btn {
 			position: fixed;
-            top: 10px;
+			top: 10px;
 			left: 200px;
 			background-color: #007bff;
 			color: white;
@@ -149,7 +149,7 @@
 			border-radius: 4px;
 			cursor: pointer;
 			z-index: 1002;
-            transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
+			transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
             width: auto;
         }
 
@@ -348,6 +348,13 @@
 					{% else %}
 						<p><strong>Bairro:</strong> Bairro não registrado</p>
 					{% endif %}
+					{% if cliente.cep %}
+						{% for cep in cliente.cep.split(';') %}
+							<p><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
+						{% endfor %}
+					{% else %}
+						<p><strong>CEP:</strong> CEP não registrado</p>
+					{% endif %}
 					{% if cliente.cidade %}
 						{% for cidade in cliente.cidade.split(';') %}
 							<p><strong>Cidade {{ loop.index }}:</strong> {{ cidade.strip() }}</p>
@@ -356,13 +363,7 @@
 						<p><strong>Cidade:</strong> Cidade não registrado</p>
 					{% endif %}
 					<p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>
-					{% if cliente.cep %}
-						{% for cep in cliente.cep.split(';') %}
-							<p><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
-						{% endfor %}
-					{% else %}
-						<p><strong>CEP:</strong> CEP não registrado</p>
-					{% endif %}
+
 					<div class="card mb-4">
                     <h3 class="mt-4">Atualizar Apelido (Nome Social), CPF, Endereço e Estado</h3>
                     <form action="/update_dados_cliente/{{ cliente.id }}" method="POST">
@@ -373,17 +374,19 @@
 						<label for="cnpj">CNPJ</label>
                         <input type="text" name="cnpj" class="form-control mb" placeholder="CNPJ" value="{{ cliente.cnpj or '' }}">
                         <div id="enderecos-container">
-						<label for="endereco">Endereço</label>
-						<input type="text" name="endereco[]" class="form-control mb" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
-						<label for="bairro">Bairro</label>
-						<input type="text" name="bairro[]" class="form-control mb" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
-						<label for="cidade">Cidade</label>
-                        <input type="text" name="cidade[]" class="form-control mb" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
-						<label for="cep">CEP</label>
-                        <input type="text" name="cep[]" class="form-control mb" placeholder="CEP" value="{{ cliente.cep or ''}}">
-						<button type="button" class="btn btn-outline-primary mt" onclick="adicionarCampoEndereco()">
-							<i class="bi bi-plus-circle"></i> Adicionar outro endereço
-						</button>
+                            <div class="mb">
+                                <label for="endereco">Endereço</label>
+                                <input type="text" name="endereco[]" class="form-control mb" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
+                                <label for="bairro">Bairro</label>
+                                <input type="text" name="bairro[]" class="form-control mb" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
+								<label for="cep">CEP</label>
+                                <input type="text" name="cep[]" class="form-control mb" placeholder="CEP" value="{{ cliente.cep or ''}}" id="mainCepInput">
+                                <label for="cidade">Cidade</label>
+                                <input type="text" name="cidade[]" class="form-control mb" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
+                            </div>
+                            <button type="button" class="btn btn-outline-primary mt" onclick="adicionarCampoEndereco()">
+							    <i class="bi bi-plus-circle"></i> Adicionar outro endereço
+						    </button>
 						</div>
                         <label for="estado">Estado</label>
                         <select name="estado" class="form-control mb">
@@ -758,20 +761,19 @@
 					{% else %}
 						<p><strong>Bairro:</strong> Bairro não registrado</p>
 					{% endif %}
-					{% if cliente.cidade %}
-						{% for cidade in cliente.cidade.split(';') %}
-							<p><strong>Cidade {{ loop.index }}:</strong> {{ cidade.strip() }}</p>
-						{% endfor %}
-					{% else %}
-						<p><strong>Cidade:</strong> Cidade não registrado</p>
-					{% endif %}
-					<p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>
 					{% if cliente.cep %}
 						{% for cep in cliente.cep.split(';') %}
 							<p><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
 						{% endfor %}
 					{% else %}
 						<p><strong>CEP:</strong> CEP não registrado</p>
+					{% endif %}
+					{% if cliente.cidade %}
+						{% for cidade in cliente.cidade.split(';') %}
+							<p><strong>Cidade {{ loop.index }}:</strong> {{ cidade.strip() }}</p>
+						{% endfor %}
+					{% else %}
+						<p><strong>Cidade:</strong> Cidade não registrado</p>
 					{% endif %}
                     <p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>
                 </div>
@@ -922,13 +924,22 @@
 			const novoCampo = document.createElement('div');
 			novoCampo.classList.add('mb');
             novoCampo.innerHTML = `
-				Digite o Endereço adicional<input type="text" name="endereco[]" class="form-control" placeholder="Endereço adicional">
-				Digite o Bairro adicional<input type="text" name="bairro[]" class="form-control" placeholder="Bairro adicional">
-				Digite a Cidade adicional<input type="text" name="cidade[]" class="form-control" placeholder="Cidade adicional">
-				
-				Digite o CEP adicional<input type="text" name="cep[]" class="form-control" placeholder="CEP adicional">
+				<label for="endereco">Endereço Adicional</label>
+				<input type="text" name="endereco[]" class="form-control mb" placeholder="Endereço adicional">
+				<label for="bairro">Bairro Adicional</label>
+				<input type="text" name="bairro[]" class="form-control mb" placeholder="Bairro adicional">
+				<label for="cidade">Cidade Adicional</label>
+				<input type="text" name="cidade[]" class="form-control mb" placeholder="Cidade adicional">
+				<label for="cep">CEP Adicional</label>
+				<input type="text" name="cep[]" class="form-control mb-2" placeholder="CEP adicional">
 			`;
-			container.appendChild(novoCampo);
+			container.insertBefore(novoCampo, container.querySelector('button.btn-outline-primary')); // Insert before the "Adicionar outro endereço" button
+
+            // Attach event listener to the newly created CEP input
+            const newCepInput = novoCampo.querySelector('input[name="cep[]"]');
+            if (newCepInput) {
+                newCepInput.addEventListener('blur', () => preencherEnderecoPorCep(newCepInput));
+            }
         }
 
 		
@@ -966,6 +977,7 @@
             novoCarro.innerHTML = `
                Marca<br><input type="text" name="marca" class="form-control mb" placeholder="Marca">
                Modelo<br><input type="text" name="modelo" class="form-control mb" placeholder="Modelo">
+               Motor<br><input type="text" name="motor" class="form-control mb" placeholder="Motor">
                Ano<br><input type="number" name="ano" class="form-control mb" placeholder="Ano">
                Placa<br><input type="text" name="placa" class="form-control mb" placeholder="Placa">
                Quilometragem em KMs rodados<br><input type="number" name="quilometro" class="form-control mb-2" placeholder="Quilometragem">
@@ -1034,7 +1046,7 @@
                 <body>
                 <div align="center">
                 <img src="{{ url_for('static', filename='img/logo.png')  }}" width="150" height="auto">
-                <p><strong>CNPJ:</strong> 17.165.775/0001-10 <strong>WhatsApp:</strong> 55 99971-4234</p>
+                <p><strong>CNPJ:</strong> Insira aqui <strong>WhatsApp:</strong> Insira aqui</p>
                 </div>
                 <div align="left">
                     ${printContent.innerHTML}
@@ -1046,7 +1058,7 @@
             printWindow.print();
         }
 
-        // FUNÇÃO: Imprimir o conteúdo de uma aba específica
+        // FUNÇÃO: Imprimir o conteúdo de uma aba específica (REVERTED TO ORIGINAL)
         function imprimirAba(tabId) {
             const tabContent = document.getElementById(tabId);
             if (!tabContent) {
@@ -1104,6 +1116,92 @@
 					}
 			}, 500);
 		}
+
+        // Função para preencher endereço, bairro, cidade e estado a partir do CEP
+        function preencherEnderecoPorCep(cepInput) {
+            let cep = cepInput.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+
+            if (cep.length === 8) {
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.erro) {
+                            // Find the closest parent div.mb that contains the current cepInput
+                            // This will now correctly find the wrapper div for the main inputs too
+                            const currentAddressGroup = cepInput.closest('div.mb');
+
+                            // For City (cidade[]) - find the input within the same group
+                            const cidadeInput = currentAddressGroup.querySelector('input[name="cidade[]"]');
+                            if (cidadeInput) {
+                                cidadeInput.value = data.localidade || '';
+                            }
+
+                            // For State (estado) - this is a single, global select, so target it directly
+                            const estadoSelect = document.querySelector('select[name="estado"]');
+                            if (estadoSelect) {
+                                estadoSelect.value = data.uf || '';
+                            }
+
+                            // For Address (endereco[]) - find the input within the same group
+                            const enderecoInput = currentAddressGroup.querySelector('input[name="endereco[]"]');
+                            if (enderecoInput) {
+                                enderecoInput.value = data.logradouro || '';
+                            }
+
+                            // For Bairro (bairro[]) - find the input within the same group
+                            const bairroInput = currentAddressGroup.querySelector('input[name="bairro[]"]');
+                            if (bairroInput) {
+                                bairroInput.value = data.bairro || '';
+                            }
+
+                        } else {
+                            console.error('CEP não encontrado ou inválido.');
+                            // Optionally clear fields if CEP is not found within the same group
+                            const currentAddressGroup = cepInput.closest('div.mb');
+
+                            const cidadeInput = currentAddressGroup.querySelector('input[name="cidade[]"]');
+                            if (cidadeInput) cidadeInput.value = '';
+
+                            const estadoSelect = document.querySelector('select[name="estado"]');
+                            if (estadoSelect) estadoSelect.value = '';
+
+                            const enderecoInput = currentAddressGroup.querySelector('input[name="endereco[]"]');
+                            if (enderecoInput) enderecoInput.value = '';
+
+                            const bairroInput = currentAddressGroup.querySelector('input[name="bairro[]"]');
+                            if (bairroInput) bairroInput.value = '';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao consultar a API de CEP:', error);
+                        // Handle network errors
+                    });
+            }
+        }
+
+        // Add event listener to the main CEP input field on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainCepInput = document.getElementById('mainCepInput'); // Select the main CEP input by its ID
+            if (mainCepInput) {
+                mainCepInput.addEventListener('blur', () => preencherEnderecoPorCep(mainCepInput));
+            }
+        });
+
+        // Override the original adicionarCampoEndereco to attach event listener to new CEP inputs
+        const originalAdicionarCampoEndereco = adicionarCampoEndereco; // Store the original function
+        adicionarCampoEndereco = function() {
+            originalAdicionarCampoEndereco(); // Call the original function to add fields
+            // Get the last added div within #enderecos-container to find its CEP input
+            const lastAddedDiv = document.querySelector('#enderecos-container div.mb:last-of-type');
+            if (lastAddedDiv) {
+                const newCepInput = lastAddedDiv.querySelector('input[name="cep[]"]');
+                if (newCepInput) {
+                    newCepInput.addEventListener('blur', () => preencherEnderecoPorCep(newCepInput));
+                }
+            }
+        };
+
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
