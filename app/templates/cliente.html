@@ -348,13 +348,6 @@
 					{% else %}
 						<p><strong>Bairro:</strong> Bairro não registrado</p>
 					{% endif %}
-					{% if cliente.cep %}
-						{% for cep in cliente.cep.split(';') %}
-							<p><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
-						{% endfor %}
-					{% else %}
-						<p><strong>CEP:</strong> CEP não registrado</p>
-					{% endif %}
 					{% if cliente.cidade %}
 						{% for cidade in cliente.cidade.split(';') %}
 							<p><strong>Cidade {{ loop.index }}:</strong> {{ cidade.strip() }}</p>
@@ -363,26 +356,34 @@
 						<p><strong>Cidade:</strong> Cidade não registrado</p>
 					{% endif %}
 					<p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>
-
+					{% if cliente.cep %}
+						{% for cep in cliente.cep.split(';') %}
+							<p><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
+						{% endfor %}
+					{% else %}
+						<p><strong>CEP:</strong> CEP não registrado</p>
+					{% endif %}
 					<div class="card mb-4">
                     <h3 class="mt-4">Atualizar Apelido (Nome Social), CPF, Endereço e Estado</h3>
-                    <form action="/update_dados_cliente/{{ cliente.id }}" method="POST">
+                    <form action="/update_dados_cliente/{{ cliente.id }}" method="POST" onsubmit="return validarFormularioCliente(event)">
 						<label for ="apelido">Apelido ou Nome Social</label>
 						<input type="text" name="apelido" class="form-control mb" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
                         <label for="cpf">CPF</label>
-                        <input type="text" name="cpf" class="form-control mb" placeholder="CPF" value="{{ cliente.cpf or '' }}">
+                        <input type="text" name="cpf" id="cpfInput" class="form-control mb" placeholder="CPF" value="{{ cliente.cpf or '' }}" oninput="validarCPFInput(this)">
+                        <span id="cpfError" style="color: red; display: none;">CPF inválido.</span>
 						<label for="cnpj">CNPJ</label>
-                        <input type="text" name="cnpj" class="form-control mb" placeholder="CNPJ" value="{{ cliente.cnpj or '' }}">
+                        <input type="text" name="cnpj" id="cnpjInput" class="form-control mb" placeholder="CNPJ" value="{{ cliente.cnpj or '' }}" oninput="validarCNPJInput(this)">
+                        <span id="cnpjError" style="color: red; display: none;">CNPJ inválido.</span>
                         <div id="enderecos-container">
                             <div class="mb">
                                 <label for="endereco">Endereço</label>
                                 <input type="text" name="endereco[]" class="form-control mb" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
                                 <label for="bairro">Bairro</label>
                                 <input type="text" name="bairro[]" class="form-control mb" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
-								<label for="cep">CEP</label>
-                                <input type="text" name="cep[]" class="form-control mb" placeholder="CEP" value="{{ cliente.cep or ''}}" id="mainCepInput">
                                 <label for="cidade">Cidade</label>
                                 <input type="text" name="cidade[]" class="form-control mb" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
+                                <label for="cep">CEP</label>
+                                <input type="text" name="cep[]" class="form-control mb" placeholder="CEP" value="{{ cliente.cep or ''}}" id="mainCepInput">
                             </div>
                             <button type="button" class="btn btn-outline-primary mt" onclick="adicionarCampoEndereco()">
 							    <i class="bi bi-plus-circle"></i> Adicionar outro endereço
@@ -761,19 +762,20 @@
 					{% else %}
 						<p><strong>Bairro:</strong> Bairro não registrado</p>
 					{% endif %}
-					{% if cliente.cep %}
-						{% for cep in cliente.cep.split(';') %}
-							<p><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
-						{% endfor %}
-					{% else %}
-						<p><strong>CEP:</strong> CEP não registrado</p>
-					{% endif %}
 					{% if cliente.cidade %}
 						{% for cidade in cliente.cidade.split(';') %}
 							<p><strong>Cidade {{ loop.index }}:</strong> {{ cidade.strip() }}</p>
 						{% endfor %}
 					{% else %}
 						<p><strong>Cidade:</strong> Cidade não registrado</p>
+					{% endif %}
+					<p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>
+					{% if cliente.cep %}
+						{% for cep in cliente.cep.split(';') %}
+							<p><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
+						{% endfor %}
+					{% else %}
+						<p><strong>CEP:</strong> CEP não registrado</p>
 					{% endif %}
                     <p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>
                 </div>
@@ -933,9 +935,9 @@
 				<label for="cep">CEP Adicional</label>
 				<input type="text" name="cep[]" class="form-control mb-2" placeholder="CEP adicional">
 			`;
-			container.insertBefore(novoCampo, container.querySelector('button.btn-outline-primary')); // Insert before the "Adicionar outro endereço" button
+			container.insertBefore(novoCampo, container.querySelector('button.btn-outline-primary')); // Insere antes do botão "Adicionar outro endereço"
 
-            // Attach event listener to the newly created CEP input
+            // Anexa o event listener ao novo campo de CEP criado
             const newCepInput = novoCampo.querySelector('input[name="cep[]"]');
             if (newCepInput) {
                 newCepInput.addEventListener('blur', () => preencherEnderecoPorCep(newCepInput));
@@ -1126,29 +1128,28 @@
                     .then(response => response.json())
                     .then(data => {
                         if (!data.erro) {
-                            // Find the closest parent div.mb that contains the current cepInput
-                            // This will now correctly find the wrapper div for the main inputs too
+                            // Encontra o grupo de campos de endereço ao qual o CEP pertence
                             const currentAddressGroup = cepInput.closest('div.mb');
 
-                            // For City (cidade[]) - find the input within the same group
+                            // Preenche o campo de cidade dentro do mesmo grupo
                             const cidadeInput = currentAddressGroup.querySelector('input[name="cidade[]"]');
                             if (cidadeInput) {
                                 cidadeInput.value = data.localidade || '';
                             }
 
-                            // For State (estado) - this is a single, global select, so target it directly
+                            // Preenche o select de estado (é um campo global, não dentro do grupo de endereço)
                             const estadoSelect = document.querySelector('select[name="estado"]');
                             if (estadoSelect) {
                                 estadoSelect.value = data.uf || '';
                             }
 
-                            // For Address (endereco[]) - find the input within the same group
+                            // Preenche o campo de endereço dentro do mesmo grupo
                             const enderecoInput = currentAddressGroup.querySelector('input[name="endereco[]"]');
                             if (enderecoInput) {
                                 enderecoInput.value = data.logradouro || '';
                             }
 
-                            // For Bairro (bairro[]) - find the input within the same group
+                            // Preenche o campo de bairro dentro do mesmo grupo
                             const bairroInput = currentAddressGroup.querySelector('input[name="bairro[]"]');
                             if (bairroInput) {
                                 bairroInput.value = data.bairro || '';
@@ -1156,9 +1157,9 @@
 
                         } else {
                             console.error('CEP não encontrado ou inválido.');
-                            // Optionally clear fields if CEP is not found within the same group
+                            // Opcionalmente, limpa os campos se o CEP não for encontrado
                             const currentAddressGroup = cepInput.closest('div.mb');
-
+                            
                             const cidadeInput = currentAddressGroup.querySelector('input[name="cidade[]"]');
                             if (cidadeInput) cidadeInput.value = '';
 
@@ -1174,10 +1175,179 @@
                     })
                     .catch(error => {
                         console.error('Erro ao consultar a API de CEP:', error);
-                        // Handle network errors
+                        // Lida com erros de rede
                     });
             }
         }
+
+        // Função de validação de CPF
+        function validarCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g, ''); // Remove caracteres não numéricos
+            if (cpf == '') return false;
+            // Elimina CPFs inválidos conhecidos
+            if (cpf.length != 11 ||
+                cpf == "00000000000" ||
+                cpf == "11111111111" ||
+                cpf == "22222222222" ||
+                cpf == "33333333333" ||
+                cpf == "44444444444" ||
+                cpf == "55555555555" ||
+                cpf == "66666666666" ||
+                cpf == "77777777777" ||
+                cpf == "88888888888" ||
+                cpf == "99999999999")
+                return false;
+            // Valida 1o digito
+            let add = 0;
+            for (let i = 0; i < 9; i++)
+                add += parseInt(cpf.charAt(i)) * (10 - i);
+            let rev = 11 - (add % 11);
+            if (rev == 10 || rev == 11)
+                rev = 0;
+            if (rev != parseInt(cpf.charAt(9)))
+                return false;
+            // Valida 2o digito
+            add = 0;
+            for (let i = 0; i < 10; i++)
+                add += parseInt(cpf.charAt(i)) * (11 - i);
+            rev = 11 - (add % 11);
+            if (rev == 10 || rev == 11)
+                rev = 0;
+            if (rev != parseInt(cpf.charAt(10)))
+                return false;
+            return true;
+        }
+
+        // Função de validação de CNPJ
+        function validarCNPJ(cnpj) {
+            cnpj = cnpj.replace(/[^\d]+/g, ''); // Remove caracteres não numéricos
+
+            if (cnpj == '') return false;
+
+            if (cnpj.length != 14)
+                return false;
+
+            // Elimina CNPJs inválidos conhecidos
+            if (cnpj == "00000000000000" ||
+                cnpj == "11111111111111" ||
+                cnpj == "22222222222222" ||
+                cnpj == "33333333333333" ||
+                cnpj == "44444444444444" ||
+                cnpj == "55555555555555" ||
+                cnpj == "66666666666666" ||
+                cnpj == "77777777777777" ||
+                cnpj == "88888888888888" ||
+                cnpj == "99999999999999")
+                return false;
+
+            // Valida DVs
+            let tamanho = cnpj.length - 2;
+            let numeros = cnpj.substring(0, tamanho);
+            let digitos = cnpj.substring(tamanho);
+            let soma = 0;
+            let pos = tamanho - 7;
+            for (let i = tamanho; i >= 1; i--) {
+                soma += numeros.charAt(i - 1) * pos--;
+                if (pos < 2)
+                    pos = 9;
+            }
+            let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+            if (resultado != digitos.charAt(0))
+                return false;
+
+            tamanho = tamanho + 1;
+            numeros = cnpj.substring(0, tamanho);
+            soma = 0;
+            pos = tamanho - 7;
+            for (let i = tamanho; i >= 1; i--) {
+                soma += numeros.charAt(i - 1) * pos--;
+                if (pos < 2)
+                    pos = 9;
+            }
+            resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+            if (resultado != digitos.charAt(1))
+                return false;
+
+            return true;
+        }
+
+        // Função para validar CPF em tempo real (oninput)
+        function validarCPFInput(input) {
+            const cpf = input.value;
+            const errorSpan = document.getElementById('cpfError');
+            if (cpf.length === 11 || cpf.length === 14) { // Considera 11 dígitos puros ou 14 com máscara
+                if (validarCPF(cpf)) {
+                    errorSpan.style.display = 'none';
+                    input.setCustomValidity('');
+                } else {
+                    errorSpan.textContent = 'CPF inválido.';
+                    errorSpan.style.display = 'inline';
+                    input.setCustomValidity('CPF inválido.');
+                }
+            } else {
+                errorSpan.style.display = 'none'; // Esconde a mensagem se não tiver dígitos suficientes para validar
+                input.setCustomValidity('');
+            }
+        }
+
+        // Função para validar CNPJ em tempo real (oninput)
+        function validarCNPJInput(input) {
+            const cnpj = input.value;
+            const errorSpan = document.getElementById('cnpjError');
+            if (cnpj.length === 14 || cnpj.length === 18) { // Considera 14 dígitos puros ou 18 com máscara
+                if (validarCNPJ(cnpj)) {
+                    errorSpan.style.display = 'none';
+                    input.setCustomValidity('');
+                } else {
+                    errorSpan.textContent = 'CNPJ inválido.';
+                    errorSpan.style.display = 'inline';
+                    input.setCustomValidity('CNPJ inválido.');
+                }
+            } else {
+                errorSpan.style.display = 'none'; // Esconde a mensagem se não tiver dígitos suficientes para validar
+                input.setCustomValidity('');
+            }
+        }
+
+        // Função para validar o formulário antes do envio
+        function validarFormularioCliente(event) {
+            const cpfInput = document.getElementById('cpfInput');
+            const cnpjInput = document.getElementById('cnpjInput');
+            let formValido = true;
+
+            // Valida CPF se preenchido
+            if (cpfInput.value.trim() !== '') {
+                if (!validarCPF(cpfInput.value)) {
+                    document.getElementById('cpfError').textContent = 'CPF inválido.';
+                    document.getElementById('cpfError').style.display = 'inline';
+                    formValido = false;
+                } else {
+                    document.getElementById('cpfError').style.display = 'none';
+                }
+            } else {
+                document.getElementById('cpfError').style.display = 'none';
+            }
+
+            // Valida CNPJ se preenchido
+            if (cnpjInput.value.trim() !== '') {
+                if (!validarCNPJ(cnpjInput.value)) {
+                    document.getElementById('cnpjError').textContent = 'CNPJ inválido.';
+                    document.getElementById('cnpjError').style.display = 'inline';
+                    formValido = false;
+                } else {
+                    document.getElementById('cnpjError').style.display = 'none';
+                }
+            } else {
+                document.getElementById('cnpjError').style.display = 'none';
+            }
+
+            if (!formValido) {
+                event.preventDefault(); // Impede o envio do formulário se houver erros
+                alert('Por favor, corrija os erros no formulário antes de continuar.'); // Alerta genérico
+            }
+            return formValido;
+        }
+
 
         // Add event listener to the main CEP input field on DOMContentLoaded
         document.addEventListener('DOMContentLoaded', function() {

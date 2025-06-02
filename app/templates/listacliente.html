@@ -53,6 +53,187 @@
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         });
+
+        // Função de validação de CPF
+        function validarCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g, ''); // Remove caracteres não numéricos
+            if (cpf == '') return false;
+            // Elimina CPFs inválidos conhecidos
+            if (cpf.length != 11 ||
+                cpf == "00000000000" ||
+                cpf == "11111111111" ||
+                cpf == "22222222222" ||
+                cpf == "33333333333" ||
+                cpf == "44444444444" ||
+                cpf == "55555555555" ||
+                cpf == "66666666666" ||
+                cpf == "77777777777" ||
+                cpf == "88888888888" ||
+                cpf == "99999999999")
+                return false;
+            // Valida 1o digito
+            let add = 0;
+            for (let i = 0; i < 9; i++)
+                add += parseInt(cpf.charAt(i)) * (10 - i);
+            let rev = 11 - (add % 11);
+            if (rev == 10 || rev == 11)
+                rev = 0;
+            if (rev != parseInt(cpf.charAt(9)))
+                return false;
+            // Valida 2o digito
+            add = 0;
+            for (let i = 0; i < 10; i++)
+                add += parseInt(cpf.charAt(i)) * (11 - i);
+            rev = 11 - (add % 11);
+            if (rev == 10 || rev == 11)
+                rev = 0;
+            if (rev != parseInt(cpf.charAt(10)))
+                return false;
+            return true;
+        }
+
+        // Função de validação de CNPJ
+        function validarCNPJ(cnpj) {
+            cnpj = cnpj.replace(/[^\d]+/g, ''); // Remove caracteres não numéricos
+
+            if (cnpj == '') return false;
+
+            if (cnpj.length != 14)
+                return false;
+
+            // Elimina CNPJs inválidos conhecidos
+            if (cnpj == "00000000000000" ||
+                cnpj == "11111111111111" ||
+                cnpj == "22222222222222" ||
+                cnpj == "33333333333333" ||
+                cnpj == "44444444444444" ||
+                cnpj == "55555555555555" ||
+                cnpj == "66666666666666" ||
+                cnpj == "77777777777777" ||
+                cnpj == "88888888888888" ||
+                cnpj == "99999999999999")
+                return false;
+
+            // Valida DVs
+            let tamanho = cnpj.length - 2;
+            let numeros = cnpj.substring(0, tamanho);
+            let digitos = cnpj.substring(tamanho);
+            let soma = 0;
+            let pos = tamanho - 7;
+            for (let i = tamanho; i >= 1; i--) {
+                soma += numeros.charAt(i - 1) * pos--;
+                if (pos < 2)
+                    pos = 9;
+            }
+            let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+            if (resultado != digitos.charAt(0))
+                return false;
+
+            tamanho = tamanho + 1;
+            numeros = cnpj.substring(0, tamanho);
+            soma = 0;
+            pos = tamanho - 7;
+            for (let i = tamanho; i >= 1; i--) {
+                soma += numeros.charAt(i - 1) * pos--;
+                if (pos < 2)
+                    pos = 9;
+            }
+            resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+            if (resultado != digitos.charAt(1))
+                return false;
+
+            return true;
+        }
+
+        // Função para validar CPF em tempo real (oninput)
+        function validarCPFInput(input) {
+            const cpf = input.value;
+            const errorSpan = document.getElementById('cpfError');
+            if (cpf.length === 11 || cpf.length === 14) { // Considera 11 dígitos puros ou 14 com máscara
+                if (validarCPF(cpf)) {
+                    errorSpan.style.display = 'none';
+                    input.setCustomValidity('');
+                } else {
+                    errorSpan.textContent = 'CPF inválido.';
+                    errorSpan.style.display = 'inline';
+                    input.setCustomValidity('CPF inválido.');
+                }
+            } else {
+                errorSpan.style.display = 'none'; // Esconde a mensagem se não tiver dígitos suficientes para validar
+                input.setCustomValidity('');
+            }
+        }
+
+        // Função para validar CNPJ em tempo real (oninput)
+        function validarCNPJInput(input) {
+            const cnpj = input.value;
+            const errorSpan = document.getElementById('cnpjError');
+            if (cnpj.length === 14 || cnpj.length === 18) { // Considera 14 dígitos puros ou 18 com máscara
+                if (validarCNPJ(cnpj)) {
+                    errorSpan.style.display = 'none';
+                    input.setCustomValidity('');
+                } else {
+                    errorSpan.textContent = 'CNPJ inválido.';
+                    errorSpan.style.display = 'inline';
+                    input.setCustomValidity('CNPJ inválido.');
+                }
+            } else {
+                errorSpan.style.display = 'none'; // Esconde a mensagem se não tiver dígitos suficientes para validar
+                input.setCustomValidity('');
+            }
+        }
+
+        // Função para validar o formulário de adicionar cliente antes do envio
+        function validarFormularioAdicionarCliente(event) {
+            const nomeInput = document.getElementById("nome");
+            const cpfInput = document.querySelector('#CPF-container input[name="cpf"]');
+            const cnpjInput = document.querySelector('#CNPJ-container input[name="cnpj"]');
+
+            let formValido = true;
+
+            // Valida nome duplicado
+            if (!validarNomeDuplicado()) {
+                formValido = false;
+            }
+
+            // Valida CPF se preenchido
+            if (cpfInput && cpfInput.value.trim() !== '') {
+                if (!validarCPF(cpfInput.value)) {
+                    document.getElementById('cpfError').textContent = 'CPF inválido.';
+                    document.getElementById('cpfError').style.display = 'inline';
+                    formValido = false;
+                } else {
+                    document.getElementById('cpfError').style.display = 'none';
+                }
+            } else {
+                // Se o CPF não for preenchido, garante que a mensagem de erro esteja oculta
+                if (document.getElementById('cpfError')) {
+                    document.getElementById('cpfError').style.display = 'none';
+                }
+            }
+
+            // Valida CNPJ se preenchido
+            if (cnpjInput && cnpjInput.value.trim() !== '') {
+                if (!validarCNPJ(cnpjInput.value)) {
+                    document.getElementById('cnpjError').textContent = 'CNPJ inválido.';
+                    document.getElementById('cnpjError').style.display = 'inline';
+                    formValido = false;
+                } else {
+                    document.getElementById('cnpjError').style.display = 'none';
+                }
+            } else {
+                // Se o CNPJ não for preenchido, garante que a mensagem de erro esteja oculta
+                if (document.getElementById('cnpjError')) {
+                    document.getElementById('cnpjError').style.display = 'none';
+                }
+            }
+
+            if (!formValido) {
+                event.preventDefault(); // Impede o envio do formulário se houver erros
+                alert('Por favor, corrija os erros no formulário antes de continuar.'); // Alerta genérico
+            }
+            return formValido;
+        }
     </script>
 		    <style>
         /* Layout principal */
@@ -270,7 +451,7 @@
     }
 
     .menu-lateral.recolhido ~ .logo-container {
-        opacity: 1; /* Exibe a logo novamente quando o menu é recolhido */
+        opacity: 1;
         pointer-events: all;
     }
 	
@@ -289,7 +470,6 @@
 	</style>
 </head>
 <body>
-    <!-- Adicionar contêiner da logo fixo no topo -->
     <div class="logo-container">
         <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa">
     </div>
@@ -298,7 +478,6 @@
         <a href="/">Menu Inicial</a>
         <a href="/inventario">Inventário</a>
     </div>
-    <!-- Conteúdo da página -->
     <div class="conteudo" id="conteudo">
 	<div class="card mb-4">
         <div class="card-header">
@@ -351,7 +530,7 @@
 			<h1>Adicionar Novo Cliente</h1>
 		</div>
 		<div class="card-body">
-<form action="/add" method="POST" onsubmit="return validarNomeDuplicado()">
+<form action="/add" method="POST" onsubmit="return validarFormularioAdicionarCliente(event)">
     <div class="mb">
         <label for="nome">Nome</label>
         <input type="text" name="nome" id="nome" class="form-control" placeholder="Nome" required>
@@ -368,11 +547,13 @@
     </div>
 	<div id="CPF-container" class="mb">
         <label for="cpf">CPF</label>
-        <input type="text" name="cpf" class="form-control mb-2" placeholder="CPF">
+        <input type="text" name="cpf" id="cpfInput" class="form-control mb-2" placeholder="CPF" oninput="validarCPFInput(this)">
+        <span id="cpfError" style="color: red; display: none;">CPF inválido.</span>
     </div>
 	<div id="CNPJ-container" class="mb">
         <label for="cnpj">CNPJ</label>
-        <input type="text" name="CNPJ" class="form-control mb-2" placeholder="CPF">
+        <input type="text" name="cnpj" id="cnpjInput" class="form-control mb-2" placeholder="CNPJ" oninput="validarCNPJInput(this)">
+        <span id="cnpjError" style="color: red; display: none;">CNPJ inválido.</span>
     </div>
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-success">Salvar Cliente</button>
@@ -410,6 +591,187 @@
 				menu.classList.remove("recolhido"); // No desktop, garante que o menu esteja aberto
 			}
 		};
+
+        // Função de validação de CPF
+        function validarCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g, ''); // Remove caracteres não numéricos
+            if (cpf == '') return false;
+            // Elimina CPFs inválidos conhecidos
+            if (cpf.length != 11 ||
+                cpf == "00000000000" ||
+                cpf == "11111111111" ||
+                cpf == "22222222222" ||
+                cpf == "33333333333" ||
+                cpf == "44444444444" ||
+                cpf == "55555555555" ||
+                cpf == "66666666666" ||
+                cpf == "77777777777" ||
+                cpf == "88888888888" ||
+                cpf == "99999999999")
+                return false;
+            // Valida 1o digito
+            let add = 0;
+            for (let i = 0; i < 9; i++)
+                add += parseInt(cpf.charAt(i)) * (10 - i);
+            let rev = 11 - (add % 11);
+            if (rev == 10 || rev == 11)
+                rev = 0;
+            if (rev != parseInt(cpf.charAt(9)))
+                return false;
+            // Valida 2o digito
+            add = 0;
+            for (let i = 0; i < 10; i++)
+                add += parseInt(cpf.charAt(i)) * (11 - i);
+            rev = 11 - (add % 11);
+            if (rev == 10 || rev == 11)
+                rev = 0;
+            if (rev != parseInt(cpf.charAt(10)))
+                return false;
+            return true;
+        }
+
+        // Função de validação de CNPJ
+        function validarCNPJ(cnpj) {
+            cnpj = cnpj.replace(/[^\d]+/g, ''); // Remove caracteres não numéricos
+
+            if (cnpj == '') return false;
+
+            if (cnpj.length != 14)
+                return false;
+
+            // Elimina CNPJs inválidos conhecidos
+            if (cnpj == "00000000000000" ||
+                cnpj == "11111111111111" ||
+                cnpj == "22222222222222" ||
+                cnpj == "33333333333333" ||
+                cnpj == "44444444444444" ||
+                cnpj == "55555555555555" ||
+                cnpj == "66666666666666" ||
+                cnpj == "77777777777777" ||
+                cnpj == "88888888888888" ||
+                cnpj == "99999999999999")
+                return false;
+
+            // Valida DVs
+            let tamanho = cnpj.length - 2;
+            let numeros = cnpj.substring(0, tamanho);
+            let digitos = cnpj.substring(tamanho);
+            let soma = 0;
+            let pos = tamanho - 7;
+            for (let i = tamanho; i >= 1; i--) {
+                soma += numeros.charAt(i - 1) * pos--;
+                if (pos < 2)
+                    pos = 9;
+            }
+            let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+            if (resultado != digitos.charAt(0))
+                return false;
+
+            tamanho = tamanho + 1;
+            numeros = cnpj.substring(0, tamanho);
+            soma = 0;
+            pos = tamanho - 7;
+            for (let i = tamanho; i >= 1; i--) {
+                soma += numeros.charAt(i - 1) * pos--;
+                if (pos < 2)
+                    pos = 9;
+            }
+            resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+            if (resultado != digitos.charAt(1))
+                return false;
+
+            return true;
+        }
+
+        // Função para validar CPF em tempo real (oninput)
+        function validarCPFInput(input) {
+            const cpf = input.value;
+            const errorSpan = document.getElementById('cpfError');
+            if (cpf.length === 11 || cpf.length === 14) { // Considera 11 dígitos puros ou 14 com máscara
+                if (validarCPF(cpf)) {
+                    errorSpan.style.display = 'none';
+                    input.setCustomValidity('');
+                } else {
+                    errorSpan.textContent = 'CPF inválido.';
+                    errorSpan.style.display = 'inline';
+                    input.setCustomValidity('CPF inválido.');
+                }
+            } else {
+                errorSpan.style.display = 'none'; // Esconde a mensagem se não tiver dígitos suficientes para validar
+                input.setCustomValidity('');
+            }
+        }
+
+        // Função para validar CNPJ em tempo real (oninput)
+        function validarCNPJInput(input) {
+            const cnpj = input.value;
+            const errorSpan = document.getElementById('cnpjError');
+            if (cnpj.length === 14 || cnpj.length === 18) { // Considera 14 dígitos puros ou 18 com máscara
+                if (validarCNPJ(cnpj)) {
+                    errorSpan.style.display = 'none';
+                    input.setCustomValidity('');
+                } else {
+                    errorSpan.textContent = 'CNPJ inválido.';
+                    errorSpan.style.display = 'inline';
+                    input.setCustomValidity('CNPJ inválido.');
+                }
+            } else {
+                errorSpan.style.display = 'none'; // Esconde a mensagem se não tiver dígitos suficientes para validar
+                input.setCustomValidity('');
+            }
+        }
+
+        // Função para validar o formulário de adicionar cliente antes do envio
+        function validarFormularioAdicionarCliente(event) {
+            const nomeInput = document.getElementById("nome");
+            const cpfInput = document.querySelector('#CPF-container input[name="cpf"]');
+            const cnpjInput = document.querySelector('#CNPJ-container input[name="cnpj"]');
+
+            let formValido = true;
+
+            // Valida nome duplicado
+            if (!validarNomeDuplicado()) {
+                formValido = false;
+            }
+
+            // Valida CPF se preenchido
+            if (cpfInput && cpfInput.value.trim() !== '') {
+                if (!validarCPF(cpfInput.value)) {
+                    document.getElementById('cpfError').textContent = 'CPF inválido.';
+                    document.getElementById('cpfError').style.display = 'inline';
+                    formValido = false;
+                } else {
+                    document.getElementById('cpfError').style.display = 'none';
+                }
+            } else {
+                // Se o CPF não for preenchido, garante que a mensagem de erro esteja oculta
+                if (document.getElementById('cpfError')) {
+                    document.getElementById('cpfError').style.display = 'none';
+                }
+            }
+
+            // Valida CNPJ se preenchido
+            if (cnpjInput && cnpjInput.value.trim() !== '') {
+                if (!validarCNPJ(cnpjInput.value)) {
+                    document.getElementById('cnpjError').textContent = 'CNPJ inválido.';
+                    document.getElementById('cnpjError').style.display = 'inline';
+                    formValido = false;
+                } else {
+                    document.getElementById('cnpjError').style.display = 'none';
+                }
+            } else {
+                // Se o CNPJ não for preenchido, garante que a mensagem de erro esteja oculta
+                if (document.getElementById('cnpjError')) {
+                    document.getElementById('cnpjError').style.display = 'none';
+                }
+            }
+
+            if (!formValido) {
+                event.preventDefault(); // Impede o envio do formulário se houver erros
+                alert('Por favor, corrija os erros no formulário antes de continuar.'); // Alerta genérico
+            }
+            return formValido;
+        }
 	</script>
 </body>
 </html>
