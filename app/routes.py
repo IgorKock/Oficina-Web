@@ -99,6 +99,37 @@ def add_cliente():
     flash('Cliente adicionado com sucesso!', 'success')
     return redirect(url_for('main.client'))
 
+# NOVA ROTA: Apagar Cliente
+@main.route('/delete_cliente/<int:id>', methods=['POST'])
+@login_required # Protege a rota
+def delete_cliente(id):
+    # Apenas administradores podem apagar clientes
+    if not current_user.is_admin():
+        flash('Você não tem permissão para apagar clientes.', 'danger')
+        return redirect(url_for('main.client'))
+
+    cliente = Cliente.query.get_or_404(id)
+
+    try:
+        # Apagar pagamentos associados ao cliente
+        Pagamento.query.filter_by(cliente_id=id).delete()
+        # Apagar históricos associados ao cliente
+        Historico.query.filter_by(cliente_id=id).delete()
+        # Apagar carros associados ao cliente
+        Carro.query.filter_by(cliente_id=id).delete()
+        # Apagar telefones associados ao cliente
+        Telefone.query.filter_by(cliente_id=id).delete()
+        
+        # Finalmente, apagar o cliente
+        db.session.delete(cliente)
+        db.session.commit()
+        flash('Cliente e todos os seus dados foram apagados com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback() # Em caso de erro, desfaz as operações no banco de dados
+        flash(f'Erro ao apagar cliente: {e}', 'danger')
+    
+    return redirect(url_for('main.client'))
+
 
 @main.route('/add_telefone/<int:cliente_id>', methods=['POST'])
 @login_required # Protege a rota
@@ -318,12 +349,13 @@ def add_utilizador():
         email = request.form['email'].strip()
         senha = request.form['senha']
         confirmar_senha = request.form['confirmar_senha']
-        papel_ids = request.form.getlist('papeis')
+        # ALTERAÇÃO AQUI: Agora obtemos um único papel_id, não uma lista
+        papel_id = request.form.get('papel_id') 
         telefone = request.form.get('telefone', '').strip()
         observacoes = request.form.get('observacoes', '').strip()
         palavras_chave = request.form.get('palavras_chave', '').strip()
 
-        if not nome or not email or not senha or not confirmar_senha:
+        if not nome or not email or not senha or not confirmar_senha or not papel_id: # Adicionado papel_id à validação
             flash('Por favor, preencha todos os campos obrigatórios.', 'danger')
             return render_template('utilizadores/add_utilizador.html', papeis=papeis)
 
@@ -339,10 +371,10 @@ def add_utilizador():
         novo_utilizador = Utilizador(nome=nome, email=email, telefone=telefone, palavras_chave=palavras_chave)
         novo_utilizador.set_senha(senha)
 
-        for papel_id in papel_ids:
-            papel = Papel.query.get(int(papel_id))
-            if papel:
-                novo_utilizador.papeis.append(papel)
+        # ALTERAÇÃO AQUI: Adiciona apenas o papel selecionado
+        papel = Papel.query.get(int(papel_id))
+        if papel:
+            novo_utilizador.papeis.append(papel)
 
         db.session.add(novo_utilizador)
         db.session.commit()

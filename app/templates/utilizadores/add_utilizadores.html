@@ -251,7 +251,7 @@
     <div class="menu-lateral recolhido" id="menu">
         <a href="{{ url_for('main.index') }}">Menu Inicial</a>
         <a href="{{ url_for('main.inventario') }}">Inventário</a>
-        <a href="{{ url_for('main.client') }}">Lista de Clientes</a>
+        <a href="{{ url_for('main.client') }}">Clientes</a>
         <a href="{{ url_for('main.lista_utilizadores') }}">Usuários</a>
         <!-- Adicione outros links de navegação aqui -->
         {% if current_user.is_authenticated %}
@@ -292,8 +292,9 @@
                 <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" required>
             </div>
             <div class="mb-3">
-                <label for="papeis" class="form-label">Função/Papel</label>
-                <select class="form-select" id="papeis" name="papeis" multiple required>
+                <label for="papel_id" class="form-label">Função/Papel</label>
+                <select class="form-select" id="papel_id" name="papel_id" required>
+                    <option value="">Selecione um papel</option> <!-- Opção padrão -->
                     {% for papel in papeis %}
                         <option value="{{ papel.id }}">{{ papel.nome }}</option>
                     {% endfor %}
