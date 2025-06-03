@@ -1,25 +1,37 @@
-from flask import Blueprint, render_template, request, redirect, url_for
-from .models import db, Cliente, Telefone, Historico, Pagamento, Carro, Peca
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+# Importa os modelos do esquema antigo, e os novos modelos Utilizador e Papel
+from .models import db, Cliente, Telefone, Carro, Peca, Historico, Pagamento, Utilizador, Papel
 from datetime import datetime, timedelta
 import pytz
+from werkzeug.security import generate_password_hash # Importa para hash de senha
+from flask_login import login_user, logout_user, current_user, login_required # Importações do Flask-Login
 
+# Cria um Blueprint para organizar as rotas.
+# O nome 'main' é usado para referenciar as rotas (ex: url_for('main.login')).
 main = Blueprint('main', __name__)
 
+# Rota para a página inicial
 @main.route('/')
+@login_required # Esta rota requer que o utilizador esteja logado para ser acedida.
 def index():
+    # Renderiza o template 'index.html'.
     return render_template('index.html')
 
-# Função para ajustar o horário
+# Função auxiliar para ajustar o horário para Brasília
 def ajustar_para_brasilia(data_utc):
+    """
+    Ajusta um objeto datetime para o fuso horário de Brasília.
+    """
+    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
     if data_utc.tzinfo is None:  # Verifica se o objeto é "naive" (sem fuso horário)
-        fuso_brasilia = pytz.timezone('America/Sao_Paulo')
         return fuso_brasilia.localize(data_utc)  # Adiciona o fuso horário de Brasília
     else:
         # Se já tiver fuso horário, ajusta para o horário de Brasília
-        fuso_brasilia = pytz.timezone('America/Sao_Paulo')
         return data_utc.astimezone(fuso_brasilia)
 
+# ROTAS RELACIONADAS AO INVENTÁRIO E PEÇAS
 @main.route('/inventario', methods=['GET'])
+@login_required # Protege a rota
 def inventario():
     query = request.args.get('query', '').lower()
     pecas = db.session.query(Peca).all()
@@ -29,7 +41,9 @@ def inventario():
 
     return render_template('inventario.html', pecas=pecas, query=query)
 
+# ROTAS RELACIONADAS A CLIENTES
 @main.route('/listaclientes')
+@login_required # Protege a rota
 def client():
     query = request.args.get('query', '')  # Busca de clientes
     if query:
@@ -39,34 +53,41 @@ def client():
     return render_template('listacliente.html', clientes=clientes, search_query=query)
 
 @main.route('/cliente/<int:id>')
+@login_required # Protege a rota
 def cliente(id):
     cliente = Cliente.query.get_or_404(id)
     telefones = Telefone.query.filter_by(cliente_id=id).all()
     historicos = Historico.query.filter_by(cliente_id=id).order_by(Historico.data.desc()).all()
     pagamentos = Pagamento.query.filter_by(cliente_id=id).order_by(Pagamento.data.desc()).all()
     carros = Carro.query.filter_by(cliente_id=id).all()  # Busca todos os carros do cliente
+    
     # Ajustar os horários dos históricos e pagamentos para o fuso de Brasília
     for historico in historicos:
         historico.data = ajustar_para_brasilia(historico.data)
+        # Verifica se o histórico tem pagamento associado (lógica original)
         historico.tem_pagamento = any(pagamento.historico_id == historico.id for pagamento in pagamentos)
         
     for pagamento in pagamentos:
         pagamento.data = ajustar_para_brasilia(pagamento.data)
 
+    # Retorna o template com todos os dados
     return render_template('cliente.html', cliente=cliente, telefones=telefones, historicos=historicos, pagamentos=pagamentos, carros=carros)
     
 @main.route('/add', methods=['POST'])
+@login_required # Protege a rota
 def add_cliente():
     nome = request.form['nome'].strip()
     numeros = request.form.getlist('numeros[]')
     cpf = request.form.get('cpf', '').strip()
     cnpj = request.form.get('cnpj', '').strip()
-    apelido = request.form['apelido'].strip()
+    apelido = request.form.get('apelido', '').strip()
+
     cliente_existente = Cliente.query.filter_by(nome=nome).first()
     if cliente_existente:
-        return redirect(url_for('main.client', error="Cliente já cadastrado"))
+        flash('Erro: Este cliente já está cadastrado!', 'danger')
+        return redirect(url_for('main.client'))
 
-    novo_cliente = Cliente(nome=nome, cpf=cpf, apelido=apelido)
+    novo_cliente = Cliente(nome=nome, cpf=cpf, cnpj=cnpj, apelido=apelido)
     db.session.add(novo_cliente)
     db.session.commit()
 
@@ -75,100 +96,95 @@ def add_cliente():
             novo_telefone = Telefone(numero=numero, cliente_id=novo_cliente.id)
             db.session.add(novo_telefone)
     db.session.commit()
+    flash('Cliente adicionado com sucesso!', 'success')
     return redirect(url_for('main.client'))
 
 
 @main.route('/add_telefone/<int:cliente_id>', methods=['POST'])
+@login_required # Protege a rota
 def add_telefone(cliente_id):
-    numeros = request.form.getlist('numeros[]')  # Receber múltiplos números de telefone
+    numeros = request.form.getlist('numeros[]')
 
-    # Salvar os números de telefone no banco de dados
     for numero in numeros:
-        if numero.strip():  # Certificar-se de que o número não está vazio
+        if numero.strip():
             novo_telefone = Telefone(numero=numero, cliente_id=cliente_id)
             db.session.add(novo_telefone)
 
-    db.session.commit()  # Confirma as alterações no banco de dados
-
-    # Redirecionar de volta para a página de detalhes do cliente
-    #return redirect(url_for('main.listaclientes', id=cliente_id))
+    db.session.commit()
+    flash('Telefone(s) adicionado(s) com sucesso!', 'success')
     return redirect(url_for('main.cliente', id=cliente_id))
 
 @main.route('/update_telefone/<int:telefone_id>', methods=['POST'])
+@login_required # Protege a rota
 def update_telefone(telefone_id):
     novo_numero = request.form.get('numero', '').strip()
     
     telefone = Telefone.query.get_or_404(telefone_id)
-    telefone.numero = novo_numero  # Atualiza o número no banco de dados
+    telefone.numero = novo_numero
     db.session.commit()
-
+    flash('Telefone atualizado com sucesso!', 'success')
     return redirect(url_for('main.cliente', id=telefone.cliente_id))
 
 @main.route('/delete_telefone/<int:telefone_id>', methods=['POST'])
+@login_required # Protege a rota
 def delete_telefone(telefone_id):
     telefone = Telefone.query.get_or_404(telefone_id)
-    db.session.delete(telefone)  # Remove o telefone do banco de dados
+    db.session.delete(telefone)
     db.session.commit()
-
+    flash('Telefone removido com sucesso!', 'success')
     return redirect(url_for('main.cliente', id=telefone.cliente_id))
 
 @main.route('/update_dados_cliente/<int:cliente_id>', methods=['POST'])
+@login_required # Protege a rota
 def update_dados_cliente(cliente_id):
+    # Trata campos que podem vir como lista ou string única
+    endereco = request.form.getlist('endereco[]')[0].strip() if request.form.getlist('endereco[]') else request.form.get('endereco', '').strip()
+    bairro = request.form.getlist('bairro[]')[0].strip() if request.form.getlist('bairro[]') else request.form.get('bairro', '').strip()
+    cidade = request.form.getlist('cidade[]')[0].strip() if request.form.getlist('cidade[]') else request.form.get('cidade', '').strip()
+    cep = request.form.getlist('cep[]')[0].strip() if request.form.getlist('cep[]') else request.form.get('cep', '').strip()
 
-    enderecos_list = request.form.getlist('endereco[]')
-    endereco_str = ';'.join(e.strip() for e in enderecos_list if e.strip())
-
-    bairros_list = request.form.getlist('bairro[]')
-    bairro_str = ';'.join(b.strip() for b in bairros_list if b.strip())
-
-    cidade_list = request.form.getlist('cidade[]')
-    cidade_str = ';'.join(b.strip() for b in cidade_list if b.strip())
-
-    cep_list = request.form.getlist('cep[]')
-    cep_str = ';'.join(b.strip() for b in cep_list if b.strip())
-    
-    estado = request.form['estado']
-    cpf = request.form['cpf']
-    cnpj = request.form['cnpj']
-    apelido = request.form['apelido']
+    estado = request.form.get('estado', '').strip()
+    cpf = request.form.get('cpf', '').strip()
+    cnpj = request.form.get('cnpj', '').strip()
+    apelido = request.form.get('apelido', '').strip()
 
     cliente = Cliente.query.get_or_404(cliente_id)
     cliente.cpf = cpf
     cliente.cnpj = cnpj
-    cliente.endereco = endereco_str
-    cliente.cidade = cidade_str
+    cliente.endereco = endereco
+    cliente.cidade = cidade
     cliente.estado = estado
-    cliente.cep = cep_str
-    cliente.bairro = bairro_str
-    cliente.apelido = apelido
+    cliente.cep = cep
+    cliente.bairro = bairro
+    cliente.apelido = apelido 
+
     db.session.commit()
-
+    flash('Dados do cliente atualizados com sucesso!', 'success')
     return redirect(url_for('main.cliente', id=cliente_id))
-    #return redirect(url_for('main.listaclientes', id=cliente_id))
-
+    
+# ROTAS RELACIONADAS AO HISTÓRICO
 @main.route('/add_historico/<int:carro_id>', methods=['POST'])
+@login_required # Protege a rota
 def add_historico(carro_id):
     descricao = request.form['descricao']
     carro = Carro.query.get_or_404(carro_id)
 
-    # Obtém o horário atual no fuso horário de Brasília
     fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-    hora_brasilia = datetime.now(fuso_brasilia) - timedelta(hours=3)
+    hora_brasilia = datetime.now(fuso_brasilia) - timedelta(hours=3) # Ajuste para o horário de Brasília
 
-    # 🔹 Criando o registro no banco vinculado ao carro e ao cliente
     novo_historico = Historico(cliente_id=carro.cliente_id, carro_id=carro.id, descricao=descricao, data=hora_brasilia)
     db.session.add(novo_historico)
     db.session.commit()
-
+    flash('Histórico adicionado com sucesso!', 'success')
     return redirect(url_for('main.cliente', id=carro.cliente_id))
 
-
 @main.route('/add_carros_cliente/<int:cliente_id>', methods=['POST'])
+@login_required # Protege a rota
 def add_carros(cliente_id):
     print(request.form) 
-    carros = request.form.to_dict(flat=False)  # Pega todos os dados enviados
+    carros = request.form.to_dict(flat=False)
 
-    for i in range(len(carros['marca'])):  # Itera pelos carros enviados
+    for i in range(len(carros['marca'])):
         novo_carro = Carro(
             cliente_id=cliente_id,
             marca=carros['marca'][i],
@@ -181,33 +197,30 @@ def add_carros(cliente_id):
         db.session.add(novo_carro)
 
     db.session.commit()
-    #print(url_for('main.cliente'))
-    # Redireciona para a página do cliente
+    flash('Carro(s) adicionado(s) com sucesso!', 'success')
     return redirect(url_for('main.cliente', id=cliente_id))
-    #return redirect(url_for('main.listaclientes', id=cliente_id))
 
 @main.route('/update_carros_cliente/<int:cliente_id>', methods=['POST'])
+@login_required # Protege a rota
 def update_carros(cliente_id):
-    # Busca todos os carros associados ao cliente
     carros = Carro.query.filter_by(cliente_id=cliente_id).all()
     
     for carro in carros:
-        # Atualiza os dados dos carros usando os valores do formulário
         carro.marca = request.form.get(f'marca_{carro.id}', carro.marca)
         carro.modelo = request.form.get(f'modelo_{carro.id}', carro.modelo)
-        carro.motor = request.form.get(f'motor{carro.id}', carro.motor)
+        carro.motor = request.form.get(f'motor_{carro.id}', carro.motor)
         carro.ano = request.form.get(f'ano_{carro.id}', carro.ano)
         carro.placa = request.form.get(f'placa_{carro.id}', carro.placa)
-        carro.quilometro = request.form.get(f'quilometro_{carro.id}', carro.quilometro)
+        carro.quilometro = int(request.form.get(f'quilometro_{carro.id}', carro.quilometro))
         db.session.add(carro)
 
     db.session.commit()
-
-    # Redireciona para a página do cliente
+    flash('Dados do carro atualizados com sucesso!', 'success')
     return redirect(url_for('main.cliente', id=cliente_id))
-    #return redirect(url_for('main.listaclientes', id=cliente_id))
-
+    
+# ROTAS RELACIONADAS AO PAGAMENTO
 @main.route('/add_pagamento/<int:carro_id>/<int:historico_id>', methods=['POST'])
+@login_required # Protege a rota
 def add_pagamento(carro_id, historico_id):
     valor = float(request.form['valor'])  
     metodo = request.form['metodo']
@@ -218,7 +231,7 @@ def add_pagamento(carro_id, historico_id):
         parcelas = int(parcelas)
 
     fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-    hora_brasilia = datetime.now(fuso_brasilia) - timedelta(hours=3)
+    hora_brasilia = datetime.now(fuso_brasilia) - timedelta(hours=3) # Ajuste para o horário de Brasília
 
     carro = Carro.query.get_or_404(carro_id)
     historico = Historico.query.get_or_404(historico_id)
@@ -236,31 +249,32 @@ def add_pagamento(carro_id, historico_id):
     
     db.session.add(novo_pagamento)
     db.session.commit()
-
+    flash('Pagamento registrado com sucesso!', 'success')
     return redirect(url_for('main.cliente', id=carro.cliente_id))
-    #return redirect(url_for('main.listaclientes', id=cliente_id))
 
+# ROTAS RELACIONADAS AO INVENTÁRIO E PEÇAS
 @main.route('/add_peca', methods=['POST'])
+@login_required # Protege a rota
 def add_peca():
     nome = request.form['nome'].strip()
     descricao = request.form.get('descricao')
     quantidade = int(request.form['quantidade'])
     preco = float(request.form['preco'])
 
-    # 🔹 Verificar se a peça já existe
     peca_existente = Peca.query.filter_by(nome=nome).first()
     if peca_existente:
-        pecas = Peca.query.all()  # Mantém os dados do inventário visíveis
+        pecas = Peca.query.all()
+        flash('Erro: Esta peça já está cadastrada!', 'danger')
         return render_template('inventario.html', pecas=pecas, error="Erro: Esta peça já está cadastrada!")
 
-    # 🔹 Criar nova peça
     nova_peca = Peca(nome=nome, descricao=descricao, quantidade=quantidade, preco=preco)
     db.session.add(nova_peca)
     db.session.commit()
-
+    flash('Peça adicionada com sucesso!', 'success')
     return redirect(url_for('main.inventario'))
    
 @main.route('/update_peca/<int:id>', methods=['POST'])
+@login_required # Protege a rota
 def update_peca(id):
     peca = Peca.query.get_or_404(id)
     peca.nome = request.form['nome']
@@ -269,16 +283,104 @@ def update_peca(id):
     peca.preco = float(request.form['preco'])
 
     db.session.commit()
-
+    flash('Peça atualizada com sucesso!', 'success')
     return redirect(url_for('main.inventario'))
     
 @main.route('/delete_peca/<int:id>', methods=['POST'])
+@login_required # Protege a rota
 def delete_peca(id):
     try:
-        peca = Peca.query.get_or_404(id)  # Busca a peça pelo ID
-        db.session.delete(peca)  # Remove a peça do banco de dados
-        db.session.commit()  # Confirma a remoção
-        return redirect(url_for('main.inventario'))  # Redireciona para a página do inventário
+        peca = Peca.query.get_or_404(id)
+        db.session.delete(peca)
+        db.session.commit()
+        flash('Peça removida com sucesso!', 'danger')
+        return redirect(url_for('main.inventario'))
     except Exception as e:
         print(f"Erro ao remover peça: {e}")
+        flash(f"Erro ao remover peça: {e}", 'danger')
         return "Erro interno ao remover a peça", 500
+
+# Rotas para gestão de utilizadores
+@main.route('/utilizadores')
+@login_required # Protege a rota
+def lista_utilizadores():
+    utilizadores = Utilizador.query.all()
+    # Renderiza o template de lista de utilizadores, que agora é autocontido
+    return render_template('utilizadores/lista_utilizadores.html', utilizadores=utilizadores)
+
+@main.route('/utilizadores/add', methods=['GET', 'POST'])
+def add_utilizador():
+    # A rota de adição de utilizador não é protegida por login_required
+    # para permitir que novos utilizadores se registem.
+    papeis = Papel.query.all()
+    if request.method == 'POST':
+        nome = request.form['nome'].strip()
+        email = request.form['email'].strip()
+        senha = request.form['senha']
+        confirmar_senha = request.form['confirmar_senha']
+        papel_ids = request.form.getlist('papeis')
+        telefone = request.form.get('telefone', '').strip()
+        observacoes = request.form.get('observacoes', '').strip()
+        palavras_chave = request.form.get('palavras_chave', '').strip()
+
+        if not nome or not email or not senha or not confirmar_senha:
+            flash('Por favor, preencha todos os campos obrigatórios.', 'danger')
+            return render_template('utilizadores/add_utilizador.html', papeis=papeis)
+
+        if senha != confirmar_senha:
+             flash('As senhas não coincidem.', 'danger')
+             return render_template('utilizadores/add_utilizador.html', papeis=papeis)
+
+        email_existente = Utilizador.query.filter_by(email=email).first()
+        if email_existente:
+            flash('Este email já está registado.', 'danger')
+            return render_template('utilizadores/add_utilizador.html', papeis=papeis)
+
+        novo_utilizador = Utilizador(nome=nome, email=email, telefone=telefone, palavras_chave=palavras_chave)
+        novo_utilizador.set_senha(senha)
+
+        for papel_id in papel_ids:
+            papel = Papel.query.get(int(papel_id))
+            if papel:
+                novo_utilizador.papeis.append(papel)
+
+        db.session.add(novo_utilizador)
+        db.session.commit()
+        flash('Utilizador criado com sucesso! Faça login para aceder ao sistema.', 'success')
+        return redirect(url_for('main.login')) # Redireciona para a página de login após o cadastro
+
+    # Renderiza o template de adicionar utilizador
+    return render_template('utilizadores/add_utilizadores.html', papeis=papeis)
+
+# Rota de Login
+@main.route('/login', methods=['GET', 'POST'])
+def login():
+    # Se o utilizador já estiver autenticado, redireciona para a página inicial.
+    # Isso evita que um utilizador logado aceda novamente à página de login.
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+
+    if request.method == 'POST':
+        email = request.form['email'].strip()
+        senha = request.form['senha']
+        
+        utilizador = Utilizador.query.filter_by(email=email).first()
+
+        # Verifica as credenciais: se o utilizador existe E a senha está correta.
+        if utilizador and utilizador.check_senha(senha):
+            login_user(utilizador) # Faz o login do utilizador usando Flask-Login.
+            flash('Login bem-sucedido!', 'success')
+            return redirect(url_for('main.index')) # Redireciona para a página inicial após login.
+        else:
+            flash('Email ou senha inválidos.', 'danger') # Mensagem de erro para credenciais inválidas.
+    
+    # Renderiza o template de login para requisições GET ou falha de POST.
+    return render_template('login.html')
+
+# Rota de Logout
+@main.route('/logout')
+@login_required # Garante que só utilizadores logados podem fazer logout.
+def logout():
+    logout_user() # Faz o logout do utilizador usando Flask-Login.
+    flash('Você foi desconectado.', 'info')
+    return redirect(url_for('main.login')) # Redireciona para a página de login após logout.

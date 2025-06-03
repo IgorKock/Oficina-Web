@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes do Cliente - OficinaWeb</title>
-     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-	 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-	<style>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
         /* Estilos das abas */
         .nav-tabs {
             display: flex;
@@ -23,8 +25,8 @@
             border-bottom: none;
             margin-right: 2px;
             background-color: #f8f9fa;
-			border-top-left-radius: 0.25rem;
-			border-top-right-radius: 0.25rem;
+            border-top-left-radius: 0.25rem;
+            border-top-right-radius: 0.25rem;
         }
 
         .nav-tab-item.active {
@@ -37,8 +39,8 @@
             padding: 20px;
             border: 1px solid #dee2e6;
             border-top: none;
-			border-bottom-left-radius: 0.25rem;
-			border-bottom-right-radius: 0.25rem;
+            border-bottom-left-radius: 0.25rem;
+            border-bottom-right-radius: 0.25rem;
         }
 
         .tab-content.active {
@@ -53,11 +55,11 @@
 
         /* Layout principal */
         body {
-			font-family: 'Exo', sans-serif;
+            font-family: 'Inter', sans-serif; /* Usando a fonte Inter conforme instrução */
             background-color: #f8f9fa;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
@@ -67,16 +69,16 @@
         .logo-container {
             display: flex !important;
             justify-content: center;
-			align-items: center;
-			width: 50%;
-			padding: 10px 0;
-			position: fixed !important;
-			top: 10px;
-			left: 50%;
-			transform: translateX(-50%);
-			z-index: 999;
+            align-items: center;
+            width: 50%;
+            padding: 10px 0;
+            position: fixed !important;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
             background: none;
-			pointer-events: none;
+            pointer-events: none;
         }
 
         .logo-container img {
@@ -128,7 +130,7 @@
             margin-top: 80px;
             transition: margin-left 0.3s ease-in-out;
             position: relative;
-            height: calc(100vh - 80px);
+            min-height: calc(100vh - 80px);
             overflow: auto;
         }
 
@@ -139,26 +141,26 @@
 
         /* Botão de recolher menu */
         .toggle-btn {
-			position: fixed;
-			top: 10px;
-			left: 200px;
-			background-color: #007bff;
-			color: white;
-			padding: 8px 12px;
-			border: none;
-			border-radius: 4px;
-			cursor: pointer;
-			z-index: 1002;
-			transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
+            position: fixed;
+            top: 10px;
+            left: 200px;
+            background-color: #007bff;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1002;
+            transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
             width: auto;
         }
 
-		.card {
-			background-color: #f8f9fa;
+        .card {
+            background-color: #f8f9fa;
             border-radius: 0.75rem;
             box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
         }
-		
+        
         .card-header {
             background-color: #e9ecef;
             border-bottom: 1px solid rgba(0, 0, 0, 0.125);
@@ -171,148 +173,158 @@
         .toggle-btn.recolhido {
             left: 70px;
         }
-		.menu-lateral.recolhido + .toggle-btn {
-			left: 10px;
-		}
-		
-		@media (min-width: 769px) {
-			.logo-container {
-				display: flex !important;
+        .menu-lateral.recolhido + .toggle-btn {
+            left: 10px;
+        }
+        
+        @media (min-width: 769px) {
+            .logo-container {
+                display: flex !important;
             }
-		}
-		
-		/* Ajustes para telas menores que 768px (tablets e celulares) */
-	@media (max-width: 768px) {
-    .menu-lateral {
-        width: 60px;
-    }
+        }
+        
+        /* Ajustes para telas menores que 768px (tablets e celulares) */
+        @media (max-width: 768px) {
+            .menu-lateral {
+                width: 60px;
+            }
 
-    .conteudo {
-        margin-left: 60px;
-    }
+            .conteudo {
+                margin-left: 60px;
+            }
 
-    .nav-tabs {
-        flex-direction: column;
-    }
-	
-	.logo-container {
-        transition: none !important;
-    }
-    .logo-container img {
-        max-width: 80px;
-    }
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .logo-container {
+                transition: none !important;
+            }
+            .logo-container img {
+                max-width: 80px;
+            }
 
-    .toggle-btn {
-        left: 10px !important;
-        position: fixed;
-        top: 10px;
-        z-index: 1001;
-    }
-	
-    .menu-lateral:not(.recolhido) ~ .logo-container {
-        position: absolute !important;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex !important;
-        pointer-events: none;
-        transition: none !important;
-        opacity: 1 !important;
-    }
+            .toggle-btn {
+                left: 10px !important;
+                position: fixed;
+                top: 10px;
+                z-index: 1001;
+            }
+            
+            .menu-lateral:not(.recolhido) ~ .logo-container {
+                position: absolute !important;
+                top: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex !important;
+                pointer-events: none;
+                transition: none !important;
+                opacity: 1 !important;
+            }
 
-    .menu-lateral.recolhido ~ .logo-container {
-        position: fixed !important;
-        top: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex !important;
-        pointer-events: all;
-        transition: none !important;
-        opacity: 1 !important;
-    }
-	
-    /* Ajusta o botão de menu para se mover quando ativo */
-    .menu-lateral.recolhido ~ .toggle-btn {
-        left: 15px;
-    }
-}
+            .menu-lateral.recolhido ~ .logo-container {
+                position: fixed !important;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex !important;
+                pointer-events: all;
+                transition: none !important;
+                opacity: 1 !important;
+            }
+            
+            /* Ajusta o botão de menu para se mover quando ativo */
+            .menu-lateral.recolhido ~ .toggle-btn {
+                left: 15px;
+            }
+        }
 
-/* Ajustes para telas menores que 480px (celulares pequenos) */
-@media (max-width: 480px) {
-    .menu-lateral {
-        width: 100%;
-        height: 100vh;
-        position: absolute;
-        top: 0;
-        left: 0;
-        background-color: #343a40;
-        z-index: 999;
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding-bottom: 50px;
-    }
+        /* Ajustes para telas menores que 480px (celulares pequenos) */
+        @media (max-width: 480px) {
+            .menu-lateral {
+                width: 100%;
+                height: 100vh;
+                position: absolute;
+                top: 0;
+                left: 0;
+                background-color: #343a40;
+                z-index: 999;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding-bottom: 50px;
+            }
 
-    .menu-lateral.recolhido {
-        transform: translateX(-100%);
-    }
+            .menu-lateral.recolhido {
+                transform: translateX(-100%);
+            }
 
-    .conteudo {
-        margin-left: 0;
-        width: 100%;
-        padding: 10px;
-    }
+            .conteudo {
+                margin-left: 0;
+                width: 100%;
+                padding: 10px;
+            }
 
-    .nav-tabs {
-        font-size: 14px;
-    }
+            .nav-tabs {
+                font-size: 14px;
+            }
 
-    .toggle-btn {
-		width: 100px !important;
-        font-size: 12px;
-        padding: 6px 10px;
-    }
-	
-	.menu-lateral:not(.recolhido) ~ .logo-container {
-        opacity: 0;
-        pointer-events: none;
-    }
+            .toggle-btn {
+                width: 100px !important;
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+            
+            .menu-lateral:not(.recolhido) ~ .logo-container {
+                opacity: 0;
+                pointer-events: none;
+            }
 
-    .menu-lateral.recolhido ~ .logo-container {
-        opacity: 1;
-        pointer-events: all;
-    }
-	
-	.menu-lateral.recolhido ~ .logo-container {
-        display: flex !important;
-    }
-	
-    table {
-        font-size: 12px;
-    }
+            .menu-lateral.recolhido ~ .logo-container {
+                opacity: 1;
+                pointer-events: all;
+            }
+            
+            .menu-lateral.recolhido ~ .logo-container {
+                display: flex !important;
+            }
+            
+            table {
+                font-size: 12px;
+            }
 
-    th, td {
-        padding: 5px;
-    }
+            th, td {
+                padding: 5px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="logo-container">
         <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa">
     </div>
-	<button class="toggle-btn" onclick="toggleMenu()">☰</button>
+    <button class="toggle-btn" onclick="toggleMenu()">☰</button>
     <div class="menu-lateral recolhido" id="menu">
         <a href="/">Menu Inicial</a>
-        <a href="/listaclientes">Lista de Clientes</a>
         <a href="/inventario">Inventário</a>
+        <a href="/listaclientes">Lista de Clientes</a>
+        {# Verifica se o utilizador está autenticado e se é administrador #}
+        {% if current_user.is_authenticated and current_user.is_admin() %}
+            <a href="/utilizadores">Usuários</a>
+        {% endif %}
+        {# Adiciona links de login/logout #}
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.logout') }}">Sair ({{ current_user.nome }})</a>
+        {% else %}
+            <a href="{{ url_for('main.login') }}">Login</a>
+        {% endif %}
     </div>
 
     <div class="conteudo" id="conteudo">
-	
         <div class="card-header">
-			<h1>Detalhes do Cliente</h1>
-		</div>
+            <h1>Detalhes do Cliente</h1>
+        </div>
         <p></p>
         <p><strong>Clique no botão ☰ para recolher ou expandir o menu.</strong></p>
 
@@ -325,53 +337,53 @@
                 <li class="nav-tab-item" onclick="openTab('veiculos')">Veículos</li>
                 <li class="nav-tab-item" onclick="openTab('telefones')">Telefones</li>
                 <li class="nav-tab-item" onclick="openTab('pagamentos')">Pagamentos</li>
-				<li class="nav-tab-item" onclick="openTab('print')">Imprimir</li>
+                <li class="nav-tab-item" onclick="openTab('print')">Imprimir</li>
             </ul>
-			<div class="card mb-4">
+            <div class="card mb-4">
                 <div id="dados-pessoais" class="tab-content active">
                     <h4>Dados Pessoais</h4>
                     <p><strong>Nome:</strong> {{ cliente.nome }}</p>
-					<p><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "Apelido não registrado" }}</p>
+                    <p><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "Apelido não registrado" }}</p>
                     <p><strong>CPF:</strong> {{ cliente.cpf or "CPF não registrado" }}</p>
-					<p><strong>CNPJ:</strong> {{ cliente.cnpj or "CNPJ não registrado" }}</p>
-					{% if cliente.endereco %}
-						{% for endereco in cliente.endereco.split(';') %}
-							<p><strong>Endereço {{ loop.index }}:</strong> {{ endereco.strip() }}</p>
-						{% endfor %}
-					{% else %}
-						<p><strong>Endereço:</strong> Endereço não registrado</p>
-					{% endif %}
-					{% if cliente.bairro %}
-						{% for bairro in cliente.bairro.split(';') %}
-							<p><strong>Bairro {{ loop.index }}:</strong> {{ bairro.strip() }}</p>
-						{% endfor %}
-					{% else %}
-						<p><strong>Bairro:</strong> Bairro não registrado</p>
-					{% endif %}
-					{% if cliente.cidade %}
-						{% for cidade in cliente.cidade.split(';') %}
-							<p><strong>Cidade {{ loop.index }}:</strong> {{ cidade.strip() }}</p>
-						{% endfor %}
-					{% else %}
-						<p><strong>Cidade:</strong> Cidade não registrado</p>
-					{% endif %}
-					<p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>
-					{% if cliente.cep %}
-						{% for cep in cliente.cep.split(';') %}
-							<p><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
-						{% endfor %}
-					{% else %}
-						<p><strong>CEP:</strong> CEP não registrado</p>
-					{% endif %}
-					<div class="card mb-4">
+                    <p><strong>CNPJ:</strong> {{ cliente.cnpj or "CNPJ não registrado" }}</p>
+                    {% if cliente.endereco %}
+                        {% for endereco in cliente.endereco.split(';') %}
+                            <p><strong>Endereço {{ loop.index }}:</strong> {{ endereco.strip() }}</p>
+                        {% endfor %}
+                    {% else %}
+                        <p><strong>Endereço:</strong> Endereço não registrado</p>
+                    {% endif %}
+                    {% if cliente.bairro %}
+                        {% for bairro in cliente.bairro.split(';') %}
+                            <p><strong>Bairro {{ loop.index }}:</strong> {{ bairro.strip() }}</p>
+                        {% endfor %}
+                    {% else %}
+                        <p><strong>Bairro:</strong> Bairro não registrado</p>
+                    {% endif %}
+                    {% if cliente.cidade %}
+                        {% for cidade in cliente.cidade.split(';') %}
+                            <p><strong>Cidade {{ loop.index }}:</strong> {{ cidade.strip() }}</p>
+                        {% endfor %}
+                    {% else %}
+                        <p><strong>Cidade:</strong> Cidade não registrado</p>
+                    {% endif %}
+                    <p><strong>Estado:</strong> {{ cliente.estado or "Estado não registrado" }}</p>
+                    {% if cliente.cep %}
+                        {% for cep in cliente.cep.split(';') %}
+                            <p><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
+                        {% endfor %}
+                    {% else %}
+                        <p><strong>CEP:</strong> CEP não registrado</p>
+                    {% endif %}
+                    <div class="card mb-4">
                     <h3 class="mt-4">Atualizar Apelido (Nome Social), CPF, Endereço e Estado</h3>
                     <form action="/update_dados_cliente/{{ cliente.id }}" method="POST" onsubmit="return validarFormularioCliente(event)">
-						<label for ="apelido">Apelido ou Nome Social</label>
-						<input type="text" name="apelido" class="form-control mb" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
+                        <label for ="apelido">Apelido ou Nome Social</label>
+                        <input type="text" name="apelido" class="form-control mb" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
                         <label for="cpf">CPF</label>
                         <input type="text" name="cpf" id="cpfInput" class="form-control mb" placeholder="CPF" value="{{ cliente.cpf or '' }}" oninput="validarCPFInput(this)">
                         <span id="cpfError" style="color: red; display: none;">CPF inválido.</span>
-						<label for="cnpj">CNPJ</label>
+                        <label for="cnpj">CNPJ</label>
                         <input type="text" name="cnpj" id="cnpjInput" class="form-control mb" placeholder="CNPJ" value="{{ cliente.cnpj or '' }}" oninput="validarCNPJInput(this)">
                         <span id="cnpjError" style="color: red; display: none;">CNPJ inválido.</span>
                         <div id="enderecos-container">
@@ -386,9 +398,9 @@
                                 <input type="text" name="cep[]" class="form-control mb" placeholder="CEP" value="{{ cliente.cep or ''}}" id="mainCepInput">
                             </div>
                             <button type="button" class="btn btn-outline-primary mt" onclick="adicionarCampoEndereco()">
-							    <i class="bi bi-plus-circle"></i> Adicionar outro endereço
-						    </button>
-						</div>
+                                <i class="bi bi-plus-circle"></i> Adicionar outro endereço
+                            </button>
+                        </div>
                         <label for="estado">Estado</label>
                         <select name="estado" class="form-control mb">
                             <option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
@@ -1048,7 +1060,7 @@
                 <body>
                 <div align="center">
                 <img src="{{ url_for('static', filename='img/logo.png')  }}" width="150" height="auto">
-                <p><strong>CNPJ:</strong> Insira aqui <strong>WhatsApp:</strong> Insira aqui</p>
+                <p><strong>CNPJ:</strong> 17.165.775/0001-10 <strong>WhatsApp:</strong> 55 99971-4234</p>
                 </div>
                 <div align="left">
                     ${printContent.innerHTML}
@@ -1370,7 +1382,7 @@
                 }
             }
         };
-
+        
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
