@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 # Importa os modelos do esquema antigo, e os novos modelos Utilizador e Papel
-from .models import db, Cliente, Telefone, Carro, Peca, Historico, Pagamento, Utilizador, Papel
+from .models import db, Cliente, Telefone, Carro, Peca, Historico, Pagamento, Utilizador, Papel, utilizador_papeis # Importa utilizador_papeis
 from datetime import datetime, timedelta
 import pytz
 from werkzeug.security import generate_password_hash # Importa para hash de senha
 from flask_login import login_user, logout_user, current_user, login_required # Importações do Flask-Login
+from sqlalchemy import delete # Importa a função delete do SQLAlchemy
 
 # Cria um Blueprint para organizar as rotas.
 # O nome 'main' é usado para referenciar as rotas (ex: url_for('main.login')).
@@ -99,7 +100,7 @@ def add_cliente():
     flash('Cliente adicionado com sucesso!', 'success')
     return redirect(url_for('main.client'))
 
-# NOVA ROTA: Apagar Cliente
+# Rota: Apagar Cliente
 @main.route('/delete_cliente/<int:id>', methods=['POST'])
 @login_required # Protege a rota
 def delete_cliente(id):
@@ -340,49 +341,137 @@ def lista_utilizadores():
     return render_template('utilizadores/lista_utilizadores.html', utilizadores=utilizadores)
 
 @main.route('/utilizadores/add', methods=['GET', 'POST'])
+@login_required # Agora esta rota requer que o utilizador esteja logado
 def add_utilizador():
-    # A rota de adição de utilizador não é protegida por login_required
-    # para permitir que novos utilizadores se registem.
+    # Verifica se o utilizador atual é um administrador
+    if not current_user.is_admin():
+        flash('Você não tem permissão para criar novos utilizadores.', 'danger')
+        return redirect(url_for('main.lista_utilizadores')) # Redireciona para a lista de utilizadores
+
     papeis = Papel.query.all()
     if request.method == 'POST':
         nome = request.form['nome'].strip()
         email = request.form['email'].strip()
         senha = request.form['senha']
         confirmar_senha = request.form['confirmar_senha']
-        # ALTERAÇÃO AQUI: Agora obtemos um único papel_id, não uma lista
         papel_id = request.form.get('papel_id') 
         telefone = request.form.get('telefone', '').strip()
-        observacoes = request.form.get('observacoes', '').strip()
         palavras_chave = request.form.get('palavras_chave', '').strip()
 
-        if not nome or not email or not senha or not confirmar_senha or not papel_id: # Adicionado papel_id à validação
+        if not nome or not email or not senha or not confirmar_senha or not papel_id:
             flash('Por favor, preencha todos os campos obrigatórios.', 'danger')
-            return render_template('utilizadores/add_utilizador.html', papeis=papeis)
+            return render_template('utilizadores/add_utilizadores.html', papeis=papeis)
 
         if senha != confirmar_senha:
              flash('As senhas não coincidem.', 'danger')
-             return render_template('utilizadores/add_utilizador.html', papeis=papeis)
+             return render_template('utilizadores/add_utilizadores.html', papeis=papeis)
 
         email_existente = Utilizador.query.filter_by(email=email).first()
         if email_existente:
             flash('Este email já está registado.', 'danger')
-            return render_template('utilizadores/add_utilizador.html', papeis=papeis)
+            return render_template('utilizadores/add_utilizadores.html', papeis=papeis)
 
         novo_utilizador = Utilizador(nome=nome, email=email, telefone=telefone, palavras_chave=palavras_chave)
         novo_utilizador.set_senha(senha)
 
-        # ALTERAÇÃO AQUI: Adiciona apenas o papel selecionado
         papel = Papel.query.get(int(papel_id))
         if papel:
             novo_utilizador.papeis.append(papel)
 
         db.session.add(novo_utilizador)
         db.session.commit()
-        flash('Utilizador criado com sucesso! Faça login para aceder ao sistema.', 'success')
-        return redirect(url_for('main.login')) # Redireciona para a página de login após o cadastro
+        flash('Utilizador criado com sucesso!', 'success')
+        return redirect(url_for('main.lista_utilizadores')) # Redireciona para a lista de utilizadores
 
-    # Renderiza o template de adicionar utilizador
     return render_template('utilizadores/add_utilizadores.html', papeis=papeis)
+
+@main.route('/utilizadores/edit/<int:id>', methods=['GET', 'POST'])
+@login_required # Protege a rota
+def edit_utilizador(id):
+    # Verifica se o utilizador atual é um administrador
+    if not current_user.is_admin():
+        flash('Você não tem permissão para editar utilizadores.', 'danger')
+        return redirect(url_for('main.lista_utilizadores'))
+
+    utilizador = Utilizador.query.get_or_404(id)
+    papeis = Papel.query.all()
+
+    if request.method == 'POST':
+        nome = request.form['nome'].strip()
+        email = request.form['email'].strip()
+        senha = request.form['senha'].strip()
+        confirmar_senha = request.form['confirmar_senha'].strip()
+        papel_id = request.form.get('papel_id')
+        telefone = request.form.get('telefone', '').strip()
+        palavras_chave = request.form.get('palavras_chave', '').strip()
+
+        # Validação de campos obrigatórios
+        if not nome or not email or not papel_id:
+            flash('Por favor, preencha todos os campos obrigatórios (Nome, Email, Papel).', 'danger')
+            return render_template('utilizadores/edit_utilizadores.html', utilizador=utilizador, papeis=papeis)
+
+        # Validação de email duplicado (apenas se o email for alterado)
+        if email != utilizador.email:
+            email_existente = Utilizador.query.filter_by(email=email).first()
+            if email_existente and email_existente.id != utilizador.id:
+                flash('Este email já está registado por outro utilizador.', 'danger')
+                return render_template('utilizadores/edit_utilizadores.html', utilizador=utilizador, papeis=papeis)
+
+        # Validação e atualização de senha (se fornecida)
+        if senha:
+            if senha != confirmar_senha:
+                flash('As senhas não coincidem.', 'danger')
+                return render_template('utilizadores/edit_utilizadores.html', utilizador=utilizador, papeis=papeis)
+            utilizador.set_senha(senha)
+
+        # Atualiza os dados do utilizador
+        utilizador.nome = nome
+        utilizador.email = email
+        utilizador.telefone = telefone
+        utilizador.palavras_chave = palavras_chave
+
+        # Atualiza o papel do utilizador
+        papel_selecionado = Papel.query.get(int(papel_id))
+        if papel_selecionado:
+            # Remove todos os papéis existentes e adiciona o novo
+            utilizador.papeis.clear()
+            utilizador.papeis.append(papel_selecionado)
+
+        db.session.commit()
+        flash('Utilizador atualizado com sucesso!', 'success')
+        return redirect(url_for('main.lista_utilizadores'))
+
+    return render_template('utilizadores/edit_utilizadores.html', utilizador=utilizador, papeis=papeis)
+
+@main.route('/utilizadores/delete/<int:id>', methods=['POST'])
+@login_required # Protege a rota
+def delete_utilizador(id):
+    # Verifica se o utilizador atual é um administrador
+    if not current_user.is_admin():
+        flash('Você não tem permissão para apagar utilizadores.', 'danger')
+        return redirect(url_for('main.lista_utilizadores'))
+
+    utilizador = Utilizador.query.get_or_404(id)
+
+    try:
+        # Se o utilizador que está a ser apagado for o utilizador atualmente logado
+        if utilizador.id == current_user.id:
+            flash('Você não pode apagar a sua própria conta enquanto estiver logado.', 'danger')
+            return redirect(url_for('main.lista_utilizadores'))
+
+        # Remove as associações do utilizador com os papéis na tabela de associação
+        # Isso é necessário porque o SQLAlchemy não faz "cascade delete" para relações many-to-many por padrão
+        db.session.execute(delete(utilizador_papeis).where(utilizador_papeis.c.id_utilizador == utilizador.id))
+        
+        db.session.delete(utilizador)
+        db.session.commit()
+        flash('Utilizador apagado com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback() # Em caso de erro, desfaz as operações no banco de dados
+        flash(f'Erro ao apagar utilizador: {e}', 'danger')
+    
+    return redirect(url_for('main.lista_utilizadores'))
+
 
 # Rota de Login
 @main.route('/login', methods=['GET', 'POST'])

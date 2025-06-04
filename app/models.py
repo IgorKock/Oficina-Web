@@ -1,9 +1,9 @@
-from . import db 
+from . import db
 from sqlalchemy.event import listens_for
 import pytz
 from datetime import datetime
 from sqlalchemy.sql import func
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash # Importação para segurança de senha
 from flask_login import UserMixin # Importa UserMixin para integração com Flask-Login
 
 def para_utc(data_local, fuso_local='America/Sao_Paulo'):
@@ -31,7 +31,7 @@ utilizador_papeis = db.Table(
     db.Column('updated_at', db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 )
 
-class Utilizador(db.Model, UserMixin): # Adiciona UserMixin para compatibilidade com Flask-Login
+class Utilizador(db.Model, UserMixin): # Adicionado UserMixin aqui
     """
     Tabela de Utilizadores/Funcionários da Oficina.
     Armazena informações sobre os utilizadores que podem aceder ao sistema.
@@ -59,13 +59,11 @@ class Utilizador(db.Model, UserMixin): # Adiciona UserMixin para compatibilidade
         return check_password_hash(self.senha_hash, senha)
 
     def is_admin(self):
-        """
-        VERIFICA SE O UTILIZADOR POSSUI O PAPEL DE 'ADMINISTRADOR'.
-        Isso é usado para controlar o acesso a certas funcionalidades ou visualizações.
-        """
-        # Itera sobre os papéis associados ao utilizador e verifica se algum deles
-        # tem o nome 'Administrador'.
-        return any(papel.nome == 'Administrador' for papel in self.papeis)
+        """Verifica se o utilizador tem o papel de 'Administrador'."""
+        # Acesso ao modelo Papel através de models.Papel
+        admin_role = Papel.query.filter_by(nome='Administrador').first()
+        return admin_role in self.papeis
+
 
     def __repr__(self):
         return f"<Utilizador(id={self.id}, nome='{self.nome}', email='{self.email}')>"
@@ -140,9 +138,9 @@ class Historico(db.Model):
 
     carro = db.relationship('Carro', backref=db.backref('historicos', lazy='dynamic'))  # 🔹 Relacionamento com Carro
 
-# Evento para o modelo Historico: Ajusta a data para UTC antes de inserir
+# Evento para o modelo Historico
 @listens_for(Historico, 'before_insert')
-def ajustar_data_historico_para_utc(mapper, connect, target):
+def ajustar_data_para_utc(mapper, connect, target):
     if target.data:
         target.data = para_utc(target.data)
 
@@ -161,8 +159,8 @@ class Pagamento(db.Model):
     carro = db.relationship('Carro', backref=db.backref('pagamentos', lazy='dynamic'))
     historico = db.relationship('Historico', backref=db.backref('pagamentos', lazy='dynamic'))
 
-# Evento para o modelo Pagamento: Ajusta a data para UTC antes de inserir
+# Evento para o modelo Pagamento
 @listens_for(Pagamento, 'before_insert')
-def ajustar_data_pagamento_para_utc(mapper, connect, target):
+def ajustar_data_para_utc(mapper, connect, target):
     if target.data:
         target.data = para_utc(target.data)
