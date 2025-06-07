@@ -341,12 +341,12 @@ def lista_utilizadores():
     return render_template('utilizadores/lista_utilizadores.html', utilizadores=utilizadores)
 
 @main.route('/utilizadores/add', methods=['GET', 'POST'])
-@login_required # Agora esta rota requer que o utilizador esteja logado
+# @login_required # Agora esta rota requer que o utilizador esteja logado
 def add_utilizador():
     # Verifica se o utilizador atual é um administrador
-    if not current_user.is_admin():
-        flash('Você não tem permissão para criar novos utilizadores.', 'danger')
-        return redirect(url_for('main.lista_utilizadores')) # Redireciona para a lista de utilizadores
+    #if not current_user.is_admin():
+        #flash('Você não tem permissão para criar novos utilizadores.', 'danger')
+        #return redirect(url_for('main.lista_utilizadores')) # Redireciona para a lista de utilizadores
 
     papeis = Papel.query.all()
     if request.method == 'POST':
