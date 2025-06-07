@@ -715,7 +715,7 @@
             <button type="submit" class="btn btn-primary">Registrar Pagamento</button>
         </form>
         {% else %}
-        <p style="color: green;"><strong>Pagamento já registrado para o serviço "{{ historico.descricao }}"</strong></p>
+        <p style="color: green;"><strong>Pagamento já registrado para o serviço "{{ historico.descricao }} do veículo {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}"</strong></p>
         {% endif %}
     {% endfor %}
 {% endfor %}
