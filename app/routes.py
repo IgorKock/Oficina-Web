@@ -25,10 +25,10 @@ def ajustar_para_brasilia(data_utc):
     """
     fuso_brasilia = pytz.timezone('America/Sao_Paulo')
     if data_utc.tzinfo is None:  # Verifica se o objeto é "naive" (sem fuso horário)
-        return fuso_brasilia.localize(data_utc)  # Adiciona o fuso horário de Brasília
-    else:
-        # Se já tiver fuso horário, ajusta para o horário de Brasília
-        return data_utc.astimezone(fuso_brasilia)
+        # Assume que o objeto sem fuso horário está em UTC, pois foi salvo assim
+        data_utc = pytz.utc.localize(data_utc)
+    # Se já tiver fuso horário (agora garantido como UTC), ajusta para o horário de Brasília
+    return data_utc.astimezone(fuso_brasilia)
 
 # ROTAS RELACIONADAS AO INVENTÁRIO E PEÇAS
 @main.route('/inventario', methods=['GET'])
@@ -62,14 +62,22 @@ def cliente(id):
     pagamentos = Pagamento.query.filter_by(cliente_id=id).order_by(Pagamento.data.desc()).all()
     carros = Carro.query.filter_by(cliente_id=id).all()  # Busca todos os carros do cliente
     
-    # Ajustar os horários dos históricos e pagamentos para o fuso de Brasília
+    # Ajustar os horários dos históricos e pagamentos para o fuso de Brasília para exibição
+    # Criar um novo atributo data_local para não sobrescrever o original (UTC)
     for historico in historicos:
-        historico.data = ajustar_para_brasilia(historico.data)
+        # ATENÇÃO AQUI: Garante que historico.data não é None antes de chamar ajustar_para_brasilia
+        if historico.data: 
+            historico.data_local = ajustar_para_brasilia(historico.data)
+        else:
+            historico.data_local = None # Define como None se a data original for None
         # Verifica se o histórico tem pagamento associado (lógica original)
         historico.tem_pagamento = any(pagamento.historico_id == historico.id for pagamento in pagamentos)
         
     for pagamento in pagamentos:
-        pagamento.data = ajustar_para_brasilia(pagamento.data)
+        if pagamento.data: # Verifica também para pagamentos, por consistência
+            pagamento.data_local = ajustar_para_brasilia(pagamento.data)
+        else:
+            pagamento.data_local = None
 
     # Retorna o template com todos os dados
     return render_template('cliente.html', cliente=cliente, telefones=telefones, historicos=historicos, pagamentos=pagamentos, carros=carros)
@@ -163,7 +171,7 @@ def delete_telefone(telefone_id):
     telefone = Telefone.query.get_or_404(telefone_id)
     db.session.delete(telefone)
     db.session.commit()
-    flash('Telefone removido com sucesso!', 'success')
+    flash('Telefone removido com sucesso!', 'danger')
     return redirect(url_for('main.cliente', id=telefone.cliente_id))
 
 @main.route('/update_dados_cliente/<int:cliente_id>', methods=['POST'])
@@ -199,38 +207,101 @@ def update_dados_cliente(cliente_id):
 @login_required # Protege a rota
 def add_historico(carro_id):
     descricao = request.form['descricao']
+    data_str = request.form['data'] # A data vem como string 'YYYY-MM-DD'
+    
+    # Combina a data do formulário com a hora atual
+    data_do_form = datetime.strptime(data_str, '%Y-%m-%d')
+    hora_atual = datetime.now().time()
+    data_historico_local = data_do_form.replace(
+        hour=hora_atual.hour,
+        minute=hora_atual.minute,
+        second=hora_atual.second,
+        microsecond=hora_atual.microsecond
+    )
+    
     carro = Carro.query.get_or_404(carro_id)
 
-    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-    hora_brasilia = datetime.now(fuso_brasilia) - timedelta(hours=3) # Ajuste para o horário de Brasília
-
-    novo_historico = Historico(cliente_id=carro.cliente_id, carro_id=carro.id, descricao=descricao, data=hora_brasilia)
+    # A função ajustar_data_para_utc será chamada no listener before_insert do modelo Historico.
+    # Portanto, estamos a passar a data local (naive) para o construtor do Historico.
+    novo_historico = Historico(cliente_id=carro.cliente_id, carro_id=carro.id, descricao=descricao, data=data_historico_local)
+    
     db.session.add(novo_historico)
     db.session.commit()
     flash('Histórico adicionado com sucesso!', 'success')
     return redirect(url_for('main.cliente', id=carro.cliente_id))
 
+@main.route('/edit_historico/<int:id>', methods=['POST'])
+@login_required # Protege a rota
+def edit_historico(id):
+    historico = Historico.query.get_or_404(id)
+    descricao = request.form['descricao']
+    data_str = request.form['data'] # A data vem como string 'YYYY-MM-DD'
+
+    # Converte a string da data para objeto datetime e combina com a hora atual
+    data_do_form = datetime.strptime(data_str, '%Y-%m-%d')
+    hora_atual = datetime.now().time()
+    data_atualizada_local = data_do_form.replace(
+        hour=hora_atual.hour,
+        minute=hora_atual.minute,
+        second=hora_atual.second,
+        microsecond=hora_atual.microsecond
+    )
+
+    historico.descricao = descricao
+    historico.data = data_atualizada_local # Atribui a data local, o listener vai converter para UTC
+    
+    db.session.commit()
+    flash('Histórico atualizado com sucesso!', 'success')
+    return redirect(url_for('main.cliente', id=historico.cliente_id))
+
+@main.route('/delete_historico/<int:id>', methods=['POST']) # Nova rota para apagar histórico
+@login_required # Protege a rota
+def delete_historico(id):
+    historico = Historico.query.get_or_404(id)
+    cliente_id = historico.cliente_id # Guarda o ID do cliente para redirecionar
+    db.session.delete(historico)
+    db.session.commit()
+    flash('Histórico removido com sucesso!', 'danger')
+    return redirect(url_for('main.cliente', id=cliente_id))
+
+
 @main.route('/add_carros_cliente/<int:cliente_id>', methods=['POST'])
 @login_required # Protege a rota
 def add_carros(cliente_id):
     print(request.form) 
-    carros = request.form.to_dict(flat=False)
+    carros_data = request.form.to_dict(flat=False)
 
-    for i in range(len(carros['marca'])):
-        novo_carro = Carro(
-            cliente_id=cliente_id,
-            marca=carros['marca'][i],
-            modelo=carros['modelo'][i],
-            motor=carros['motor'][i],
-            ano=int(carros['ano'][i]),
-            placa=carros['placa'][i],
-            quilometro=int(carros['quilometro'][i])
-        )
-        db.session.add(novo_carro)
+    # CORREÇÃO AQUI: Acessar as chaves com '[]'
+    if 'marca[]' not in carros_data or not carros_data['marca[]']:
+        flash('Erro: Nenhuma marca de carro fornecida. Por favor, adicione pelo menos um carro.', 'danger')
+        return redirect(url_for('main.cliente', id=cliente_id))
+
+    for i in range(len(carros_data['marca[]'])):
+        try:
+            # Garante que os campos numéricos são convertidos para int
+            # CORREÇÃO AQUI: Acessar as chaves com '[]'
+            ano_val = int(carros_data['ano[]'][i]) if carros_data['ano[]'][i] else None
+            quilometragem_val = int(carros_data['quilometragem[]'][i]) if carros_data['quilometragem[]'][i] else None
+
+            novo_carro = Carro(
+                cliente_id=cliente_id,
+                marca=carros_data['marca[]'][i],
+                modelo=carros_data['modelo[]'][i],
+                motor=carros_data['motor[]'][i],
+                ano=ano_val,
+                placa=carros_data['placa[]'][i],
+                quilometragem=quilometragem_val
+            )
+            db.session.add(novo_carro)
+        except (ValueError, KeyError) as e:
+            flash(f'Erro ao adicionar carro: Verifique os dados inseridos. Erro: {e}', 'danger')
+            db.session.rollback() # Desfaz quaisquer adições parciais
+            return redirect(url_for('main.cliente', id=cliente_id))
 
     db.session.commit()
     flash('Carro(s) adicionado(s) com sucesso!', 'success')
     return redirect(url_for('main.cliente', id=cliente_id))
+
 
 @main.route('/update_carros_cliente/<int:cliente_id>', methods=['POST'])
 @login_required # Protege a rota
@@ -241,9 +312,18 @@ def update_carros(cliente_id):
         carro.marca = request.form.get(f'marca_{carro.id}', carro.marca)
         carro.modelo = request.form.get(f'modelo_{carro.id}', carro.modelo)
         carro.motor = request.form.get(f'motor_{carro.id}', carro.motor)
-        carro.ano = request.form.get(f'ano_{carro.id}', carro.ano)
+        
+        # Converter ano e quilometragem para int, com tratamento para valores vazios
+        ano_str = request.form.get(f'ano_{carro.id}')
+        if ano_str:
+            carro.ano = int(ano_str)
+        
         carro.placa = request.form.get(f'placa_{carro.id}', carro.placa)
-        carro.quilometro = int(request.form.get(f'quilometro_{carro.id}', carro.quilometro))
+        
+        quilometragem_str = request.form.get(f'quilometragem_{carro.id}') # Corrigido de 'quilometro'
+        if quilometragem_str:
+            carro.quilometragem = int(quilometragem_str) # Corrigido de 'quilometro' para 'quilometragem'
+        
         db.session.add(carro)
 
     db.session.commit()
@@ -257,13 +337,10 @@ def add_pagamento(carro_id, historico_id):
     valor = float(request.form['valor'])  
     metodo = request.form['metodo']
     tipo_pagamento = request.form.get('tipo_cartao')  
-    parcelas = request.form.get('parcelas')  
+    parcelas_str = request.form.get('parcelas') # Pega como string
 
-    if parcelas:
-        parcelas = int(parcelas)
-
-    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-    hora_brasilia = datetime.now(fuso_brasilia) - timedelta(hours=3) # Ajuste para o horário de Brasília
+    # Se a string estiver vazia, define parcelas como None; caso contrário, converte para int
+    parcelas = int(parcelas_str) if parcelas_str and parcelas_str.strip() else None
 
     carro = Carro.query.get_or_404(carro_id)
     historico = Historico.query.get_or_404(historico_id)
@@ -275,14 +352,42 @@ def add_pagamento(carro_id, historico_id):
         valor=valor,
         metodo=metodo,
         tipo_pagamento=tipo_pagamento,
-        parcelas=parcelas,
-        data=hora_brasilia
+        parcelas=parcelas, # Passa None se a string for vazia
+        data=datetime.now(pytz.utc) 
     )
-    
+
     db.session.add(novo_pagamento)
     db.session.commit()
     flash('Pagamento registrado com sucesso!', 'success')
     return redirect(url_for('main.cliente', id=carro.cliente_id))
+
+@main.route('/edit_pagamento/<int:id>', methods=['POST']) # Adicionada a nova rota de edição de pagamento
+@login_required # Protege a rota
+def edit_pagamento(id):
+    pagamento = Pagamento.query.get_or_404(id)
+    
+    # Atualiza os campos do pagamento com base nos dados do formulário
+    pagamento.valor = float(request.form['valor'])
+    pagamento.metodo = request.form['metodo']
+    pagamento.tipo_pagamento = request.form.get('tipo_cartao')
+    
+    parcelas_str = request.form.get('parcelas')
+    pagamento.parcelas = int(parcelas_str) if parcelas_str and parcelas_str.strip() else None # Lida com parcelas vazias
+
+    db.session.commit()
+    flash('Pagamento atualizado com sucesso!', 'success')
+    return redirect(url_for('main.cliente', id=pagamento.cliente_id))
+
+
+@main.route('/delete_pagamento/<int:id>', methods=['POST']) # Adicionada a nova rota de delete
+@login_required # Protege a rota
+def delete_pagamento(id):
+    pagamento = Pagamento.query.get_or_404(id)
+    cliente_id = pagamento.cliente_id # Guarda o ID do cliente para redirecionar
+    db.session.delete(pagamento)
+    db.session.commit()
+    flash('Pagamento removido com sucesso!', 'danger')
+    return redirect(url_for('main.cliente', id=cliente_id))
 
 # ROTAS RELACIONADAS AO INVENTÁRIO E PEÇAS
 @main.route('/add_peca', methods=['POST'])

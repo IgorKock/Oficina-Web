@@ -2,9 +2,18 @@
 Um sistema web utilizando python para gerenciamento de clientes de oficina e de gerenciamento de inventário.
 
 # Requisitos
-Precisa do Python 3.13.2 ou suprior e dos seguintes pacotes do pip: Flask, Flask-Migrate, Flask-SQLAlchemy, Flask-Login, pytz, werkzeug e SQLAlchemy.
+Precisa do Python 3.13.2 ou suprior e dos seguintes pacotes do pip: Flask, Flask-Migrate, Flask-SQLAlchemy, Flask-Login, pytz, werkzeug, PyMySQL e o SQLAlchemy.
+
+Também precisa do MariaDB/MySQL.
 
 # Como executar
+No MariaDB/MySQL execute esses comandos:
+> CREATE DATABASE oficina_web CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+> CREATE USER 'seu_usuario'@'localhost' IDENTIFIED BY 'sua_senha';
+> GRANT ALL PRIVILEGES ON oficina_web.* TO 'flask_user'@'localhost';
+> FLUSH PRIVILEGES;
+> EXIT;
+
 Execute o arquivo run.py e digite a URL que aparecer no seu navegador.
 
 Ou utilize o Docker Compose com o comando "docker compose up --build -d".

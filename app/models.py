@@ -27,73 +27,124 @@ utilizador_papeis = db.Table(
     'utilizador_papeis',
     db.Column('id_utilizador', db.Integer, db.ForeignKey('utilizadores.id'), primary_key=True),
     db.Column('id_papel', db.Integer, db.ForeignKey('papeis.id'), primary_key=True),
-    db.Column('created_at', db.DateTime, default=datetime.utcnow),
-    db.Column('updated_at', db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    db.Column('created_at', db.DateTime, default=db.func.current_timestamp()),
+    db.Column('updated_at', db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 )
 
-class Utilizador(db.Model, UserMixin): # Adicionado UserMixin aqui
-    """
-    Tabela de Utilizadores/Funcionários da Oficina.
-    Armazena informações sobre os utilizadores que podem aceder ao sistema.
-    """
-    __tablename__ = 'utilizadores'
-
+# Definição do modelo Papel (Role)
+class Papel(db.Model):
+    __tablename__ = 'papeis'
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    senha_hash = db.Column(db.String(255), nullable=False) # Armazena o hash da senha de forma segura
-    nome = db.Column(db.String(100), nullable=False)
-    telefone = db.Column(db.String(20), nullable=True)  # Novo campo: Telefone / WhatsApp
-    palavras_chave = db.Column(db.String(255), nullable=True)  # Novo campo: Tags para qualificar o utilizador
-    created_at = db.Column(db.DateTime, default=datetime.utcnow) # Timestamp de criação
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow) # Timestamp de última atualização
+    nome = db.Column(db.String(50), unique=True, nullable=False)
+    descricao = db.Column(db.String(200), nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
+    def __repr__(self):
+        return f'<Papel {self.nome}>'
+
+# Definição do modelo Utilizador (User) - Integrado com Flask-Login
+class Utilizador(UserMixin, db.Model):
+    __tablename__ = 'utilizadores' # Nome da tabela ajustado para português
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    senha_hash = db.Column(db.String(255), nullable=False) # Campo para armazenar o hash da senha
+    telefone = db.Column(db.String(20), nullable=True)
+    palavras_chave = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    
     # Relacionamento muitos-para-muitos com Papel através da tabela de associação
-    papeis = db.relationship('Papel', secondary=utilizador_papeis, backref=db.backref('utilizadores', lazy='dynamic'), lazy='dynamic')
+    papeis = db.relationship('Papel', secondary=utilizador_papeis, backref=db.backref('utilizadores', lazy='dynamic'))
 
     def set_senha(self, senha):
-        """Define a senha do utilizador, armazenando seu hash de forma segura."""
+        """Gera o hash da senha."""
         self.senha_hash = generate_password_hash(senha)
 
     def check_senha(self, senha):
-        """Verifica se a senha fornecida corresponde ao hash armazenado."""
+        """Verifica se a senha fornecida corresponde ao hash."""
         return check_password_hash(self.senha_hash, senha)
-
+    
     def is_admin(self):
-        """Verifica se o utilizador tem o papel de 'Administrador'."""
-        # Acesso ao modelo Papel através de models.Papel
-        admin_role = Papel.query.filter_by(nome='Administrador').first()
-        return admin_role in self.papeis
-
-
-    def __repr__(self):
-        return f"<Utilizador(id={self.id}, nome='{self.nome}', email='{self.email}')>"
-
-class Papel(db.Model):
-    """
-    Tabela de Papéis.
-    Define os diferentes níveis de acesso ou funções dentro do sistema (ex: Administrador, Mecânico).
-    """
-    __tablename__ = 'papeis'
-
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(50), unique=True, nullable=False) # Nome único do papel (ex: 'Administrador')
-    descricao = db.Column(db.String(255), nullable=True) # Descrição do papel
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+        """Verifica se o utilizador tem o papel 'admin'."""
+        # Se 'papeis' for None ou não tiver um 'id' atribuído
+        if not self.papeis:
+            return False
+        return any(papel.nome == 'admin' for papel in self.papeis)
 
     def __repr__(self):
-        return f"<Papel(id={self.id}, nome='{self.nome}')>"
+        return f'<Utilizador {self.nome}>'
 
 
-# --- Modelos Existentes (do seu esquema original) ---
+# Evento para o modelo Utilizador
+@listens_for(Utilizador, 'before_insert')
+@listens_for(Utilizador, 'before_update')
+def update_utilizador_timestamps(mapper, connection, target):
+    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+    agora = datetime.now(fuso_brasilia)
+    if not hasattr(target, 'created_at') or target.created_at is None:
+        target.created_at = agora.astimezone(pytz.utc)
+    target.updated_at = agora.astimezone(pytz.utc)
 
-class Peca(db.Model):
-    __tablename__ = 'pecas'
+
+class Cliente(db.Model):
+    __tablename__ = 'clientes' # Nome da tabela ajustado
     id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)  # Nome da peça
-    descricao = db.Column(db.String(200), nullable=True)  # Descrição da peça
-    quantidade = db.Column(db.Integer, nullable=False, default=0)  # Quantidade disponível
-    preco = db.Column(db.Float, nullable=False)  # Preço por unidade
+    nome = db.Column(db.String(100), nullable=False)
+    cpf = db.Column(db.String(20), nullable=True)
+    cnpj = db.Column(db.String(20), nullable=True)
+    apelido = db.Column(db.String(100), nullable=True)
+    endereco = db.Column(db.String(255), nullable=True)
+    numero = db.Column(db.String(20), nullable=True)
+    complemento = db.Column(db.String(100), nullable=True)
+    bairro = db.Column(db.String(100), nullable=True)
+    cidade = db.Column(db.String(100), nullable=True)
+    estado = db.Column(db.String(2), nullable=True)
+    cep = db.Column(db.String(10), nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+
+    telefones = db.relationship('Telefone', backref='cliente', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Cascade para telefones
+    carros = db.relationship('Carro', backref='cliente', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Cascade para carros
+    historicos = db.relationship('Historico', backref='cliente', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Cascade para históricos
+    pagamentos = db.relationship('Pagamento', backref='cliente', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Cascade para pagamentos
+
+    def __repr__(self):
+        return f'<Cliente {self.nome}>'
+
+# Evento para o modelo Cliente
+@listens_for(Cliente, 'before_insert')
+@listens_for(Cliente, 'before_update')
+def update_cliente_timestamps(mapper, connection, target):
+    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+    agora = datetime.now(fuso_brasilia)
+    if not hasattr(target, 'created_at') or target.created_at is None:
+        target.created_at = agora.astimezone(pytz.utc)
+    target.updated_at = agora.astimezone(pytz.utc)
+
+
+class Telefone(db.Model):
+    __tablename__ = 'telefones'
+    id = db.Column(db.Integer, primary_key=True)
+    cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
+    numero = db.Column(db.String(20), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+
+    def __repr__(self):
+        return f'<Telefone {self.numero}>'
+
+# Evento para o modelo Telefone
+@listens_for(Telefone, 'before_insert')
+@listens_for(Telefone, 'before_update')
+def update_telefone_timestamps(mapper, connection, target):
+    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+    agora = datetime.now(fuso_brasilia)
+    if not hasattr(target, 'created_at') or target.created_at is None:
+        target.created_at = agora.astimezone(pytz.utc)
+    target.updated_at = agora.astimezone(pytz.utc)
+
 
 class Carro(db.Model):
     __tablename__ = 'carros'
@@ -101,48 +152,85 @@ class Carro(db.Model):
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
     marca = db.Column(db.String(50), nullable=False)
     modelo = db.Column(db.String(50), nullable=False)
-    motor = db.Column(db.String(50), nullable=False)
-    ano = db.Column(db.Integer, nullable=False)
-    placa = db.Column(db.String(20), nullable=False)
-    quilometro = db.Column(db.Integer, nullable=False)
+    motor = db.Column(db.String(50), nullable=True)
+    ano = db.Column(db.Integer, nullable=True)
+    placa = db.Column(db.String(10), unique=True, nullable=False)
+    quilometragem = db.Column(db.Integer, nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
-class Cliente(db.Model):
-    __tablename__ = 'clientes'
+    historicos = db.relationship('Historico', backref='carro', lazy='dynamic', cascade="all, delete-orphan")
+    pagamentos = db.relationship('Pagamento', backref='carro', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Relacionamento com Pagamento
+
+    def __repr__(self):
+        return f'<Carro {self.marca} {self.modelo}>'
+
+# Evento para o modelo Carro
+@listens_for(Carro, 'before_insert')
+@listens_for(Carro, 'before_update')
+def update_carro_timestamps(mapper, connection, target):
+    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+    agora = datetime.now(fuso_brasilia)
+    if not hasattr(target, 'created_at') or target.created_at is None:
+        target.created_at = agora.astimezone(pytz.utc)
+    target.updated_at = agora.astimezone(pytz.utc)
+
+
+class Peca(db.Model):
+    __tablename__ = 'pecas'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
-    endereco = db.Column(db.String(200), nullable=True)  # Endereço do cliente
-    estado = db.Column(db.String(50), nullable=True)  # Estado do cliente
-    cidade = db.Column(db.String(100), nullable=True)  # Cidade do cliente
-    cep = db.Column(db.String(10), nullable=True)  # CEP do cliente
-    bairro = db.Column(db.String(200), nullable=True)  # Bairro do cliente
-    cpf = db.Column(db.String(14), nullable=True) # CPF do cliente
-    apelido = db.Column(db.String(500)) # Apelido/Nome Social do cliente
-    cnpj = db.Column(db.String(20), nullable=True) # CNPJ do cliente
-    telefones = db.relationship('Telefone', backref='cliente', lazy=True)
-    historicos = db.relationship('Historico', backref='cliente', lazy=True)
-    pagamentos = db.relationship('Pagamento', backref='cliente', lazy=True)
+    descricao = db.Column(db.String(200), nullable=True)
+    quantidade = db.Column(db.Integer, nullable=False)
+    preco = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
-class Telefone(db.Model):
-    __tablename__ = 'telefones'
-    id = db.Column(db.Integer, primary_key=True)
-    numero = db.Column(db.String(15), nullable=False)
-    cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
+    def __repr__(self):
+        return f'<Peca {self.nome}>'
+
+# Evento para o modelo Peca
+@listens_for(Peca, 'before_insert')
+@listens_for(Peca, 'before_update')
+def update_peca_timestamps(mapper, connection, target):
+    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+    agora = datetime.now(fuso_brasilia)
+    if not hasattr(target, 'created_at') or target.created_at is None:
+        target.created_at = agora.astimezone(pytz.utc)
+    target.updated_at = agora.astimezone(pytz.utc)
+
 
 class Historico(db.Model):
     __tablename__ = 'historicos'
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
-    carro_id = db.Column(db.Integer, db.ForeignKey('carros.id'), nullable=False)  # 🔹 Associando ao carro
-    data = db.Column(db.DateTime, nullable=False)  
+    carro_id = db.Column(db.Integer, db.ForeignKey('carros.id'), nullable=False)
+    data = db.Column(db.DateTime, nullable=False) # Removido o default para controle manual
     descricao = db.Column(db.String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
-    carro = db.relationship('Carro', backref=db.backref('historicos', lazy='dynamic'))  # 🔹 Relacionamento com Carro
+    # CORREÇÃO AQUI: Removido lazy='dynamic' da backref 'historico' para o relacionamento many-to-one
+    pagamentos = db.relationship('Pagamento', backref='historico') 
+
+    def __repr__(self):
+        return f'<Historico {self.id}>'
 
 # Evento para o modelo Historico
 @listens_for(Historico, 'before_insert')
-def ajustar_data_para_utc(mapper, connect, target):
-    if target.data:
-        target.data = para_utc(target.data)
+@listens_for(Historico, 'before_update')
+def ajustar_data_historico_para_utc(mapper, connection, target):
+    if target.data and target.data.tzinfo is None:
+        fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+        local_dt = fuso_brasilia.localize(target.data)
+        target.data = local_dt.astimezone(pytz.utc)
+    
+    # Atualiza created_at e updated_at se necessário
+    agora = datetime.now(pytz.timezone('America/Sao_Paulo')) # Horário de Brasília
+    if not hasattr(target, 'created_at') or target.created_at is None:
+        target.created_at = agora.astimezone(pytz.utc)
+    target.updated_at = agora.astimezone(pytz.utc)
+
 
 class Pagamento(db.Model):
     __tablename__ = 'pagamentos'
@@ -150,17 +238,29 @@ class Pagamento(db.Model):
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
     carro_id = db.Column(db.Integer, db.ForeignKey('carros.id'), nullable=False)  # 🔹 Associando ao veículo
     historico_id = db.Column(db.Integer, db.ForeignKey('historicos.id'), nullable=False)  # 🔹 Associando ao serviço
-    data = db.Column(db.DateTime, default=db.func.current_timestamp())  
+    data = db.Column(db.DateTime, nullable=False) # Removido o default para controle manual no routes.py
     valor = db.Column(db.Float, nullable=False)
     metodo = db.Column(db.String(50), nullable=False)
     tipo_pagamento = db.Column(db.String(20), nullable=True)
     parcelas = db.Column(db.Integer, nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp()) # Adicionado
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp()) # Adicionado
 
-    carro = db.relationship('Carro', backref=db.backref('pagamentos', lazy='dynamic'))
-    historico = db.relationship('Historico', backref=db.backref('pagamentos', lazy='dynamic'))
+    def __repr__(self):
+        return f'<Pagamento {self.id}>'
 
 # Evento para o modelo Pagamento
 @listens_for(Pagamento, 'before_insert')
-def ajustar_data_para_utc(mapper, connect, target):
-    if target.data:
-        target.data = para_utc(target.data)
+@listens_for(Pagamento, 'before_update')
+def ajustar_data_pagamento_para_utc(mapper, connection, target):
+    # Se a data já tiver fuso horário (ex: vindo de datetime.now(pytz.utc)), não localize novamente
+    if target.data and target.data.tzinfo is None:
+        fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+        local_dt = fuso_brasilia.localize(target.data)
+        target.data = local_dt.astimezone(pytz.utc)
+    
+    # Atualiza created_at e updated_at se necessário
+    agora = datetime.now(pytz.timezone('America/Sao_Paulo')) # Horário de Brasília
+    if not hasattr(target, 'created_at') or target.created_at is None:
+        target.created_at = agora.astimezone(pytz.utc)
+    target.updated_at = agora.astimezone(pytz.utc)
