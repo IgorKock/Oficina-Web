@@ -9,9 +9,13 @@ Também precisa do MariaDB/MySQL.
 # Como executar
 No MariaDB/MySQL execute esses comandos:
 > CREATE DATABASE oficina_web CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+> 
 > CREATE USER 'seu_usuario'@'localhost' IDENTIFIED BY 'sua_senha';
+> 
 > GRANT ALL PRIVILEGES ON oficina_web.* TO 'flask_user'@'localhost';
+> 
 > FLUSH PRIVILEGES;
+>
 > EXIT;
 
 Execute o arquivo run.py e digite a URL que aparecer no seu navegador.
