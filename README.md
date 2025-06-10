@@ -19,11 +19,17 @@ No MariaDB/MySQL execute esses comandos:
 >
 > EXIT;
 
+Lembre-se de trocar o usuário e a senha para um próprio.
+
 Execute o arquivo run.py e digite a URL que aparecer no seu navegador.
 
 # Executar via docker
 Se preferir executar via docker siga esses passos abaixo.
 
-Ou utilize o Docker Compose com o comando "docker compose up --build -d".
+Altere o arquivo do docker-compose para trocar o usuário e a senha para um próprio seu.
+
+Após isso pode escolher um desses:
+
+Usar o Docker Compose com o comando "docker compose up --build -d".
 
 Ou através de um Docker pronto no Docker Hub: https://hub.docker.com/r/igorkock/oficinaweb
