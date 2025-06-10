@@ -4,11 +4,12 @@ Um sistema web utilizando python para gerenciamento de clientes de oficina e de 
 # Requisitos
 Precisa do Python 3.13.2 ou suprior e dos seguintes pacotes do pip: Flask, Flask-Migrate, Flask-SQLAlchemy, Flask-Login, pytz, werkzeug, PyMySQL e o SQLAlchemy.
 
-Também precisa do MariaDB/MySQL.
+Também precisa do MySQL/MariaDB.
 
 # Executar localmente
 Se preferir executar localmente siga esses passos abaixo.
-No MariaDB/MySQL execute esses comandos:
+
+No MySQL/MariaDB execute esses comandos:
 > CREATE DATABASE oficina_web CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 > 
 > CREATE USER 'seu_usuario'@'localhost' IDENTIFIED BY 'sua_senha';
