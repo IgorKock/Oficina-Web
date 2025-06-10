@@ -14,7 +14,7 @@ No MySQL/MariaDB execute esses comandos:
 > 
 > CREATE USER 'seu_usuario'@'localhost' IDENTIFIED BY 'sua_senha';
 > 
-> GRANT ALL PRIVILEGES ON oficina_web.* TO 'flask_user'@'localhost';
+> GRANT ALL PRIVILEGES ON oficina_web.* TO 'seu_usuario'@'localhost';
 > 
 > FLUSH PRIVILEGES;
 >
