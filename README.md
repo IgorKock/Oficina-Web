@@ -6,7 +6,8 @@ Precisa do Python 3.13.2 ou suprior e dos seguintes pacotes do pip: Flask, Flask
 
 Também precisa do MariaDB/MySQL.
 
-# Como executar
+# Executar localmente
+Se preferir executar localmente siga esses passos abaixo.
 No MariaDB/MySQL execute esses comandos:
 > CREATE DATABASE oficina_web CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 > 
@@ -19,6 +20,9 @@ No MariaDB/MySQL execute esses comandos:
 > EXIT;
 
 Execute o arquivo run.py e digite a URL que aparecer no seu navegador.
+
+# Executar via docker
+Se preferir executar via docker siga esses passos abaixo.
 
 Ou utilize o Docker Compose com o comando "docker compose up --build -d".
 
