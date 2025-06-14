@@ -6,15 +6,16 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Define o diretório de trabalho dentro do container
 WORKDIR /app
 
-# Copia todo o conteúdo do diretório atual para o container
+# Copia todos os arquivos do contexto (incluindo entrypoint.sh e sua aplicação) para o container
 COPY . .
 
 # Atualiza a lista de pacotes e instala as dependências do sistema via apt
-# Adiciona python3-full para garantir todas as dependências Python
+# Inclui 'netcat-traditional' para o comando 'nc' no entrypoint.sh
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-sqlalchemy \
+    netcat-traditional \
     # Bibliotecas Flask e suas extensões
     python3-flask \
     python3-flask-sqlalchemy \
@@ -28,9 +29,12 @@ RUN apt-get update && apt-get install -y \
     # Limpa o cache apt para reduzir o tamanho da imagem Docker
     && rm -rf /var/lib/apt/lists/*
 
+# Torna o script de entrada executável
+RUN chmod +x ./entrypoint.sh
+
 # Expõe a porta 5000, que é a porta padrão da aplicação Flask
 EXPOSE 5000
 
-# Adiciona um pequeno atraso antes de iniciar a aplicação
-# Isso pode ajudar a garantir que a rede Docker esteja totalmente estabelecida
-CMD ["bash", "-c", "sleep 10 && python3 run.py"]
+# Define o script entrypoint que será executado quando o container iniciar
+# Ele aguardará o DB, executará migrações e, em seguida, iniciará a aplicação Flask
+ENTRYPOINT ["./entrypoint.sh"]
