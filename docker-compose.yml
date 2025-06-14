@@ -3,7 +3,7 @@ version: "3.8"
 services:
   # Serviço para o banco de dados MariaDB
   db:
-    image: mariadb:10.6 # Use uma versão específica do MariaDB (10.6 ou 11.8 conforme preferir)
+    image: mariadb:11.8 # Use uma versão específica do MariaDB (10.6 ou 11.8 conforme preferir)
     restart: always # Garante que o container reinicie automaticamente
     environment:
       MYSQL_ROOT_PASSWORD: root_password # Altere esta senha para algo seguro em produção
@@ -13,11 +13,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql # Persiste os dados do banco de dados
     networks:
-      oficina_network:
-        # Configuração de DNS para o serviço 'db'
-        # Isso pode ajudar a resolver problemas de 'Host name lookup failure'
-        aliases:
-          - mariadb_server # Um alias adicional para 'db', caso seja necessário
+      - oficina_network # Conecta-se à rede Docker definida abaixo
     # Healthcheck: Garante que o MariaDB está pronto para aceitar conexões antes de outros serviços
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -u user_app -ppassword_app"]
@@ -52,18 +48,7 @@ services:
 
 networks:
   oficina_network:
-    driver: bridge
-    # Adiciona um DNS explícito para a rede, o que pode ajudar na resolução de nomes
-    ipam:
-      config:
-        - subnet: 172.20.0.0/24 # Exemplo de sub-rede, você pode ajustar se tiver conflitos
-    driver_opts:
-      com.docker.network.bridge.enable_icc: "true" # Permite a comunicação entre containers na mesma rede
-    # Adiciona servidores DNS para a rede
-    # Isso é fundamental para o 'Host name lookup failure'
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
+    driver: bridge # Definindo a rede como bridge, sem opções DNS ou IPAM explícitas
 
 # Definição do volume para persistência dos dados do banco de dados
 volumes:
