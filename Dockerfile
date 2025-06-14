@@ -33,11 +33,10 @@ RUN apt-get update && apt-get install -y \
 RUN wget https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -O /usr/bin/wait-for-it.sh \
     && chmod +x /usr/bin/wait-for-it.sh
 
-# Copia o script entrypoint.sh para o container e o torna executável
+# Copia o script entrypoint.sh para o container
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-# Converte as quebras de linha do entrypoint.sh para o formato Unix
-RUN dos2unix /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# Converte as quebras de linha do entrypoint.sh para o formato Unix E torna-o executável
+RUN dos2unix /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
 # Expõe a porta 5000, que é a porta padrão onde o Flask roda
 EXPOSE 5000
