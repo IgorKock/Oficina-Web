@@ -3,16 +3,16 @@ version: "3.8"
 services:
   # Serviço para o banco de dados MariaDB
   db:
-    image: mariadb:11.8 # Use uma versão específica do MariaDB (10.6 ou 11.8 conforme preferir)
+    image: mariadb:10.6 # Use uma versão específica do MariaDB (10.6 ou 11.8 conforme preferir)
     restart: always # Garante que o container reinicie automaticamente
     environment:
-      MYSQL_ROOT_PASSWORD: root_password # Altere esta senha para algo seguro em produção
+      MYSQL_ROOT_PASSWORD: root_password # ALtere esta senha para algo seguro em produção
       MYSQL_DATABASE: oficina_web # Nome do banco de dados que sua aplicação usará
       MYSQL_USER: user_app # Usuário do banco de dados para sua aplicação
       MYSQL_PASSWORD: password_app # Senha do usuário do banco de dados para sua aplicação
     volumes:
       - db_data:/var/lib/mysql # Persiste os dados do banco de dados
-    # Healthcheck: Garante que o MariaDB está pronto antes da aplicação web tentar conectar.
+    # Healthcheck: Garante que o MariaDB está pronto para aceitar conexões antes de outros serviços
     healthcheck:
       test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "user_app", "-puser_app"]
       interval: 10s # Verifica a cada 10 segundos
@@ -23,22 +23,18 @@ services:
   # Seu serviço da aplicação web (Flask)
   web:
     build: . # Constrói a imagem Docker a partir do Dockerfile no diretório atual
-    image: igorkock/oficinaweb:latest # Nome da imagem Docker (opcional, mas bom para identificação)
+    image: oficinaweb_app:latest # Nome da imagem Docker, use um nome simples para referência local
     container_name: oficinaweb # Nome do container Docker
     ports:
       - "5000:5000" # Mapeia a porta 5000 do host para a porta 5000 do container
     networks:
       - oficina_network # Conecta-se à rede Docker definida abaixo
-    # depends_on: Garante que o serviço 'db' esteja saudável antes de iniciar o 'web'
+    # depends_on: Garante que o serviço 'db' esteja saudável (passando healthcheck) antes de iniciar o 'web'
     depends_on:
       db:
         condition: service_healthy
-    # links: Explicitamente adiciona o serviço 'db' ao /etc/hosts do container 'web'.
-    # Isso pode ajudar em casos de falha na resolução de DNS interna do Docker.
-    links:
-      - db
-    # Comando para iniciar sua aplicação Flask
-    command: python3 run.py
+    # Adiciona restart: on-failure para que o container web tente reiniciar se falhar (ex: por não conseguir conectar ao DB)
+    restart: on-failure
     environment:
       # Configurações do banco de dados passadas como variáveis de ambiente para a aplicação Flask
       DB_USER: user_app
