@@ -3,10 +3,10 @@ version: "3.8"
 services:
   # Serviço para o banco de dados MariaDB
   db:
-    image: mariadb:11.8 # Use uma versão específica do MariaDB
+    image: mariadb:11.8 # Use uma versão específica do MariaDB (10.6 ou 11.8 conforme preferir)
     restart: always # Garante que o container reinicie automaticamente
     environment:
-      MYSQL_ROOT_PASSWORD: root_password # ALtere esta senha para algo seguro em produção
+      MYSQL_ROOT_PASSWORD: root_password # Altere esta senha para algo seguro em produção
       MYSQL_DATABASE: oficina_web # Nome do banco de dados que sua aplicação usará
       MYSQL_USER: user_app # Usuário do banco de dados para sua aplicação
       MYSQL_PASSWORD: password_app # Senha do usuário do banco de dados para sua aplicação
@@ -33,6 +33,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # links: Explicitamente adiciona o serviço 'db' ao /etc/hosts do container 'web'.
+    # Isso pode ajudar em casos de falha na resolução de DNS interna do Docker.
+    links:
+      - db
     # Comando para iniciar sua aplicação Flask
     command: python3 run.py
     environment:
