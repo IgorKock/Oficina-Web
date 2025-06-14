@@ -3,10 +3,10 @@ version: "3.8"
 services:
   # Serviço para o banco de dados MariaDB
   db:
-    image: mariadb:11.8 # Use uma versão específica do MariaDB (10.6 ou 11.8 conforme preferir)
+    image: mariadb:10.6 # Ou mariadb:11.8, conforme a versão que deseja usar
     restart: always # Garante que o container reinicie automaticamente
     environment:
-      MYSQL_ROOT_PASSWORD: root_password # Altere esta senha para algo seguro em produção
+      MYSQL_ROOT_PASSWORD: root_password # ALtere esta senha para algo seguro em produção
       MYSQL_DATABASE: oficina_web # Nome do banco de dados que sua aplicação usará
       MYSQL_USER: user_app # Usuário do banco de dados para sua aplicação
       MYSQL_PASSWORD: password_app # Senha do usuário do banco de dados para sua aplicação
@@ -16,11 +16,13 @@ services:
       - oficina_network # Conecta-se à rede Docker definida abaixo
     # Healthcheck: Garante que o MariaDB está pronto para aceitar conexões antes de outros serviços
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u user_app -ppassword_app"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 60s
+      # Teste mais robusto: tenta conectar como 'root' e executa uma consulta simples
+      # $$MYSQL_ROOT_PASSWORD é usado para escapar a variável de ambiente para o shell dentro do container
+      test: ["CMD", "mysql", "--protocol=tcp", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD", "-e", "SELECT 1;"]
+      interval: 5s # Verifica a cada 5 segundos
+      timeout: 20s # Espera até 20 segundos pela resposta do comando
+      retries: 10 # Tenta 10 vezes antes de considerar o container "unhealthy"
+      start_period: 120s # Período de graça: durante os primeiros 120 segundos, falhas no healthcheck não contam para o número de tentativas, permitindo que o DB inicialize completamente.
 
   # Seu serviço da aplicação web (Flask)
   web:
@@ -33,8 +35,8 @@ services:
       - oficina_network
     depends_on:
       db:
-        condition: service_healthy
-    restart: on-failure
+        condition: service_healthy # Depende do DB estar saudável antes de iniciar
+    restart: on-failure # Reinicia se falhar
     environment:
       DB_USER: user_app
       DB_PASSWORD: password_app
@@ -48,7 +50,7 @@ services:
 
 networks:
   oficina_network:
-    driver: bridge # Definindo a rede como bridge, sem opções DNS ou IPAM explícitas
+    driver: bridge # Definindo a rede como bridge
 
 # Definição do volume para persistência dos dados do banco de dados
 volumes:
