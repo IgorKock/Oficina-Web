@@ -3,55 +3,55 @@ version: "3.8"
 services:
   # Serviço para o banco de dados MariaDB
   db:
-    image: mariadb:10.6 # Ou mariadb:11.8, conforme a versão que deseja usar
+    image: mariadb:10.6 # Use uma versão específica do MariaDB, por exemplo 10.6 para maior compatibilidade
     restart: always # Garante que o container reinicie automaticamente
     environment:
-      MYSQL_ROOT_PASSWORD: root_password # ALtere esta senha para algo seguro em produção
+      MYSQL_ROOT_PASSWORD: root_password # Altere esta senha para algo seguro em produção
       MYSQL_DATABASE: oficina_web # Nome do banco de dados que sua aplicação usará
       MYSQL_USER: user_app # Usuário do banco de dados para sua aplicação
       MYSQL_PASSWORD: password_app # Senha do usuário do banco de dados para sua aplicação
     volumes:
       - db_data:/var/lib/mysql # Persiste os dados do banco de dados
+    healthcheck: # Configuração do healthcheck para o MariaDB
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD"] # Testa a conexão com o usuário e senha do app
+      interval: 10s # Verifica a cada 10 segundos
+      timeout: 5s # Tempo limite para a verificação
+      retries: 5 # Número de tentativas antes de considerar "unhealthy"
+      start_period: 30s # Período inicial para o container iniciar sem falhar o healthcheck
     networks:
-      - oficina_network # Conecta-se à rede Docker definida abaixo
-    # Healthcheck: Garante que o MariaDB está pronto para aceitar conexões antes de outros serviços
-    healthcheck:
-      # Teste mais robusto: tenta conectar como 'root' e executa uma consulta simples
-      # $$MYSQL_ROOT_PASSWORD é usado para escapar a variável de ambiente para o shell dentro do container
-      test: ["CMD", "mysql", "--protocol=tcp", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD", "-e", "SELECT 1;"]
-      interval: 5s # Verifica a cada 5 segundos
-      timeout: 20s # Espera até 20 segundos pela resposta do comando
-      retries: 10 # Tenta 10 vezes antes de considerar o container "unhealthy"
-      start_period: 120s # Período de graça: durante os primeiros 120 segundos, falhas no healthcheck não contam para o número de tentativas, permitindo que o DB inicialize completamente.
+      - oficina_network
+    # Opcional: expõe a porta 3306 do MariaDB para o host, útil para ferramentas externas
+    # ports:
+    #   - "3306:3306"
 
   # Seu serviço da aplicação web (Flask)
   web:
     build: .
-    image: oficinaweb_app:latest
+    image: igorkock/oficinaweb:latest
     container_name: oficinaweb
     ports:
       - "5000:5000"
     networks:
       - oficina_network
+    # A aplicação 'web' depende do serviço 'db' e espera que ele esteja saudável
     depends_on:
       db:
-        condition: service_healthy # Depende do DB estar saudável antes de iniciar
-    restart: on-failure # Reinicia se falhar
+        condition: service_healthy
+    # Comando para iniciar sua aplicação
+    command: python3 run.py
     environment:
+      # Configuração da URL do banco de dados para a sua aplicação Flask
+      # O host 'db' refere-se ao nome do serviço do MariaDB definido acima
+      SQLALCHEMY_DATABASE_URI: mysql+pymysql://user_app:password_app@db:3306/oficina_web
+      FLASK_APP: run.py
       DB_USER: user_app
       DB_PASSWORD: password_app
-      DB_HOST: db # 'db' é o nome do serviço do MariaDB dentro da rede Docker
+      DB_HOST: db
       DB_NAME: oficina_web
-      FLASK_APP: run.py
-      FLASK_ENV: development
-      SECRET_KEY: sua_chave_secreta_muito_segura
-    # O ENTRYPOINT no Dockerfile ainda cuidará do sleep e das migrações
-    # Não há necessidade de 'command' aqui
 
 networks:
   oficina_network:
-    driver: bridge # Definindo a rede como bridge
+    driver: bridge
 
-# Definição do volume para persistência dos dados do banco de dados
 volumes:
-  db_data:
+  db_data: # Define o volume para persistir os dados do banco de dados
