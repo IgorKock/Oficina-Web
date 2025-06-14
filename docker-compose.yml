@@ -1,61 +1,62 @@
-version: "3.8"
+    version: "3.8"
 
-services:
-  # Serviço para o banco de dados MariaDB
-  db:
-    image: mariadb:10.6 # Use uma versão específica do MariaDB, por exemplo 10.6 para maior compatibilidade
-    restart: always # Garante que o container reinicie automaticamente
-    environment:
-      MYSQL_ROOT_PASSWORD: root_password # Altere esta senha para algo seguro em produção
-      MYSQL_DATABASE: oficina_web # Nome do banco de dados que sua aplicação usará
-      MYSQL_USER: user_app # Usuário do banco de dados para sua aplicação
-      MYSQL_PASSWORD: password_app # Senha do usuário do banco de dados para sua aplicação
-    volumes:
-      - db_data:/var/lib/mysql # Persiste os dados do banco de dados
-    healthcheck: # Configuração do healthcheck para o MariaDB
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD"] # Testa a conexão com o usuário e senha do app
-      interval: 10s # Verifica a cada 10 segundos
-      timeout: 5s # Tempo limite para a verificação
-      retries: 5 # Número de tentativas antes de considerar "unhealthy"
-      start_period: 30s # Período inicial para o container iniciar sem falhar o healthcheck
-    networks:
-      - oficina_network
-    # Opcional: expõe a porta 3306 do MariaDB para o host, útil para ferramentas externas
-    # ports:
-    #   - "3306:3306"
-
-  # Seu serviço da aplicação web (Flask)
-  web:
-    build: .
-    image: igorkock/oficinaweb:latest
-    container_name: oficinaweb
-    ports:
-      - "5000:5000"
-    networks:
-      - oficina_network
-    # A aplicação 'web' depende do serviço 'db' e espera que ele esteja saudável
-    depends_on:
+    services:
+      # Serviço para o banco de dados MariaDB
       db:
-        condition: service_healthy
-    # Comando para executar as migrações e depois iniciar a aplicação
-    command: >
-      bash -c "
-      flask db upgrade &&
-      python3 run.py
-      "
-    environment:
-      # Configuração da URL do banco de dados para a sua aplicação Flask
-      # O host 'db' refere-se ao nome do serviço do MariaDB definido acima
-      SQLALCHEMY_DATABASE_URI: mysql+pymysql://user_app:password_app@db:3306/oficina_web
-      FLASK_APP: run.py
-      DB_USER: user_app
-      DB_PASSWORD: password_app
-      DB_HOST: db
-      DB_NAME: oficina_web
+        image: mariadb:10.6 # Use uma versão específica do MariaDB, por exemplo 10.6 para maior compatibilidade
+        restart: always # Garante que o container reinicie automaticamente
+        environment:
+          MYSQL_ROOT_PASSWORD: root_password # Altere esta senha para algo seguro em produção
+          MYSQL_DATABASE: oficina_web # Nome do banco de dados que sua aplicação usará
+          MYSQL_USER: user_app # Usuário do banco de dados para sua aplicação
+          MYSQL_PASSWORD: password_app # Senha do usuário do banco de dados para sua aplicação
+        volumes:
+          - db_data:/var/lib/mysql # Persiste os dados do banco de dados
+        healthcheck: # Configuração do healthcheck para o MariaDB
+          test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD"] # Testa a conexão com o usuário e senha do app
+          interval: 10s # Verifica a cada 10 segundos
+          timeout: 5s # Tempo limite para a verificação
+          retries: 5 # Número de tentativas antes de considerar "unhealthy"
+          start_period: 30s # Período inicial para o container iniciar sem falhar o healthcheck
+        networks:
+          - oficina_network
+        # Opcional: expõe a porta 3306 do MariaDB para o host, útil para ferramentas externas
+        # ports:
+        #   - "3306:3306"
 
-networks:
-  oficina_network:
-    driver: bridge
+      # Seu serviço da aplicação web (Flask)
+      web:
+        build: .
+        image: igorkock/oficinaweb:latest
+        container_name: oficinaweb
+        ports:
+          - "5000:5000"
+        networks:
+          - oficina_network
+        # A aplicação 'web' depende do serviço 'db' e espera que ele esteja saudável
+        depends_on:
+          db:
+            condition: service_healthy
+        # O comando de inicialização agora é definido pelo ENTRYPOINT no Dockerfile
+        # command: >
+        #   bash -c "
+        #   flask db upgrade &&
+        #   python3 run.py
+        #   "
+        environment:
+          # Configuração da URL do banco de dados para a sua aplicação Flask
+          # O host 'db' refere-se ao nome do serviço do MariaDB definido acima
+          SQLALCHEMY_DATABASE_URI: mysql+pymysql://user_app:password_app@db:3306/oficina_web
+          FLASK_APP: run.py
+          DB_USER: user_app
+          DB_PASSWORD: password_app
+          DB_HOST: db
+          DB_NAME: oficina_web
 
-volumes:
-  db_data: # Define o volume para persistir os dados do banco de dados
+    networks:
+      oficina_network:
+        driver: bridge
+
+    volumes:
+      db_data: # Define o volume para persistir os dados do banco de dados
+    

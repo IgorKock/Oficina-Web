@@ -1,40 +1,47 @@
-# Usa a imagem base Ubuntu mais recente
-FROM ubuntu:latest
-# Define um argumento para o frontend Debian (útil para instalações não interativas)
-ARG DEBIAN_FRONTEND=noninteractive
+    # Usa a imagem oficial do Ubuntu como base
+    FROM ubuntu:latest
 
-# Define o diretório de trabalho dentro do container
-WORKDIR /app
+    # Define uma variável de ambiente para evitar prompts interativos durante a instalação de pacotes
+    ARG DEBIAN_FRONTEND=noninteractive
 
-# Copia todos os arquivos do contexto (incluindo entrypoint.sh e sua aplicação) para o container
-COPY . .
+    # Define o diretório de trabalho dentro do container
+    WORKDIR /app
 
-# Atualiza a lista de pacotes e instala as dependências do sistema via apt
-# Inclui 'netcat-traditional' para o comando 'nc' no entrypoint.sh
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-sqlalchemy \
-    netcat-traditional \
-    # Bibliotecas Flask e suas extensões
-    python3-flask \
-    python3-flask-sqlalchemy \
-    python3-flask-migrate \
-    python3-flask-login \
-    # Drivers de banco de dados e utilitários
-    python3-pymysql \
-    # Outras bibliotecas
-    python3-tz \
-    python3-werkzeug \
-    # Limpa o cache apt para reduzir o tamanho da imagem Docker
-    && rm -rf /var/lib/apt/lists/*
+    # Copia todo o conteúdo do diretório atual (local) para o diretório de trabalho (/app) no container
+    COPY . .
 
-# Torna o script de entrada executável
-RUN chmod +x ./entrypoint.sh
+    # Atualiza a lista de pacotes e instala as dependências necessárias
+    # netcat é necessário para o script wait-for-it.sh
+    RUN apt-get update && apt-get install -y \
+        python3 \
+        python3-pip \
+        python3-flask \
+        python3-flask-migrate \
+        python3-flask-sqlalchemy \
+        python3-flask-login \
+        python3-sqlalchemy \
+        python3-tz \
+        python3-werkzeug \
+        python3-pymysql \
+        netcat \
+        && rm -rf /var/lib/apt/lists/*
 
-# Expõe a porta 5000, que é a porta padrão da aplicação Flask
-EXPOSE 5000
+    # Baixa o script wait-for-it.sh e o torna executável
+    # Este script é usado no entrypoint.sh para esperar pelo DB
+    RUN wget https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -O /usr/bin/wait-for-it.sh \
+        && chmod +x /usr/bin/wait-for-it.sh
 
-# Define o script entrypoint que será executado quando o container iniciar
-# Ele aguardará o DB, executará migrações e, em seguida, iniciará a aplicação Flask
-ENTRYPOINT ["./entrypoint.sh"]
+    # Copia o script entrypoint.sh para o container e o torna executável
+    COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+    RUN chmod +x /usr/local/bin/entrypoint.sh
+
+    # Expõe a porta 5000, que é a porta padrão onde o Flask roda
+    EXPOSE 5000
+
+    # Define o entrypoint do container. O Docker executará este script na inicialização.
+    ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+    # CMD é o comando padrão que é passado como argumento para o ENTRYPOINT.
+    # Neste caso, o ENTRYPOINT irá chamar 'python3 run.py' no final.
+    CMD ["python3", "run.py"]
+    
