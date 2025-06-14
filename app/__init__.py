@@ -5,8 +5,7 @@ from datetime import datetime
 from sqlalchemy.exc import OperationalError, ProgrammingError
 from flask_login import LoginManager
 import os
-import pytz # Importar pytz para o ajuste de fuso horário
-
+import pytz # Importar pytz para manipulação de fuso horário
 
 # A instância 'db' é criada aqui, fora da função create_app
 db = SQLAlchemy()
@@ -16,104 +15,91 @@ login_manager = LoginManager() # Inicializa LoginManager
 def create_app():
     app = Flask(__name__)
 
-    # Obter a string de conexão completa do banco de dados da variável de ambiente
-    # Se não estiver definida (ex: em desenvolvimento local sem Docker Compose),
-    # usa os valores padrão para construir a string.
-    # Note que o 'db' no host é o nome do serviço MariaDB no docker-compose.yml
-    # DB_USER = os.environ.get('DB_USER', 'seu_usuario')
-    # DB_PASSWORD = os.environ.get('DB_PASSWORD', 'sua_senha') # CERTIFIQUE-SE QUE ESTA SENHA ESTÁ CORRETA E É A MESMA DO MARIADB
-    # DB_HOST = os.environ.get('DB_HOST', 'localhost')
-    # DB_NAME = os.environ.get('DB_NAME', 'oficina_web')
-    
-    db_uri = os.environ.get('SQLALCHEMY_DATABASE_URI') or \
-             f"mysql+pymysql://{os.environ.get('DB_USER', 'user_app')}:" \
-             f"{os.environ.get('DB_PASSWORD', 'password_app')}@" \
-             f"{os.environ.get('DB_HOST', 'localhost')}:3306/" \
-             f"{os.environ.get('DB_NAME', 'oficina_web')}"
+    # Obter variáveis de ambiente, com valores padrão de fallback
+    # Estes valores padrão só serão usados se as variáveis de ambiente não forem definidas
+    # Pelo Docker Compose, elas *serão* definidas, então os padrões são apenas para segurança
+    DB_USER = os.environ.get('DB_USER', 'flask_user')
+    DB_PASSWORD = os.environ.get('DB_PASSWORD', '123')
+    DB_HOST = os.environ.get('DB_HOST', 'localhost') # No Docker Compose, será 'db'
+    DB_NAME = os.environ.get('DB_NAME', 'oficina_web')
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'sua_chave_secreta_muito_segura_padrao')
 
-
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+    # Configura a URI de conexão com o banco de dados usando as variáveis de ambiente
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SECRET_KEY'] = 'sua_chave_secreta_muito_segura' # Necessário para sessões do Flask-Login
+    app.config['SECRET_KEY'] = SECRET_KEY # Necessário para sessões do Flask-Login
 
+    # Inicializa as extensões Flask com a aplicação
     db.init_app(app)
     migrate.init_app(app, db)
 
-    login_manager.init_app(app) # Inicializa o Flask-Login com a aplicação
-    login_manager.login_view = 'main.login' # Define a rota para onde o utilizador será redirecionado se não estiver logado
+    login_manager.init_app(app)
+    login_manager.login_view = 'main.login' # Define a rota de login para o Flask-Login
 
-    # IMPORTANTE: Importa os modelos aqui, DENTRO da função create_app,
-    # e APÓS db.init_app(app). Isso evita a importação circular.
-    from . import models
+    # Importa os modelos aqui para evitar problemas de importação circular
+    from .models import Utilizador, Papel 
 
     # Configura o user_loader para o Flask-Login
     @login_manager.user_loader
     def load_user(user_id):
-        """
-        Função de carregamento de utilizador para o Flask-Login.
-        """
-        return models.Utilizador.query.get(int(user_id))
+        return Utilizador.query.get(int(user_id))
 
-    # Importa e registra os Blueprints
-    from .routes import main
-    app.register_blueprint(main)
+    # Regista o Blueprint das rotas na aplicação
+    from .routes import main as main_blueprint
+    app.register_blueprint(main_blueprint)
 
-    # Chamamos a função de adição de papéis DENTRO do contexto da aplicação.
-    # Ela mesma terá tratamento de erro para quando a tabela não existir.
+    # Contexto da aplicação para operações de inicialização
     with app.app_context():
-        # REMOVIDO: db.create_all() - O Flask-Migrate se encarrega disso
-        _add_initial_roles_on_startup()
+        try:
+            # Chama a função para adicionar papéis iniciais ao banco de dados
+            _add_initial_roles_on_startup(app)
+            print("Aplicação iniciada com sucesso e papéis iniciais verificados.")
 
+        except ProgrammingError as e:
+            db.session.rollback() # Reverte a transação em caso de erro
+            print("\n--- ERRO DE MIGRAÇÃO DE BANCO DE DADOS ---")
+            print(f"Detalhes do erro: {e}")
+            print("Parece que as tabelas do banco de dados não foram criadas.")
+            print("Por favor, certifique-se de que as migrações foram aplicadas corretamente:")
+            print("1. No Prompt de Comando, defina a variável de ambiente: set FLASK_APP=run.py")
+            print("2. flask db init (APENAS na primeira vez que usar Flask-Migrate neste projeto)")
+            print("3. flask db migrate -m 'Cria tabelas iniciais para MariaDB'")
+            print("4. flask db upgrade")
+            print("Após aplicar as migrações, execute 'python run.py' novamente para adicionar os papéis.")
+            print("-------------------------------------------\n")
+            # Não levanta o erro novamente para que o comando Flask-Migrate possa continuar
+        except OperationalError as e:
+            db.session.rollback() # Reverte a transação em caso de erro
+            print("\n--- ERRO CRÍTICO DE BANCO DE DADOS ---\n")
+            print("Parece que há um problema de conexão ou configuração com o MariaDB.")
+            print("Verifique se o servidor MariaDB está ativo e se a base de dados, usuário e senha foram criados corretamente.")
+            print(f"Detalhes do erro: {e}")
+            print("---------------------------------------\n")
+            raise e # Levanta o erro para que o processo seja interrompido
+        except Exception as e:
+            db.session.rollback() # Reverte a transação em caso de erro
+            print(f"Ocorreu um erro inesperado ao adicionar papéis iniciais: {e}")
+            raise e
 
     return app
 
-def _add_initial_roles_on_startup():
-    from . import models # Importa models aqui para evitar circularidade
-    papel_administrador_data = {'nome': 'Administrador', 'descricao': 'Administrador do sistema com acesso total.'}
-    papel_mecanico_data = {'nome': 'Mecanico', 'descricao': 'Utilizador com permissões de Mecânico.'}
-    papel_recepcionista_data = {'nome': 'Recepcionista', 'descricao': 'Pode gerir clientes e agendamentos'}
-    papel_gerente_data = {'nome': 'Gerente', 'descricao': 'Pode ver relatórios e gerir funcionários'}
+# Função auxiliar para adicionar papéis iniciais ao banco de dados
+def _add_initial_roles_on_startup(app):
+    from .models import Papel # Importa o modelo Papel aqui para evitar importações circulares
+    initial_roles = [
+        {'nome': 'admin', 'descricao': 'Acesso total ao sistema e gestão de utilizadores'},
+        {'nome': 'mecanico', 'descricao': 'Gerencia ordens de serviço, peças e históricos de carros'},
+        {'nome': 'rececionista', 'descricao': 'Gerencia clientes, carros e agendamentos'},
+        {'nome': 'gerente', 'descricao': 'Supervisão geral, relatórios e gestão de pagamentos'}
+    ]
 
-    papeis_iniciais = [papel_administrador_data, papel_mecanico_data, papel_recepcionista_data, papel_gerente_data]
-
-    print("Verificando e adicionando papéis iniciais ao banco de dados...")
-    try:
-        for papel_data in papeis_iniciais:
-            # Tenta consultar a tabela. Se ela não existir, ProgrammingError será levantado.
-            papel_existente = models.Papel.query.filter_by(nome=papel_data['nome']).first()
+    with app.app_context():
+        print("Verificando e adicionando papéis iniciais ao banco de dados...")
+        for papel_data in initial_roles:
+            papel_existente = Papel.query.filter_by(nome=papel_data['nome']).first()
             if not papel_existente:
-                novo_papel = models.Papel(nome=papel_data['nome'], descricao=papel_data['descricao'],
-                                       created_at=datetime.utcnow(), updated_at=datetime.utcnow())
+                novo_papel = Papel(nome=papel_data['nome'], descricao=papel_data['descricao'])
                 db.session.add(novo_papel)
-                print(f"Papel '{papel_data['nome']}' adicionado.")
-            else:
-                print(f"Papel '{papel_data['nome']}' já existe.")
-        db.session.commit()
-        print("Verificação e adição de papéis iniciais concluída.")
-    except ProgrammingError as e:
-        # Erro específico quando a tabela não existe
-        db.session.rollback() # Garante que a sessão seja limpa
-        print("\n--- ERRO: A tabela 'papeis' não existe no banco de dados. ---")
-        print("Isso é normal se você está executando 'flask db init', 'migrate' ou 'upgrade'.")
-        print("Por favor, certifique-se de que as migrações foram aplicadas corretamente:")
-        print("1. No Prompt de Comando, defina a variável de ambiente: set FLASK_APP=run.py")
-        print("2. flask db init (APENAS na primeira vez que usar Flask-Migrate neste projeto)")
-        print("3. flask db migrate -m 'Cria tabelas iniciais para MariaDB'")
-        print("4. flask db upgrade")
-        print("Após aplicar as migrações, execute 'python run.py' novamente para adicionar os papéis.")
-        print("-------------------------------------------\n")
-        # Não levanta o erro novamente para que o comando Flask-Migrate possa continuar
-    except OperationalError as e:
-        # Para outros erros de conexão ou operação do BD (ex: credenciais erradas)
-        db.session.rollback()
-        print("\n--- ERRO CRÍTICO DE BANCO DE DADOS ---")
-        print("Parece que há um problema de conexão ou configuração com o MariaDB.")
-        print("Verifique se o servidor MariaDB está ativo e se a base de dados, usuário e senha foram criados corretamente.")
-        print(f"Detalhes do erro: {e}")
-        print("---------------------------------------\n")
-        raise e # Levanta o erro para que o processo seja interrompido
-    except Exception as e:
-        # Para qualquer outro erro inesperado
-        db.session.rollback()
-        print(f"Ocorreu um erro inesperado ao adicionar papéis iniciais: {e}")
-        raise e
+                print(f"Adicionado papel: {papel_data['nome']}")
+        db.session.commit() # Confirma as alterações no banco de dados
+        print("Verificação e adição de papéis concluída.")
