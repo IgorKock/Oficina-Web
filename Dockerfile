@@ -24,6 +24,7 @@
         python3-werkzeug \
         python3-pymysql \
         netcat-openbsd \
+		wget \
         && rm -rf /var/lib/apt/lists/*
 
     # Baixa o script wait-for-it.sh e o torna executável
