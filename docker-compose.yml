@@ -18,7 +18,7 @@ services:
       interval: 10s # Verifica a cada 10 segundos
       timeout: 5s   # Espera 5 segundos pela resposta
       retries: 5    # Tenta 5 vezes antes de considerar falha
-      start_period: 30s # Período inicial para o container subir antes de começar as verificações
+      start_period: 60s # **AUMENTADO para 60 segundos**
 
   # Seu serviço da aplicação web (Flask)
   web:
