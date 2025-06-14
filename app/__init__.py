@@ -27,6 +27,10 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = SECRET_KEY
 
+    # Inicializa as extensões Flask com a aplicação (AQUI É A ÚNICA VEZ!)
+    db.init_app(app)
+    migrate.init_app(app, db) # Migração também inicializa uma vez
+
     login_manager.init_app(app)
     login_manager.login_view = 'main.login'
 
@@ -41,14 +45,13 @@ def create_app():
 
     # Contexto da aplicação para operações de inicialização
     with app.app_context():
-        # Lógica de retry para a conexão ao banco de dados
+        # Lógica de retry para a conexão ao banco de dados e inicialização de papéis
         max_retries = 10
         retry_delay = 5 # segundos
         
         for i in range(max_retries):
             try:
-                print(f"Tentando conectar ao banco de dados... Tentativa {i+1}/{max_retries}")
-                db.init_app(app) # Inicializa a extensão SQLAlchemy com a aplicação
+                print(f"Tentando conectar ao banco de dados e verificar papéis... Tentativa {i+1}/{max_retries}")
                 # Tenta uma operação simples para verificar a conexão
                 # Se não houver tabelas, ainda pode lançar ProgrammingError
                 db.session.execute(db.text("SELECT 1")).scalar()
@@ -71,8 +74,7 @@ def create_app():
                 print("4. flask db upgrade")
                 print("Após aplicar as migrações, execute 'python run.py' novamente para adicionar os papéis.")
                 print("-------------------------------------------\n")
-                # Não levanta o erro novamente, apenas informa e sai
-                break # Sai do loop, pois este erro indica que as tabelas não existem, não um problema de conexão.
+                break # Sai do loop, pois este erro indica que as tabelas não existem.
                       # O usuário precisa rodar as migrações manualmente.
             except OperationalError as e:
                 db.session.rollback()
@@ -112,13 +114,13 @@ def _add_initial_roles_on_startup(app):
         {'nome': 'gerente', 'descricao': 'Supervisão geral, relatórios e gestão de pagamentos'}
     ]
 
-    with app.app_context(): # Garante que estamos no contexto da aplicação
-        print("Verificando e adicionando papéis iniciais ao banco de dados...")
-        for papel_data in initial_roles:
-            papel_existente = Papel.query.filter_by(nome=papel_data['nome']).first()
-            if not papel_existente:
-                novo_papel = Papel(nome=papel_data['nome'], descricao=papel_data['descricao'])
-                db.session.add(novo_papel)
-                print(f"Adicionado papel: {papel_data['nome']}")
-        db.session.commit() # Confirma as alterações no banco de dados
-        print("Verificação e adição de papéis concluída.")
+    # No app_context, db.session e Papel já estão disponíveis.
+    print("Verificando e adicionando papéis iniciais ao banco de dados...")
+    for papel_data in initial_roles:
+        papel_existente = Papel.query.filter_by(nome=papel_data['nome']).first()
+        if not papel_existente:
+            novo_papel = Papel(nome=papel_data['nome'], descricao=papel_data['descricao'])
+            db.session.add(novo_papel)
+            print(f"Adicionado papel: {papel_data['nome']}")
+    db.session.commit() # Confirma as alterações no banco de dados
+    print("Verificação e adição de papéis concluída.")
