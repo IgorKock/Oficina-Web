@@ -3,52 +3,68 @@ version: "3.8"
 services:
   # Serviço para o banco de dados MariaDB
   db:
-    image: mariadb:11.8 # Use uma versão específica do MariaDB (10.6 ou 11.8 conforme preferir)
+    image: mariadb:10.6 # Use uma versão específica do MariaDB (10.6 ou 11.8 conforme preferir)
     restart: always # Garante que o container reinicie automaticamente
     environment:
-      MYSQL_ROOT_PASSWORD: root_password # ALtere esta senha para algo seguro em produção
+      MYSQL_ROOT_PASSWORD: root_password # Altere esta senha para algo seguro em produção
       MYSQL_DATABASE: oficina_web # Nome do banco de dados que sua aplicação usará
       MYSQL_USER: user_app # Usuário do banco de dados para sua aplicação
       MYSQL_PASSWORD: password_app # Senha do usuário do banco de dados para sua aplicação
     volumes:
       - db_data:/var/lib/mysql # Persiste os dados do banco de dados
+    networks:
+      oficina_network:
+        # Configuração de DNS para o serviço 'db'
+        # Isso pode ajudar a resolver problemas de 'Host name lookup failure'
+        aliases:
+          - mariadb_server # Um alias adicional para 'db', caso seja necessário
     # Healthcheck: Garante que o MariaDB está pronto para aceitar conexões antes de outros serviços
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "user_app", "-puser_app"]
-      interval: 10s # Verifica a cada 10 segundos
-      timeout: 5s   # Espera 5 segundos pela resposta
-      retries: 5    # Tenta 5 vezes antes de considerar falha
-      start_period: 60s # **AUMENTADO para 60 segundos**
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u user_app -ppassword_app"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
   # Seu serviço da aplicação web (Flask)
   web:
-    build: . # Constrói a imagem Docker a partir do Dockerfile no diretório atual
-    image: oficinaweb_app:latest # Nome da imagem Docker, use um nome simples para referência local
-    container_name: oficinaweb # Nome do container Docker
+    build: .
+    image: oficinaweb_app:latest
+    container_name: oficinaweb
     ports:
-      - "5000:5000" # Mapeia a porta 5000 do host para a porta 5000 do container
+      - "5000:5000"
     networks:
-      - oficina_network # Conecta-se à rede Docker definida abaixo
-    # depends_on: Garante que o serviço 'db' esteja saudável (passando healthcheck) antes de iniciar o 'web'
+      - oficina_network
     depends_on:
       db:
         condition: service_healthy
-    # Adiciona restart: on-failure para que o container web tente reiniciar se falhar (ex: por não conseguir conectar ao DB)
     restart: on-failure
     environment:
-      # Configurações do banco de dados passadas como variáveis de ambiente para a aplicação Flask
       DB_USER: user_app
       DB_PASSWORD: password_app
       DB_HOST: db # 'db' é o nome do serviço do MariaDB dentro da rede Docker
       DB_NAME: oficina_web
-      FLASK_APP: run.py # Necessário para comandos Flask (ex: flask db)
-      FLASK_ENV: development # Define o ambiente Flask (development, production)
-      SECRET_KEY: sua_chave_secreta_muito_segura # Chave secreta para sessões Flask
+      FLASK_APP: run.py
+      FLASK_ENV: development
+      SECRET_KEY: sua_chave_secreta_muito_segura
+    # O ENTRYPOINT no Dockerfile ainda cuidará do sleep e das migrações
+    # Não há necessidade de 'command' aqui
 
 networks:
   oficina_network:
-    driver: bridge # Define uma rede de bridge padrão para os serviços se comunicarem
+    driver: bridge
+    # Adiciona um DNS explícito para a rede, o que pode ajudar na resolução de nomes
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24 # Exemplo de sub-rede, você pode ajustar se tiver conflitos
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true" # Permite a comunicação entre containers na mesma rede
+    # Adiciona servidores DNS para a rede
+    # Isso é fundamental para o 'Host name lookup failure'
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
 # Definição do volume para persistência dos dados do banco de dados
 volumes:
-  db_data: # O Docker irá gerenciar este volume para persistir os dados do MariaDB
+  db_data:
