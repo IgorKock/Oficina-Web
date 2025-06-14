@@ -6,22 +6,27 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Define o diretório de trabalho dentro do container
 WORKDIR /app
 
-# Copia todo o conteúdo do diretório atual para o container
+# Copia todo o conteúdo do diretório atual para o diretório de trabalho no container
 COPY . .
 
-# Instala python3 e python3-pip
+# Atualiza a lista de pacotes e instala as dependências do sistema
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
+    # Instala bibliotecas Python via apt para garantir que as dependências de sistema sejam atendidas
+    python3-flask \
+    python3-flask-migrate \
+    python3-flask-sqlalchemy \
+    python3-flask-login \
+    python3-sqlalchemy \
+    python3-tz \
+    python3-werkzeug \
+    python3-pymysql \
     # Limpa o cache apt para reduzir o tamanho da imagem Docker
     && rm -rf /var/lib/apt/lists/*
-
-# Instala as dependências Python via pip
-# É crucial instalar pymysql via pip para garantir a versão correta e que funcione com SQLAlchemy
-RUN pip install Flask Flask-SQLAlchemy Flask-Migrate Flask-Login PyMySQL python-dotenv pytz
 
 # Expõe a porta 5000, que é a porta padrão da aplicação Flask
 EXPOSE 5000
 
-# O comando CMD para iniciar sua aplicação Flask
+# Define o comando que será executado quando o container for iniciado
 CMD ["python3", "run.py"]
