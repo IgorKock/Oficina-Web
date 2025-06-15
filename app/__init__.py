@@ -108,10 +108,10 @@ def create_app():
 def _add_initial_roles_on_startup(app):
     from .models import Papel # Importa o modelo Papel aqui para evitar importações circulares
     initial_roles = [
-        {'nome': 'admin', 'descricao': 'Acesso total ao sistema e gestão de utilizadores'},
-        {'nome': 'mecanico', 'descricao': 'Gerencia ordens de serviço, peças e históricos de carros'},
-        {'nome': 'rececionista', 'descricao': 'Gerencia clientes, carros e agendamentos'},
-        {'nome': 'gerente', 'descricao': 'Supervisão geral, relatórios e gestão de pagamentos'}
+        {'nome': 'Administrador', 'descricao': 'Acesso total ao sistema e gestão de utilizadores'},
+        {'nome': 'Mecânico', 'descricao': 'Gerencia ordens de serviço, peças e históricos de carros'},
+        {'nome': 'Recepcionista', 'descricao': 'Gerencia clientes, carros e agendamentos'},
+        {'nome': 'Gerente', 'descricao': 'Supervisão geral, relatórios e gestão de pagamentos'}
     ]
 
     # No app_context, db.session e Papel já estão disponíveis.
