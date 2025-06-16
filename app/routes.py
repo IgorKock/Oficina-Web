@@ -595,7 +595,7 @@ def login():
         # Verifica as credenciais: se o utilizador existe E a senha está correta.
         if utilizador and utilizador.check_senha(senha):
             login_user(utilizador) # Faz o login do utilizador usando Flask-Login.
-            flash('Login bem-sucedido!', 'success')
+            #flash('Login bem-sucedido!', 'success')
             return redirect(url_for('main.index')) # Redireciona para a página inicial após login.
         else:
             flash('Email ou senha inválidos.', 'danger') # Mensagem de erro para credenciais inválidas.
@@ -608,5 +608,5 @@ def login():
 @login_required # Garante que só utilizadores logados podem fazer logout.
 def logout():
     logout_user() # Faz o logout do utilizador usando Flask-Login.
-    flash('Você foi desconectado.', 'info')
+    #flash('Você foi desconectado.', 'info')
     return redirect(url_for('main.login')) # Redireciona para a página de login após logout.
