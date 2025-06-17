@@ -298,7 +298,7 @@
                 padding: 5px;
             }
         }
-    </style>
+        </style>
 </head>
 <body>
     <div class="logo-container">
@@ -373,32 +373,32 @@
                     {% endif %}
                     <div class="card mb-4">
                     <h3 class="mt-4">Atualizar Apelido (Nome Social), CPF, Endereço e Estado</h3>
-                    <form action="/update_dados_cliente/{{ cliente.id }}" method="POST" onsubmit="return validarFormularioCliente(event)">
+                    <form action="{{ url_for('main.update_dados_cliente', cliente_id=cliente.id) }}" method="POST" id="editClientForm" onsubmit="return validarFormularioCliente(event)">
                         <label for ="apelido">Apelido ou Nome Social</label>
-                        <input type="text" name="apelido" class="form-control mb" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
+                        <input type="text" name="apelido" class="form-control mb-2" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
                         <label for="cpf">CPF</label>
-                        <input type="text" name="cpf" id="cpfInput" class="form-control mb" placeholder="CPF" value="{{ cliente.cpf or '' }}" oninput="validarCPFInput(this)">
+                        <input type="text" name="cpf" id="cpfInput" class="form-control mb-2 cpf-input" placeholder="CPF" value="{{ cliente.cpf or '' }}" oninput="validarCPFInput(this)">
                         <span id="cpfError" style="color: red; display: none;">CPF inválido.</span>
                         <label for="cnpj">CNPJ</label>
-                        <input type="text" name="cnpj" id="cnpjInput" class="form-control mb" placeholder="CNPJ" value="{{ cliente.cnpj or '' }}" oninput="validarCNPJInput(this)">
+                        <input type="text" name="cnpj" id="cnpjInput" class="form-control mb-2 cnpj-input" placeholder="CNPJ" value="{{ cliente.cnpj or '' }}" oninput="validarCNPJInput(this)">
                         <span id="cnpjError" style="color: red; display: none;">CNPJ inválido.</span>
                         <div id="enderecos-container">
                             <div class="mb">
                                 <label for="endereco">Endereço</label>
-                                <input type="text" name="endereco[]" class="form-control mb" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
+                                <input type="text" name="endereco[]" class="form-control mb-2" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
                                 <label for="bairro">Bairro</label>
-                                <input type="text" name="bairro[]" class="form-control mb" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
+                                <input type="text" name="bairro[]" class="form-control mb-2" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
                                 <label for="cidade">Cidade</label>
-                                <input type="text" name="cidade[]" class="form-control mb" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
+                                <input type="text" name="cidade[]" class="form-control mb-2" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
                                 <label for="cep">CEP</label>
-                                <input type="text" name="cep[]" class="form-control mb" placeholder="CEP" value="{{ cliente.cep or ''}}" id="mainCepInput">
+                                <input type="text" name="cep[]" class="form-control mb-2 cep-input" placeholder="CEP" value="{{ cliente.cep or ''}}" id="mainCepInput">
                             </div>
                             <button type="button" class="btn btn-outline-primary mt" onclick="adicionarCampoEndereco()">
                                 <i class="bi bi-plus-circle"></i> Adicionar outro endereço
                             </button>
                         </div>
                         <label for="estado">Estado</label>
-                        <select name="estado" class="form-control mb">
+                        <select name="estado" class="form-control mb-2">
                             <option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
                             <option value="AL" {% if cliente.estado == 'AL' %}selected{% endif %}>Alagoas</option>
                             <option value="AP" {% if cliente.estado == 'AP' %}selected{% endif %}>Amapá</option>
@@ -548,24 +548,25 @@
                 {% endif %}
 				<div class="card mb-4">
                     <h4>Adicionar Informações do Carro</h4>
-                    <form action="/add_carros_cliente/{{ cliente.id }}" method="POST">
+                    <form action="{{ url_for('main.add_carros', cliente_id=cliente.id) }}" method="POST" id="addCarroForm">
                         <div id="carros-container">
-                            <div class="carro-form mb">
+                            <div class="carro-form mb-2">
                                 <label for="marca[]">Marca</label>
-                                <input type="text" name="marca[]" class="form-control mb" placeholder="Marca" required>
+                                <input type="text" name="marca[]" class="form-control mb-2" placeholder="Marca" required>
                                 <label for="modelo[]">Modelo</label>
-                                <input type="text" name="modelo[]" class="form-control mb" placeholder="Modelo" required>
+                                <input type="text" name="modelo[]" class="form-control mb-2" placeholder="Modelo" required>
                                 <label for="motor[]">Motor</label>
-                                <input type="text" name="motor[]" class="form-control mb" placeholder="Motor">
+                                <input type="text" name="motor[]" class="form-control mb-2" placeholder="Motor">
                                 <label for="ano[]">Ano</label>
-                                <input type="number" name="ano[]" class="form-control mb" placeholder="Ano">
+                                <input type="number" name="ano[]" class="form-control mb-2 ano-input" placeholder="Ano">
                                 <label for="placa[]">Placa</label>
-                                <input type="text" name="placa[]" class="form-control mb" placeholder="Placa">
+                                <input type="text" name="placa[]" class="form-control mb-2 placa-input" placeholder="Placa">
                                 <label for="quilometragem[]">Quilometragem em KMs rodados</label>
                                 <input type="number" name="quilometragem[]" class="form-control mb-2" placeholder="Quilometragem">
                             </div>
                         </div>
-                        <button type="button" class="btn btn-primary mb-2" onclick="adicionarCarro()">Adicionar mais um carro</button>
+						<button class="btn btn-outline-primary mb-2" type="button" onclick="adicionarCarro()"><i class="bi bi-plus-circle mb-1"></i> Adicionar mais um carro
+                        </button>
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-success">Salvar</button>
                         </div>
@@ -574,20 +575,20 @@
 				<div class="card mb-4">
                     <h4>Atualizar Informações dos Carros</h4>
                     {% if carros %}
-                    <form action="/update_carros_cliente/{{ cliente.id }}" method="POST">
+                    <form action="{{ url_for('main.update_carros', cliente_id=cliente.id) }}" method="POST" id="updateCarrosForm">
                         {% for carro in carros %}
                         <div class="carro-form mb">
                             <input type="hidden" name="carro_id" value="{{ carro.id }}">
                             <label for="marca_{{ carro.id }}">Marca</label>
-                            <input type="text" name="marca_{{ carro.id }}" class="form-control mb" placeholder="Marca" value="{{ carro.marca }}" required>
+                            <input type="text" name="marca_{{ carro.id }}" class="form-control mb-2" placeholder="Marca" value="{{ carro.marca }}" required>
                             <label for="modelo_{{ carro.id }}">Modelo</label>
-                            <input type="text" name="modelo_{{ carro.id }}" class="form-control mb" placeholder="Modelo" value="{{ carro.modelo }}" required>
+                            <input type="text" name="modelo_{{ carro.id }}" class="form-control mb-2" placeholder="Modelo" value="{{ carro.modelo }}" required>
                             <label for="motor_{{ carro.id }}">Motor</label>
-                            <input type="text" name="motor_{{ carro.id }}" class="form-control mb" placeholder="Motor" value="{{ carro.motor }}">
+                            <input type="text" name="motor_{{ carro.id }}" class="form-control mb-2" placeholder="Motor" value="{{ carro.motor }}">
                             <label for="ano_{{ carro.id }}">Ano</label>
-                            <input type="number" name="ano_{{ carro.id }}" class="form-control mb" placeholder="Ano" value="{{ carro.ano }}">
+                            <input type="number" name="ano_{{ carro.id }}" class="form-control mb-2 ano-input" placeholder="Ano" value="{{ carro.ano }}">
                             <label for="placa_{{ carro.id }}">Placa</label>
-                            <input type="text" name="placa_{{ carro.id }}" class="form-control mb" placeholder="Placa" value="{{ carro.placa }}">
+                            <input type="text" name="placa_{{ carro.id }}" class="form-control mb-2 placa-input" placeholder="Placa" value="{{ carro.placa }}">
                             <label for="quilometragem_{{ carro.id }}">Quilometragem em KMs rodados</label>
                             <input type="number" name="quilometragem_{{ carro.id }}" class="form-control mb-2" placeholder="Quilometragem" value="{{ carro.quilometragem }}">
                         </div>
@@ -629,24 +630,24 @@
 			{% for telefone in telefones %}
 			<div class="mb-2">
 				<label for="numero">Número de Telefone</label>
-				<input type="text" name="numero" class="form-control" value="{{ telefone.numero }}">
+				<input type="text" name="numero" class="form-control telefone-input" value="{{ telefone.numero }}">
 			</div>
 			<div class="d-flex gap-2">
-				<form action="/update_telefone/{{ telefone.id }}" method="POST">
+				<form action="{{ url_for('main.update_telefone', telefone_id=telefone.id) }}" method="POST" id="updateTelefoneForm{{ telefone.id }}">
 					<button type="submit" class="btn btn-warning">Atualizar Telefone</button>
 				</form>
-				<form action="/delete_telefone/{{ telefone.id }}" method="POST">
+				<form action="{{ url_for('main.delete_telefone', telefone_id=telefone.id) }}" method="POST">
 					<button type="submit" class="btn btn-danger">Remover Telefone</button>
 				</form>
 			</div>
 			{% endfor %}
 			</div>
 			<div class="card mb-4">
-			<h3 class="mt-4">Adcionar Telefones</h3>
-			<form action="/add_telefone/{{ cliente.id }}" method="POST">
+			<h3 class="mt-4">Adicionar Telefones</h3>
+			<form action="{{ url_for('main.add_telefone', cliente_id=cliente.id) }}" method="POST" id="addTelefoneForm">
 				<label for="numeros[]">Digite um telefone</label>
 				<div id="telefones-container" class="mb-2">
-					<input type="text" name="numeros[]" class="form-control mb" placeholder="Digite o Telefone" required> {# Adicionado 'required' aqui #}
+					<input type="text" name="numeros[]" class="form-control mb-2 telefone-input" placeholder="Digite o Telefone" required> {# Adicionado 'required' aqui #}
 					<button class="btn btn-outline-primary" type="button" onclick="adicionarCampoTelefone()"><i class="bi bi-plus-circle mb-1"></i> Adicionar Telefone Extra
 					</button>
 				</div>
@@ -726,7 +727,7 @@
                                         <h5 class="modal-title" id="editPagamentoModalLabel{{ pagamento.id }}">Editar Pagamento</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-                                    <form action="{{ url_for('main.edit_pagamento', id=pagamento.id) }}" method="POST">
+                                    <form action="{{ url_for('main.edit_pagamento', id=pagamento.id) }}" method="POST" id="editPagamentoForm{{ pagamento.id }}">
                                         <div class="modal-body">
                                             <div class="mb-3">
                                                 <label for="valor{{ pagamento.id }}" class="form-label">Valor (R$)</label>
@@ -735,17 +736,17 @@
                                             <div class="mb-3">
                                                 <label for="metodo{{ pagamento.id }}" class="form-label">Método de Pagamento</label>
                                                 <select class="form-control" id="metodo{{ pagamento.id }}" name="metodo" required onchange="toggleOpcaoPagamento(event)">
-                                                    <option value="Dinheiro" {% if pagamento.metodo == 'Dinheiro' %}selected{% endif %}>Dinheiro</option>
-                                                    <option value="Cartão de Crédito" {% if pagamento.metodo == 'Cartão de Crédito' %}selected{% endif %}>Cartão de Crédito</option>
-                                                    <option value="Cartão de Débito" {% if pagamento.metodo == 'Cartão de Débito' %}selected{% endif %}>Cartão de Débito</option>
-                                                    <option value="Pix" {% if pagamento.metodo == 'Pix' %}selected{% endif %}>Pix</option>
+                                                    <option value="Dinheiro">Dinheiro</option>
+                                                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                                    <option value="Cartão de Débito">Cartão de Débito</option>
+                                                    <option value="Pix">Pix</option>
                                                 </select>
                                             </div>
                                             <div class="opcaoCartao" {% if pagamento.metodo != 'Cartão de Crédito' %}style="display: none;"{% endif %}>
                                                 <label for="tipo_pagamento{{ pagamento.id }}" class="form-label">Tipo de Pagamento:</label>
                                                 <select class="form-control mb-2" id="tipo_pagamento{{ pagamento.id }}" name="tipo_pagamento" onchange="toggleParcelas(event)">
-                                                    <option value="À vista" {% if pagamento.tipo_pagamento == 'À vista' %}selected{% endif %}>À vista</option>
-                                                    <option value="Parcelado" {% if pagamento.tipo_pagamento == 'Parcelado' %}selected{% endif %}>Parcelado</option>
+                                                    <option value="À vista">À vista</option>
+                                                    <option value="Parcelado">Parcelado</option>
                                                 </select>
                                                 <div class="opcaoParcelado" {% if pagamento.tipo_pagamento != 'Parcelado' %}style="display: none;"{% endif %}>
                                                     <label for="parcelas{{ pagamento.id }}" class="form-label">Número de Parcelas:</label>
@@ -771,7 +772,7 @@
 {% for carro in carros %}
     {% for historico in carro.historicos %}
         {% if not historico.tem_pagamento %}
-        <form id="form_pagamento_{{ historico.id }}" action="/add_pagamento/{{ carro.id }}/{{ historico.id }}" method="POST">
+        <form id="form_pagamento_{{ historico.id }}" action="{{ url_for('main.add_pagamento', carro_id=carro.id, historico_id=historico.id) }}" method="POST">
             <h3>Registrar pagamento para: {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}</h3>
             <p><strong>Serviço realizado:</strong> {{ historico.descricao }}</p>
             <label for="valor">Valor (R$)</label>
@@ -965,6 +966,13 @@
 			</div>
             </div>
             </div>
+    <!-- Bootstrap JS (bundle inclui Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
+    <!-- jQuery e jQuery Mask Plugin -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
     <script>
         // Função para abrir a aba
         function openTab(tabName) {
@@ -1006,15 +1014,24 @@
                 });
             });
         });
+
         // Função para adicionar novos campos de telefone
         function adicionarCampoTelefone() {
             const container = document.getElementById('telefones-container');
             const novoCampo = document.createElement('div');
-            novoCampo.classList.add('mb');
+            novoCampo.classList.add('mb-2');
             novoCampo.innerHTML = `
-                Digite o telefone adicional<input type="text" name="numeros[]" class="form-control" placeholder="Digite o telefone adicional" required>
+                Digite o telefone adicional<input type="text" name="numeros[]" class="form-control mb-2 telefone-input" placeholder="Digite o telefone adicional" required>
             `;
             container.appendChild(novoCampo);
+             // Aplica a máscara ao novo campo de telefone
+            $(novoCampo).find('.telefone-input').mask('(00) 0000-00009', {
+                onKeyPress: function(val, e, field, options) {
+                    var masks = ['(00) 0000-00009', '(00) 00000-0000'];
+                    var mask = (val.length > 14) ? masks[1] : masks[0];
+                    $(field).mask(mask, options);
+                }
+            });
         }
 		
 		// Função para adicionar outros endereços
@@ -1024,13 +1041,13 @@
 			novoCampo.classList.add('mb');
             novoCampo.innerHTML = `
 				<label for="endereco">Endereço Adicional</label>
-				<input type="text" name="endereco[]" class="form-control mb" placeholder="Endereço adicional">
+				<input type="text" name="endereco[]" class="form-control mb-2" placeholder="Endereço adicional">
 				<label for="bairro">Bairro Adicional</label>
-				<input type="text" name="bairro[]" class="form-control mb" placeholder="Bairro adicional">
+				<input type="text" name="bairro[]" class="form-control mb-2" placeholder="Bairro adicional">
 				<label for="cidade">Cidade Adicional</label>
-				<input type="text" name="cidade[]" class="form-control mb" placeholder="Cidade adicional">
+				<input type="text" name="cidade[]" class="form-control mb-2" placeholder="Cidade adicional">
 				<label for="cep">CEP Adicional</label>
-				<input type="text" name="cep[]" class="form-control mb-2" placeholder="CEP adicional">
+				<input type="text" name="cep[]" class="form-control mb-2 cep-input" placeholder="CEP adicional">
 			`;
 			container.insertBefore(novoCampo, container.querySelector('button.btn-outline-primary')); // Insere antes do botão "Adicionar outro endereço"
 
@@ -1038,6 +1055,8 @@
             const newCepInput = novoCampo.querySelector('input[name="cep[]"]');
             if (newCepInput) {
                 newCepInput.addEventListener('blur', () => preencherEnderecoPorCep(newCepInput));
+                // Aplica a máscara ao novo campo de CEP
+                $(newCepInput).mask('00000-000');
             }
         }
 
@@ -1079,39 +1098,72 @@
         function adicionarCarro() {
             const carrosContainer = document.getElementById('carros-container');
             const novoCarro = document.createElement('div');
-            novoCarro.className = 'carro-form mb';
+            novoCarro.className = 'carro-form mb-2';
             novoCarro.innerHTML = `
                Marca<br><input type="text" name="marca[]" class="form-control mb" placeholder="Marca" required>
                Modelo<br><input type="text" name="modelo[]" class="form-control mb" placeholder="Modelo" required>
                Motor<br><input type="text" name="motor[]" class="form-control mb" placeholder="Motor">
-               Ano<br><input type="number" name="ano[]" class="form-control mb" placeholder="Ano">
-               Placa<br><input type="text" name="placa[]" class="form-control mb" placeholder="Placa">
+               Ano<br><input type="number" name="ano[]" class="form-control mb ano-input" placeholder="Ano">
+               Placa<br><input type="text" name="placa[]" class="form-control mb-2 placa-input" placeholder="Placa">
                Quilometragem em KMs rodados<br><input type="number" name="quilometragem[]" class="form-control mb-2" placeholder="Quilometragem">
             `;
             carrosContainer.appendChild(novoCarro);
+            // Aplica máscaras aos novos campos de carro
+            $(novoCarro).find('.ano-input').mask('0000');
+            $(novoCarro).find('.placa-input').mask('SSS-0000', {
+                'translation': {
+                    S: {
+                        pattern: /[A-Za-z]/
+                    },
+                    '0': {
+                        pattern: /[0-9]/
+                    }
+                }
+            });
         }
 
         // Função para o menu
 		function toggleMenu() {
 			let menu = document.getElementById("menu");
-            let botao = document.querySelector(".toggle-btn");
+            let conteudo = document.getElementById("conteudo");
+            let toggleBtn = document.querySelector(".toggle-btn");
+            let logo = document.querySelector(".logo-container");
 
 			if (menu.classList.contains("recolhido")) {
 				menu.classList.remove("recolhido");
+                conteudo.classList.remove("menu-recolhido");
+                toggleBtn.classList.remove("recolhido");
+                if (window.innerWidth <= 768) {
+                    logo.style.display = "none"; /* Oculta a logo no mobile quando o menu estiver expandido */
+                }
 			} else {
 				menu.classList.add("recolhido");
+                conteudo.classList.add("menu-recolhido");
+                toggleBtn.classList.add("recolhido");
+                if (window.innerWidth <= 768) {
+                    logo.style.display = "flex"; /* Exibe a logo novamente no mobile ao recolher */
+                }
 			}
 		}        
-        // Menu fechado no mobile
+        
+        // Correção para iniciar a página com o menu fechado no mobile e aberto no desktop
         window.onload = function() {
             let menu = document.getElementById("menu");
+            let conteudo = document.getElementById("conteudo");
+            let toggleBtn = document.querySelector(".toggle-btn");
             let logo = document.querySelector(".logo-container");
-			
-			if (window.innerWidth <= 768) {
-				menu.classList.add("recolhido");
-			} else {
-				menu.classList.remove("recolhido");
-			}
+
+            if (window.innerWidth <= 768) {
+                menu.classList.add("recolhido"); // Mantém o menu fechado ao carregar
+                conteudo.classList.add("menu-recolhido");
+                toggleBtn.classList.add("recolhido");
+                logo.style.display = "flex"; // Garante que a logo esteja visível no mobile quando o menu está recolhido
+            } else {
+                menu.classList.remove("recolhido"); // No desktop, garante que o menu esteja aberto
+                conteudo.classList.remove("menu-recolhido");
+                toggleBtn.classList.remove("recolhido");
+                logo.style.display = "flex"; // Garante que a logo esteja visível no desktop
+            }
 
             // Inicializa o estado dos campos de pagamento ao carregar a página
             document.querySelectorAll('.opcaoCartao').forEach(opcaoCartaoDiv => {
@@ -1121,7 +1173,7 @@
                     if (selectMetodo) { // Adicionada verificação para garantir que o select de método existe
                         if (selectMetodo.value === 'Cartão de Crédito') {
                             opcaoCartaoDiv.style.display = 'block';
-                            const selectTipoCartao = opcaoCartaoDiv.querySelector('select[name="tipo_cartao"]');
+                            const selectTipoCartao = opcaoCartaoDiv.querySelector('select[name="tipo_pagamento"]'); // Corrigido para 'tipo_pagamento'
                             const opcaoParceladoDiv = opcaoCartaoDiv.querySelector('.opcaoParcelado');
                             if (selectTipoCartao && opcaoParceladoDiv) {
                                 if (selectTipoCartao.value === 'Parcelado') {
@@ -1136,6 +1188,8 @@
                     }
                 }
             });
+            // Aplica as máscaras aos campos existentes no carregamento
+            applyMasks();
         };
 
         // Função para imprimir os dados selecionados da aba "Imprimir"
@@ -1345,14 +1399,21 @@
             return true;
         }
 
-        // Função de validação de CNPJ
+        // Nova e melhorada função de validação de CNPJ
         function validarCNPJ(cnpj) {
+            console.log('validarCNPJ: Recebido (antes da limpeza):', cnpj);
             cnpj = cnpj.replace(/[^\d]+/g, ''); // Remove caracteres não numéricos
+            console.log('validarCNPJ: Após limpeza (apenas dígitos):', cnpj);
 
-            if (cnpj == '') return false;
-
-            if (cnpj.length != 14)
+            if (cnpj == '') {
+                console.log('validarCNPJ: CNPJ vazio, retornando false.');
                 return false;
+            }
+
+            if (cnpj.length != 14) {
+                console.log('validarCNPJ: Tamanho do CNPJ inválido (' + cnpj.length + '), retornando false.');
+                return false;
+            }
 
             // Elimina CNPJs inválidos conhecidos
             if (cnpj == "00000000000000" ||
@@ -1364,8 +1425,10 @@
                 cnpj == "66666666666666" ||
                 cnpj == "77777777777777" ||
                 cnpj == "88888888888888" ||
-                cnpj == "99999999999999")
+                cnpj == "99999999999999") {
+                console.log('validarCNPJ: CNPJ inválido conhecido, retornando false.');
                 return false;
+            }
 
             // Valida DVs
             let tamanho = cnpj.length - 2;
@@ -1373,28 +1436,39 @@
             let digitos = cnpj.substring(tamanho);
             let soma = 0;
             let pos = tamanho - 7;
+            
             for (let i = tamanho; i >= 1; i--) {
-                soma += numeros.charAt(i - 1) * pos--;
-                if (pos < 2)
+                soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+                if (pos < 2) {
                     pos = 9;
+                }
             }
+            
             let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
-            if (resultado != digitos.charAt(0))
+            console.log('validarCNPJ: Primeiro DV calculado:', resultado, 'Esperado:', parseInt(digitos.charAt(0)));
+            if (resultado != parseInt(digitos.charAt(0))) {
                 return false;
+            }
 
             tamanho = tamanho + 1;
             numeros = cnpj.substring(0, tamanho);
             soma = 0;
             pos = tamanho - 7;
+            
             for (let i = tamanho; i >= 1; i--) {
-                soma += numeros.charAt(i - 1) * pos--;
-                if (pos < 2)
+                soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+                if (pos < 2) {
                     pos = 9;
+                }
             }
+            
             resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
-            if (resultado != digitos.charAt(1))
+            console.log('validarCNPJ: Segundo DV calculado:', resultado, 'Esperado:', parseInt(digitos.charAt(1)));
+            if (resultado != parseInt(digitos.charAt(1))) {
                 return false;
+            }
 
+            console.log('validarCNPJ: CNPJ válido, retornando true.');
             return true;
         }
 
@@ -1419,20 +1493,39 @@
 
         // Função para validar CNPJ em tempo real (oninput)
         function validarCNPJInput(input) {
-            const cnpj = input.value;
+            console.log('validarCNPJInput: Acionado para o valor:', input.value);
+            const cnpj = input.value; // Pega o valor com a máscara, se houver
             const errorSpan = document.getElementById('cnpjError');
-            if (cnpj.length === 14 || cnpj.length === 18) { // Considera 14 dígitos puros ou 18 com máscara
-                if (validarCNPJ(cnpj)) {
+            
+            // A validação completa só deve ocorrer quando houver dígitos suficientes (14)
+            // Mesmo que a máscara adicione caracteres, a validação `validarCNPJ` vai limpar.
+            // Aqui, podemos verificar se o comprimento da *string com máscara* é >= 14 (o que significa que já tem todos os dígitos)
+            // OU se a string *limpa* já tem 14 dígitos.
+            const cnpjApenasDigitos = cnpj.replace(/\D/g, '');
+            console.log('validarCNPJInput: CNPJ apenas dígitos para verificação de comprimento:', cnpjApenasDigitos);
+
+            if (cnpjApenasDigitos.length === 14) { 
+                console.log('validarCNPJInput: Iniciando validação completa para:', cnpjApenasDigitos);
+                if (validarCNPJ(cnpj)) { // Passa o valor original, a função validarCNPJ irá limpá-lo
                     errorSpan.style.display = 'none';
                     input.setCustomValidity('');
+                    console.log('validarCNPJInput: CNPJ validado com sucesso.');
                 } else {
                     errorSpan.textContent = 'CNPJ inválido.';
                     errorSpan.style.display = 'inline';
                     input.setCustomValidity('CNPJ inválido.');
+                    console.log('validarCNPJInput: CNPJ inválido detectado.');
                 }
-            } else {
-                errorSpan.style.display = 'none'; // Esconde a mensagem se não tiver dígitos suficientes para validar
+            } else if (cnpjApenasDigitos.length > 0 && cnpjApenasDigitos.length < 14) {
+                // Se já começou a digitar, mas não tem 14 dígitos, esconde o erro temporariamente
+                errorSpan.style.display = 'none';
                 input.setCustomValidity('');
+                console.log('validarCNPJInput: CNPJ incompleto (' + cnpjApenasDigitos.length + '/14), sem erro ainda.');
+            } else {
+                // Campo vazio
+                errorSpan.style.display = 'none'; 
+                input.setCustomValidity('');
+                console.log('validarCNPJInput: Campo CNPJ vazio.');
             }
         }
 
@@ -1475,7 +1568,6 @@
             return formValido;
         }
 
-
         // Adiciona um event listener ao campo principal de CEP no carregamento do DOM
         document.addEventListener('DOMContentLoaded', function() {
             const mainCepInput = document.getElementById('mainCepInput'); // Seleciona o campo principal de CEP pelo seu ID
@@ -1498,7 +1590,131 @@
             }
         };
         
+        // Função para aplicar as máscaras aos inputs
+        function applyMasks() {
+            // Máscara de CPF
+            $('.cpf-input').mask('000.000.000-00', {
+                reverse: false
+            });
+
+            // Máscara de CNPJ
+            $('.cnpj-input').mask('00.000.000/0000-00', {
+                reverse: false
+            });
+
+            // Máscara de CEP
+            $('.cep-input').mask('00000-000');
+
+            // Máscara de Placa (Mercosul ou padrão)
+            $('.placa-input').mask('SSS-0000', {
+                'translation': {
+                    S: {
+                        pattern: /[A-Za-z]/
+                    },
+                    '0': {
+                        pattern: /[0-9]/
+                    }
+                }
+            });
+
+            // Máscara de Ano (apenas 4 dígitos numéricos)
+            $('.ano-input').mask('0000');
+
+            // Máscara de telefone flexível para campos com a classe 'telefone-input'
+            $('.telefone-input').mask('(00) 0000-00009', {
+                onKeyPress: function(val, e, field, options) {
+                    var masks = ['(00) 0000-00009', '(00) 00000-0000'];
+                    var mask = (val.length > 14) ? masks[1] : masks[0];
+                    $(field).mask(mask, options); // Usa $(field) para aplicar a máscara apenas no campo atual
+                }
+            });
+        }
+
+        // Adiciona um listener para o envio dos formulários
+        $(document).ready(function() {
+            // Chama a função applyMasks quando o DOM estiver pronto
+            applyMasks();
+
+            // Intercepta o envio do formulário de edição do cliente
+            $('#editClientForm').submit(function() {
+                var cpfInput = $('#cpfInput'); // Alterado para id="cpfInput"
+                var cnpjInput = $('#cnpjInput'); // Alterado para id="cnpjInput"
+                var cepInputs = $('input[name="cep[]"]'); // Seleciona todos os campos de CEP
+
+                // Remove os caracteres não numéricos do CPF antes de enviar
+                if (cpfInput.length && cpfInput.val()) {
+                    cpfInput.val(cpfInput.val().replace(/\D/g, ''));
+                }
+
+                // Remove os caracteres não numéricos do CNPJ antes de enviar
+                if (cnpjInput.length && cnpjInput.val()) {
+                    cnpjInput.val(cnpjInput.val().replace(/\D/g, ''));
+                }
+
+                // Remove o hífen de todos os campos de CEP antes de enviar
+                cepInputs.each(function() {
+                    if ($(this).val()) {
+                        $(this).val($(this).val().replace(/\D/g, ''));
+                    }
+                });
+            });
+
+            // Intercepta o envio do formulário de adicionar telefone
+            $('#addTelefoneForm').submit(function() {
+                var telefoneInputs = $(this).find('input[name="numeros[]"]');
+                telefoneInputs.each(function() {
+                    if ($(this).val()) {
+                        $(this).val($(this).val().replace(/\D/g, ''));
+                    }
+                });
+            });
+
+            // Intercepta o envio dos formulários de atualização de telefone (se houver múltiplos)
+            $('[id^="updateTelefoneForm"]').submit(function() {
+                var telefoneInput = $(this).find('input[name="numero"]');
+                if (telefoneInput.val()) {
+                    telefoneInput.val(telefoneInput.val().replace(/\D/g, ''));
+                }
+            });
+            
+            // Intercepta o envio do formulário de adicionar carro
+            $('#addCarroForm').submit(function() {
+                $(this).find('input[name="placa[]"]').each(function() {
+                    if ($(this).val()) {
+                        $(this).val($(this).val().replace('-', '').toUpperCase()); // Remove hífen e coloca em maiúsculas
+                    }
+                });
+                $(this).find('input[name="ano[]"]').each(function() {
+                    if ($(this).val()) {
+                        $(this).val($(this).val().replace(/\D/g, ''));
+                    }
+                });
+            });
+
+            // Intercepta o envio do formulário de atualização de carros
+            $('#updateCarrosForm').submit(function() {
+                $(this).find('[name^="placa_"]').each(function() { // Seleciona placas por atributo name que começa com "placa_"
+                    if ($(this).val()) {
+                        $(this).val($(this).val().replace('-', '').toUpperCase());
+                    }
+                });
+                $(this).find('[name^="ano_"]').each(function() { // Seleciona anos por atributo name que começa com "ano_"
+                    if ($(this).val()) {
+                        $(this).val($(this).val().replace(/\D/g, ''));
+                    }
+                });
+            });
+
+            // Intercepta o envio dos formulários de adicionar/editar pagamento
+            $('[id^="form_pagamento_"], [id^="editPagamentoForm"]').submit(function() {
+                // Apenas para garantir que campos numéricos estejam limpos, embora Flask já cuide de float
+                var valorInput = $(this).find('input[name="valor"]');
+                if (valorInput.val()) {
+                    valorInput.val(valorInput.val().replace(',', '.')); // Troca vírgula por ponto para float
+                }
+            });
+
+        });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
