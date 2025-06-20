@@ -16,31 +16,48 @@
             padding: 0;
             margin: 0;
             border-bottom: 1px solid #dee2e6;
+            background-color: #f8f9fa; /* Fundo para a área das abas */
+            border-radius: 0.5rem 0.5rem 0 0; /* Arredonda só em cima */
+            overflow: hidden; /* Garante que os cantos arredondados funcionem */
         }
 
         .nav-tab-item {
-            padding: 10px 20px;
+            padding: 12px 20px;
             cursor: pointer;
             border: 1px solid #dee2e6;
             border-bottom: none;
             margin-right: 2px;
-            background-color: #f8f9fa;
-            border-top-left-radius: 0.25rem;
-            border-top-right-radius: 0.25rem;
+            background-color: #e9ecef; /* Cor mais suave para abas inativas */
+            border-top-left-radius: 0.45rem; /* Canto um pouco mais arredondado */
+            border-top-right-radius: 0.45rem;
+            transition: background-color 0.3s ease, color 0.3s ease; /* Transição suave */
+            color: #495057; /* Cor do texto padrão */
+            font-weight: 500; /* Levemente mais negrito */
+        }
+
+        .nav-tab-item:hover:not(.active) {
+            background-color: #dee2e6; /* Efeito hover mais pronunciado */
+            color: #343a40;
         }
 
         .nav-tab-item.active {
-            border-bottom-color: #007bff;
-            background-color: #fff;
+            border-bottom-color: transparent; /* Remove a borda inferior para parecer "colado" ao conteúdo */
+            background-color: #fff; /* Fundo branco para a aba ativa */
+            color: #007bff; /* Cor do texto azul padrão do Bootstrap */
+            font-weight: bold; /* Mais negrito para a aba ativa */
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.05); /* Sombra suave para destacar */
+            z-index: 1; /* Garante que a aba ativa fique por cima */
         }
 
         .tab-content {
             display: none;
-            padding: 20px;
-            border: 1px solid #dee2e6;
-            border-top: none;
-            border-bottom-left-radius: 0.25rem;
-            border-bottom-right-radius: 0.25rem;
+            padding: 25px; /* Mais padding para o conteúdo */
+            /* Removido o border aqui para evitar linhas extras */
+            border-top: none; /* Remove a borda superior para se "conectar" à aba */
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+            background-color: #fff; /* Fundo branco para o conteúdo da aba */
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Sombra para o card */
         }
 
         .tab-content.active {
@@ -48,7 +65,6 @@
         }
 
         /* Esconde as seções de impressão por padrão dentro da aba 'Imprimir' */
-        /* Elas serão mostradas via JavaScript quando os checkboxes forem marcados */
         #print .print-section {
             display: none;
         }
@@ -56,7 +72,7 @@
         /* Layout principal */
         body {
             font-family: 'Inter', sans-serif; /* Using Inter font as per instruction */
-            background-color: #f8f9fa;
+            background-color: #f8f9fa; /* Cor de fundo suave */
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -94,7 +110,7 @@
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #343a40;
+            background-color: #343a40; /* Cor original */
             padding-top: 20px;
             transition: width 0.3s ease-in-out;
             z-index: 1000;
@@ -102,7 +118,7 @@
         }
 
         .menu-lateral.recolhido {
-            width: 0px;
+            width: 0px; /* Largura original recolhido */
         }
 
         .menu-lateral a {
@@ -119,7 +135,7 @@
         }
 
         .menu-lateral a:hover {
-            background-color: #495057;
+            background-color: #495057; /* Cor de hover original */
         }
 
         /* Content Adjustment */
@@ -135,7 +151,7 @@
         }
 
         .conteudo.menu-recolhido {
-            margin-left: 60px;
+            margin-left: 60px; /* Original */
             width: calc(100% - 60px);
         }
 
@@ -143,7 +159,7 @@
         .toggle-btn {
             position: fixed;
             top: 10px;
-            left: 200px;
+            left: 200px; /* Original */
             background-color: #007bff;
             color: white;
             padding: 8px 12px;
@@ -159,6 +175,7 @@
             background-color: #f8f9fa;
             border-radius: 0.75rem;
             box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: none; /* Removendo a borda padrão do card */
         }
         
         .card-header {
@@ -171,10 +188,10 @@
         }
 
         .toggle-btn.recolhido {
-            left: 70px;
+            left: 70px; /* Original */
         }
         .menu-lateral.recolhido + .toggle-btn {
-            left: 10px;
+            left: 10px; /* Original */
         }
         
         @media (min-width: 769px) {
@@ -186,7 +203,7 @@
         /* Adjustments for screens smaller than 768px (tablets and mobile phones) */
         @media (max-width: 768px) {
             .menu-lateral {
-                width: 60px;
+                width: 60px; /* Largura original no mobile */
             }
 
             .conteudo {
@@ -292,10 +309,28 @@
             
             table {
                 font-size: 12px;
+                border-collapse: collapse; /* Garante que as bordas da tabela sejam colapsadas */
             }
 
             th, td {
                 padding: 5px;
+                border: none; /* Remove as bordas das células */
+            }
+
+            /* Estilo específico para as tabelas dentro das abas */
+            .table-responsive .table {
+                border: none; /* Remove a borda principal da tabela */
+            }
+
+            .table-responsive .table thead th {
+                border-bottom: 1px solid rgba(0, 0, 0, 0.125); /* Mantém a borda inferior do cabeçalho */
+            }
+            .table-responsive .table tbody tr td {
+                border-top: none; /* Remove a borda superior das células do corpo da tabela */
+                border-bottom: 1px solid #e9ecef; /* Adiciona uma borda inferior suave para separar as linhas */
+            }
+            .table-responsive .table tbody tr:last-child td {
+                border-bottom: none; /* Remove a borda inferior da última linha */
             }
         }
         </style>
@@ -309,7 +344,7 @@
         <a href="{{ url_for('main.index') }}">Menu Inicial</a>
         <a href="{{ url_for('main.inventario') }}">Inventário</a>
         <a href="{{ url_for('main.client') }}">Lista de Clientes</a>
-        <a href="{{ url_for('main.lista_utilizadores') }}">Utilizadores</a>
+        <a href="{{ url_for('main.lista_utilizadores') }}">Usuários</a>
         {% if current_user.is_authenticated %}
             <a href="{{ url_for('main.logout') }}">Sair ({{ current_user.nome }})</a>
         {% else %}
@@ -459,7 +494,7 @@
                     <h4 class="mb-3">Carros do Cliente: {{ cliente.nome }} </h4>
                     {% if carros %}
                         <div class="table-responsive">
-                            <table class="table table-bordered table-hover align-middle">
+                            <table class="table table-hover align-middle"> <!-- Removido .table-bordered aqui -->
                                 <thead class="table-dark">
                                     <tr>
                                         <th>Marca</th>
@@ -485,7 +520,7 @@
                                         <tr>
                                             <td colspan="6">
                                                 <div class="table-responsive">
-                                                    <table class="table table-sm table-striped table-hover">
+                                                    <table class="table table-sm table-striped table-hover"> <!-- Removido .table-bordered aqui -->
                                                         <thead class="table-light">
                                                             <tr>
                                                                 <th>Data e Hora</th>
@@ -599,7 +634,7 @@
                                 <button type="button" class="btn btn-danger btn-sm mt-2" onclick="this.closest('.carro-form').remove();">Remover Carro</button>
                             </div>
                         </div>
-                        <div class="d-flex gap-2 mt-3"> <!-- Added d-flex, gap-2 and mt-3 for alignment -->
+                        <div class="d-flex gap-2 mt-3">
                             <button class="btn btn-outline-primary" type="button" onclick="adicionarCarro()"><i class="bi bi-plus-circle me-1"></i> Adicionar mais um carro</button>
                             <button type="submit" class="btn btn-success">Salvar</button>
                         </div>
@@ -708,7 +743,7 @@
                 <h2 class="mb-3">Pagamentos do cliente: {{ cliente.nome }} </h2>
                 {% if pagamentos %}
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover align-middle">
+                        <table class="table table-hover align-middle"> <!-- Removido .table-bordered aqui -->
                             <thead class="table-dark">
                                 <tr>
                                     <th>Veículo</th>
@@ -729,7 +764,7 @@
                                             {% if pagamento.carro_id == carro.id %}
                                                 {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}
                                             {% endif %}
-                                        {% endfor %}
+                                        {% endfor %} {# <-- Adicionado este fechamento #}
                                     </td>
                                     <td>
                                         {% for historico in historicos %}
@@ -955,7 +990,7 @@
                     <h2 class="mb-3">Pagamentos do cliente: {{ cliente.nome }}</h2>
 
                     {% if pagamentos %}
-                    <table class="table table-bordered">
+                    <table class="table table-hover"> <!-- Removido .table-bordered aqui -->
                         <thead class="table-dark">
                             <tr>
                                 <th>Veículo</th> <th>Serviço Realizado</th> <th>Data e Hora</th>
@@ -1202,23 +1237,23 @@
         // Function for the menu
 		function toggleMenu() {
 			let menu = document.getElementById("menu");
-            let conteudo = document.getElementById("conteudo");
-            let toggleBtn = document.querySelector(".toggle-btn");
-            let logo = document.querySelector(".logo-container");
+			let conteudo = document.getElementById("conteudo");
+			let toggleBtn = document.querySelector(".toggle-btn");
+			let logo = document.querySelector(".logo-container");
 
 			if (menu.classList.contains("recolhido")) {
 				menu.classList.remove("recolhido");
-                conteudo.classList.remove("menu-recolhido");
-                toggleBtn.classList.remove("recolhido");
+				conteudo.classList.remove("menu-recolhido");
+				toggleBtn.classList.remove("recolhido");
                 if (window.innerWidth <= 768) {
-                    logo.style.display = "none"; /* Hides the logo on mobile when the menu is expanded */
+                    logo.style.display = "flex"; // Shows the logo on mobile when the menu is collapsed
                 }
 			} else {
 				menu.classList.add("recolhido");
-                conteudo.classList.add("menu-recolhido");
-                toggleBtn.classList.add("recolhido");
+				conteudo.classList.add("menu-recolhido");
+				toggleBtn.classList.add("recolhido");
                 if (window.innerWidth <= 768) {
-                    logo.style.display = "flex"; /* Shows the logo again on mobile when collapsed */
+                    logo.style.display = "none"; // Hides the logo on mobile when the menu is expanded
                 }
 			}
 		}        
