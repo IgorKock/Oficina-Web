@@ -1119,6 +1119,10 @@
             newDiv.innerHTML = `
                 <h5 class="mb-3">Endereço Adicional</h5>
 				<div class="mb-3">
+                    <label for="cep" class="form-label">CEP</label>
+				    <input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP adicional">
+                </div>
+				<div class="mb-3">
                     <label for="endereco" class="form-label">Endereço</label>
 				    <input type="text" name="endereco[]" class="form-control" placeholder="Endereço adicional">
                 </div>
@@ -1129,10 +1133,6 @@
 				<div class="mb-3">
                     <label for="cidade" class="form-label">Cidade</label>
 				    <input type="text" name="cidade[]" class="form-control" placeholder="Cidade adicional">
-                </div>
-				<div class="mb-3">
-                    <label for="cep" class="form-label">CEP</label>
-				    <input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP adicional">
                 </div>
                 <button type="button" class="btn btn-danger btn-sm mt-2" onclick="this.closest('.mb-3').remove();">Remover Endereço</button>
 			`;
