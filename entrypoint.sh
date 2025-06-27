@@ -27,7 +27,7 @@ wait_for_mariadb
 # e sempre aplica as migrações mais recentes.
 MIGRATIONS_DIR="/app/migrations"
 
-if [ ! -d "$MIGRATIONS_DIR" ]; then
+if [ ! -f "$MIGRATIONS_DIR/env.py" ]; then
   echo "Diretório de migrações '$MIGRATIONS_DIR' não encontrado. Inicializando Flask-Migrate..."
   flask db init
   # Verifica se o flask db init foi bem-sucedido

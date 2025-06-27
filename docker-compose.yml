@@ -46,7 +46,7 @@ services:
       FLASK_APP: run.py # Certifique-se de que FLASK_APP está definido para as migrações
     volumes:
       - .:/app # Monta o diretório atual do host para /app no container (seu código da aplicação)
-      #- migrations_data:/app/migrations # NOVO: Volume para persistir as migrações
+      - migrations_data:/app/migrations # NOVO: Volume para persistir as migrações
     # Comando para executar as migrações e iniciar a aplicação
     # O 'flask db upgrade' garante que o banco de dados esteja atualizado
     # antes da aplicação iniciar.
