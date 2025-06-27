@@ -1,4 +1,4 @@
-version: "3.8"
+#version: "3.8"
 
 services:
   # Serviço para o banco de dados MariaDB
@@ -40,19 +40,14 @@ services:
     # O comando é agora o ENTRYPOINT definido no Dockerfile.
     # O CMD no Dockerfile será o argumento para o ENTRYPOINT.
     environment:
-      # Configuração da URL do banco de dados para a sua aplicação Flask
-      # O host 'db' refere-se ao nome do serviço do MariaDB definido acima
-      SQLALCHEMY_DATABASE_URI: mysql+pymysql://user_app:password_app@db/oficina_web
-    volumes:
-      - .:/app # Monta o diretório atual do host para /app no container (seu código da aplicação)
-      - migrations_data:/app/migrations # NOVO: Volume para persistir as migrações
-    # Se você tiver um ENTRYPOINT no Dockerfile, não precisa de um 'command' aqui.
-    # Caso contrário, o 'command' seria algo como:
-    # command: bash -c "flask db upgrade && python run.py"
-
+      # Passe as variáveis individuais que seu __init__.py espera
+      DB_USER: user_app
+      DB_PASSWORD: password_app
+      DB_HOST: db # <--- ISSO É CRUCIAL: 'db' é o nome do serviço MariaDB no Docker Compose
+      DB_NAME: oficina_web
+      FLASK_APP: run.py # Certifique-se de que FLASK_APP está definido para as migrações
 volumes:
-  db_data:
-  migrations_data: # NOVO: Definição do volume para migrações
+  db_data: # Define o volume para persistir os dados do MariaDB
 
 networks:
   oficina_network:
