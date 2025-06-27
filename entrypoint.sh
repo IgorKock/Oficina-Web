@@ -55,6 +55,9 @@ if [ $? -ne 0 ]; then
   # pois o erro pode ser na criação dos papéis, não nas tabelas em si
 fi
 
+# 💤 Delay mínimo para garantir que o banco finalize as alterações
+sleep 2
+
 echo "Migrações aplicadas!"
 
 # Inicia a aplicação Flask (comando original do CMD)
