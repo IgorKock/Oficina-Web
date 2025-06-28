@@ -240,6 +240,51 @@
                 padding: 5px;
             }
         }
+
+        /* Custom Alert Modal Styles */
+        .custom-alert-modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1050; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .custom-alert-modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            text-align: center;
+            position: relative;
+        }
+
+        .custom-alert-close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+        }
+
+        .custom-alert-close-btn:hover,
+        .custom-alert-close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -337,7 +382,7 @@
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                                     <form action="{{ url_for('main.delete_cliente', id=cliente.id) }}" method="POST" style="display: inline;">
-                                        <button type="submit" class="btn btn-danger">Apagar</button>
+                                        <button type="submit" class="btn btn-danger" onclick="return confirmDeleteClient();">Apagar</button>
                                     </form>
                                 </div>
                             </div>
@@ -367,14 +412,12 @@
                                 <input type="text" class="form-control" id="apelido" name="apelido">
                             </div>
                             <div class="mb-3">
-                                <label for="cpf" class="form-label">CPF (Opcional)</label>
-                                <!-- Removido o 'pattern' pois a máscara cuidará do formato -->
-                                <input type="text" class="form-control" id="cpf" name="cpf" placeholder="Ex: 123.456.789-00">
-                            </div>
-                            <div class="mb-3">
-                                <label for="cnpj" class="form-label">CNPJ (Opcional)</label>
-                                <!-- Removido o 'pattern' pois a máscara cuidará do formato -->
-                                <input type="text" class="form-control" id="cnpj" name="cnpj" placeholder="Ex: 00.000.000/0000-00">
+                                <label for="cpf_cnpj" class="form-label">CPF ou CNPJ</label>
+                                <input type="text" class="form-control" id="cpf_cnpj" name="cpf_cnpj" placeholder="Ex: 123.456.789-00 ou 00.000.000/0000-00">
+                                <!-- Campos ocultos para enviar ao backend -->
+                                <input type="hidden" name="cpf" id="hidden_cpf">
+                                <input type="hidden" name="cnpj" id="hidden_cnpj">
+                                <span id="cpfCnpjError" class="text-danger" style="display: none;">Documento inválido.</span>
                             </div>
                             <div id="telefones-container">
                                 <div class="mb-3 d-flex align-items-center">
@@ -391,6 +434,15 @@
         </div>
     </div>
 
+    <!-- Custom Alert Modal HTML -->
+    <div id="customAlertModal" class="custom-alert-modal">
+        <div class="custom-alert-modal-content">
+            <span class="custom-alert-close-btn">&times;</span>
+            <p id="customAlertMessage"></p>
+            <button class="btn btn-primary" onclick="closeCustomAlert()">OK</button>
+        </div>
+    </div>
+
     <!-- Bootstrap JS (bundle inclui Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     
@@ -399,6 +451,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 
     <script>
+        // Custom Alert Functions
+        function showCustomAlert(message) {
+            document.getElementById('customAlertMessage').innerText = message;
+            document.getElementById('customAlertModal').style.display = 'flex';
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('customAlertModal').style.display = 'none';
+        }
+
+        // Close button for the custom alert
+        document.querySelector('.custom-alert-close-btn').onclick = function() {
+            closeCustomAlert();
+        }
+
+        // Close when clicking outside the modal content
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('customAlertModal')) {
+                closeCustomAlert();
+            }
+        }
+
         // Função para adicionar campos de telefone dinamicamente
         function adicionarCampoTelefone() {
             const container = document.getElementById('telefones-container');
@@ -415,7 +489,7 @@
                 onKeyPress: function(val, e, field, options) {
                     var masks = ['(00) 0000-00009', '(00) 00000-0000'];
                     var mask = (val.length > 14) ? masks[1] : masks[0];
-                    $('.telefone-input').mask(mask, options);
+                    $(field).mask(mask, options); // Usa $(field) para aplicar a máscara apenas ao campo atual
                 }
             });
         }
@@ -496,15 +570,16 @@
 
         // Função para aplicar as máscaras aos inputs
         function applyMasks() {
-            // Aplica a máscara de CPF ao campo com o ID 'cpf'
-            $('#cpf').mask('000.000.000-00', {
-                reverse: false
-            });
-
-            // Aplica a máscara de CNPJ ao campo com o ID 'cnpj'
-            $('#cnpj').mask('00.000.000/0000-00', {
-                reverse: false
-            });
+            // Máscara dinâmica para CPF/CNPJ
+            var cpfCnpjMaskBehavior = function (val) {
+                return val.replace(/\D/g, '').length <= 11 ? '000.000.000-009' : '00.000.000/0000-00';
+            },
+            cpfCnpjOptions = {
+                onKeyPress: function(val, e, field, options) {
+                    field.mask(cpfCnpjMaskBehavior.apply({}, arguments), options);
+                }
+            };
+            $('#cpf_cnpj').mask(cpfCnpjMaskBehavior, cpfCnpjOptions);
 
             // Aplica a máscara de telefone para campos com a classe 'telefone-input'
             // O onKeyPress permite alternar entre máscara de 8 e 9 dígitos
@@ -512,27 +587,181 @@
                 onKeyPress: function(val, e, field, options) {
                     var masks = ['(00) 0000-00009', '(00) 00000-0000'];
                     var mask = (val.length > 14) ? masks[1] : masks[0];
-                    $('.telefone-input').mask(mask, options);
+                    $(field).mask(mask, options); // Usa $(field) para aplicar a máscara apenas ao campo atual
                 }
             });
         }
+
+        // CPF validation function (copiado de cliente.html)
+        function validarCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g, ''); // Removes non-numeric characters
+            if (cpf == '') return false;
+            // Eliminates known invalid CPFs
+            if (cpf.length != 11 ||
+                cpf == "00000000000" ||
+                cpf == "11111111111" ||
+                cpf == "22222222222" ||
+                cpf == "33333333333" ||
+                cpf == "44444444444" ||
+                cpf == "55555555555" ||
+                cpf == "66666666666" ||
+                cpf == "77777777777" ||
+                cpf == "88888888888" ||
+                cpf == "99999999999")
+                return false;
+            // Validates 1st digit
+            let add = 0;
+            for (let i = 0; i < 9; i++)
+                add += parseInt(cpf.charAt(i)) * (10 - i);
+            let rev = 11 - (add % 11);
+            if (rev == 10 || rev == 11)
+                rev = 0;
+            if (rev != parseInt(cpf.charAt(9)))
+                return false;
+            // Validates 2nd digit
+            add = 0;
+            for (let i = 0; i < 10; i++)
+                add += parseInt(cpf.charAt(i)) * (11 - i);
+            rev = 11 - (add % 11);
+            if (rev == 10 || rev == 11)
+                rev = 0;
+            if (rev != parseInt(cpf.charAt(10)))
+                return false;
+            return true;
+        }
+
+        // CNPJ validation function (copiado de cliente.html)
+        function validarCNPJ(cnpj) {
+            cnpj = cnpj.replace(/[^\d]+/g, ''); // Removes non-numeric characters
+
+            if (cnpj == '') {
+                return false;
+            }
+
+            if (cnpj.length != 14) {
+                return false;
+            }
+
+            // Eliminates known invalid CNPJs
+            if (cnpj == "00000000000000" ||
+                cnpj == "11111111111111" ||
+                cnpj == "22222222222222" ||
+                cnpj == "33333333333333" ||
+                cnpj == "44444444444444" ||
+                cnpj == "55555555555555" ||
+                cnpj == "66666666666666" ||
+                cnpj == "77777777777777" ||
+                cnpj == "88888888888888" ||
+                cnpj == "99999999999999") {
+                return false;
+            }
+
+            // Validates DVs
+            let tamanho = cnpj.length - 2;
+            let numeros = cnpj.substring(0, tamanho);
+            let digitos = cnpj.substring(tamanho);
+            let soma = 0;
+            let pos = tamanho - 7;
+            
+            for (let i = tamanho; i >= 1; i--) {
+                soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+                if (pos < 2) {
+                    pos = 9;
+                }
+            }
+            
+            let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+            if (resultado != parseInt(digitos.charAt(0))) {
+                return false;
+            }
+
+            tamanho = tamanho + 1;
+            numeros = cnpj.substring(0, tamanho);
+            soma = 0;
+            pos = tamanho - 7;
+            
+            for (let i = tamanho; i >= 1; i--) {
+                soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+                if (pos < 2) {
+                    pos = 9;
+                }
+            }
+            
+            resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+            if (resultado != parseInt(digitos.charAt(1))) {
+                return false;
+            }
+            return true;
+        }
+
+        // Função para validar o campo de input CPF/CNPJ
+        function validateCpfCnpjInput() {
+            var cpfCnpjInput = $('#cpf_cnpj');
+            var errorSpan = $('#cpfCnpjError');
+            var hiddenCpf = $('#hidden_cpf');
+            var hiddenCnpj = $('#hidden_cnpj');
+            
+            var valor = cpfCnpjInput.val().replace(/\D/g, ''); // Limpa o valor
+
+            // Reset errors and hidden fields
+            errorSpan.hide();
+            hiddenCpf.val('');
+            hiddenCnpj.val('');
+
+            if (valor === '') {
+                // Campo vazio, o que é permitido (Opcional)
+                return true;
+            } else if (valor.length === 11) {
+                if (validarCPF(valor)) {
+                    hiddenCpf.val(valor);
+                    return true;
+                } else {
+                    errorSpan.text('CPF inválido. Por favor, verifique o número.').show();
+                    return false;
+                }
+            } else if (valor.length === 14) {
+                if (validarCNPJ(valor)) {
+                    hiddenCnpj.val(valor);
+                    return true;
+                } else {
+                    errorSpan.text('CNPJ inválido. Por favor, verifique o número.').show();
+                    return false;
+                }
+            } else {
+                // Comprimento inválido
+                errorSpan.text('Documento com tamanho inválido. Digite 11 dígitos para CPF ou 14 para CNPJ.').show();
+                return false;
+            }
+        }
+        
+        // Função para confirmar a exclusão do cliente
+        function confirmDeleteClient() {
+            showCustomAlert('Tem certeza que deseja apagar o cliente e todos os seus dados? Esta ação é irreversível.');
+            // Retorna false para que o formulário não seja submetido imediatamente
+            // O usuário terá que clicar no botão "Apagar" dentro do modal de confirmação
+            return false; 
+        }
+
 
         // Adiciona um listener para o envio do formulário
         $(document).ready(function() {
             // Chama a função applyMasks quando o DOM estiver pronto
             applyMasks();
 
-            $('#addClientForm').submit(function() {
-                // Remove os caracteres não numéricos do CPF antes de enviar
-                var cpfInput = $('#cpf');
-                if (cpfInput.length && cpfInput.val()) { // Verifica se o elemento existe e tem valor
-                    cpfInput.val(cpfInput.val().replace(/\D/g, ''));
-                }
+            // Adiciona listener para o campo cpf_cnpj no modal de adicionar cliente
+            const cpfCnpjInputModal = document.getElementById('cpf_cnpj');
+            if (cpfCnpjInputModal) {
+                cpfCnpjInputModal.addEventListener('blur', function() {
+                    validateCpfCnpjInput();
+                });
+            }
 
-                // Remove os caracteres não numéricos do CNPJ antes de enviar
-                var cnpjInput = $('#cnpj');
-                if (cnpjInput.length && cnpjInput.val()) { // Verifica se o elemento existe e tem valor
-                    cnpjInput.val(cnpjInput.val().replace(/\D/g, ''));
+            $('#addClientForm').submit(function(event) {
+                // Valida o CPF/CNPJ antes de enviar
+                if (!validateCpfCnpjInput()) {
+                    event.preventDefault(); // Impede o envio do formulário
+                    showCustomAlert('Por favor, corrija o documento (CPF/CNPJ) antes de continuar.');
+                    return;
                 }
 
                 // Remove os caracteres não numéricos de todos os campos de telefone antes de enviar
