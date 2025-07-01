@@ -251,7 +251,8 @@
             justify-content: center;
             align-items: center;
             min-height: calc(100vh - 80px); /* Ajusta para o menu e logo */
-            margin-left: 200px; /* Espaço para o menu lateral */
+            /* margin-left: 200px; /* Espaço para o menu lateral */
+            margin-left: 0px;
             transition: margin-left 0.3s ease-in-out;
             padding: 20px;
         }
@@ -274,19 +275,7 @@
     <div class="logo-container">
         <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa">
     </div>
-    <button class="toggle-btn" onclick="toggleMenu()">☰</button>
-    
-    <div class="menu-lateral recolhido" id="menu">
-        <a href="{{ url_for('main.index') }}">Menu Inicial</a>
-        <a href="{{ url_for('main.inventario') }}">Inventário</a>
-        <a href="{{ url_for('main.client') }}">Lista de Clientes</a>
-        <a href="{{ url_for('main.lista_utilizadores') }}">Usuários</a>
-        {% if current_user.is_authenticated %}
-            <a href="{{ url_for('main.logout') }}">Sair ({{ current_user.nome }})</a>
-        {% else %}
-            <a href="{{ url_for('main.login') }}">Login</a>
-        {% endif %}
-    </div>
+
 
     <div class="login-container" id="conteudo">
         <div class="login-box">
@@ -345,46 +334,46 @@
         }
 
         // Correção para iniciar a página com o menu fechado no mobile e aberto no desktop
-        window.onload = function() {
-            let menu = document.getElementById("menu");
-            let conteudo = document.getElementById("conteudo");
-            let toggleBtn = document.querySelector(".toggle-btn");
+        //window.onload = function() {
+        //    let menu = document.getElementById("menu");
+        //    let conteudo = document.getElementById("conteudo");
+        //    let toggleBtn = document.querySelector(".toggle-btn");
 
-            if (window.innerWidth <= 768) {
-                menu.classList.add("recolhido"); // Mantém o menu fechado ao carregar
-                conteudo.classList.add("menu-recolhido");
-                toggleBtn.classList.add("recolhido");
-            } else {
-                menu.classList.remove("recolhido"); // No desktop, garante que o menu esteja aberto
-                conteudo.classList.remove("menu-recolhido");
-                toggleBtn.classList.remove("recolhido");
-            }
-        };
+            //if (window.innerWidth <= 768) {
+            //    menu.classList.add("recolhido"); // Mantém o menu fechado ao carregar
+            //    conteudo.classList.add("menu-recolhido");
+            //    toggleBtn.classList.add("recolhido");
+            //} else {
+            //    menu.classList.remove("recolhido"); // No desktop, garante que o menu esteja aberto
+            //    conteudo.classList.remove("menu-recolhido");
+            //    toggleBtn.classList.remove("recolhido");
+            //}
+        //};
 
         // Adiciona um listener para redimensionamento para ajustar o menu
-        window.addEventListener('resize', function() {
-            let menu = document.getElementById("menu");
-            let conteudo = document.getElementById("conteudo");
-            let toggleBtn = document.querySelector(".toggle-btn");
-            let logo = document.querySelector(".logo-container");
+       // window.addEventListener('resize', function() {
+       //     let menu = document.getElementById("menu");
+       //     let conteudo = document.getElementById("conteudo");
+       //     let toggleBtn = document.querySelector(".toggle-btn");
+       //     let logo = document.querySelector(".logo-container");
 
-            if (window.innerWidth <= 768) {
+        //    if (window.innerWidth <= 768) {
                 // Se o menu estiver expandido no mobile, oculta a logo
-                if (!menu.classList.contains("recolhido")) {
-                    logo.style.display = "none";
-                } else {
-                    logo.style.display = "flex";
-                }
-                menu.classList.add("recolhido");
-                conteudo.classList.add("menu-recolhido");
-                toggleBtn.classList.add("recolhido");
-            } else {
-                logo.style.display = "flex"; // Sempre visível no desktop
-                menu.classList.remove("recolhido");
-                conteudo.classList.remove("menu-recolhido");
-                toggleBtn.classList.remove("recolhido");
-            }
-        });
+        //        if (!menu.classList.contains("recolhido")) {
+        //            logo.style.display = "none";
+        //        } else {
+        //            logo.style.display = "flex";
+        //        }
+        //        menu.classList.add("recolhido");
+        //        conteudo.classList.add("menu-recolhido");
+        //        toggleBtn.classList.add("recolhido");
+        //    } else {
+        //        logo.style.display = "flex"; // Sempre visível no desktop
+        //        menu.classList.remove("recolhido");
+        //        conteudo.classList.remove("menu-recolhido");
+        //        toggleBtn.classList.remove("recolhido");
+        //    }
+        //});
     </script>
 </body>
 </html>
