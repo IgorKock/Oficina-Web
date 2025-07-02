@@ -1,403 +1,151 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes do Cliente - OficinaWeb</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <!-- Bootstrap Icons -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
     <style>
-        /* Estilos das abas */
-        .nav-tabs {
-            display: flex;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            border-bottom: 1px solid #dee2e6;
-            background-color: #f8f9fa; /* Fundo para a área das abas */
-            border-radius: 0.5rem 0.5rem 0 0; /* Arredonda só em cima */
-            overflow: hidden; /* Garante que os cantos arredondados funcionem */
+        /* ESTILOS DA ESTRUTURA (BASEADO EM listacliente.txt) */
+        :root {
+            --sidebar-width: 260px;
+            --header-height: 60px;
         }
-
-        .nav-tab-item {
-            padding: 12px 20px;
-            cursor: pointer;
-            border: 1px solid #dee2e6;
-            border-bottom: none;
-            margin-right: 2px;
-            background-color: #e9ecef; /* Cor mais suave para abas inativas */
-            border-top-left-radius: 0.45rem; /* Canto um pouco mais arredondado */
-            border-top-right-radius: 0.45rem;
-            transition: background-color 0.3s ease, color 0.3s ease; /* Transição suave */
-            color: #495057; /* Cor do texto padrão */
-            font-weight: 500; /* Levemente mais negrito */
-        }
-
-        .nav-tab-item:hover:not(.active) {
-            background-color: #dee2e6; /* Efeito hover mais pronunciado */
-            color: #343a40;
-        }
-
-        .nav-tab-item.active {
-            border-bottom-color: transparent; /* Remove a borda inferior para parecer "colado" ao conteúdo */
-            background-color: #fff; /* Fundo branco para a aba ativa */
-            color: #007bff; /* Cor do texto azul padrão do Bootstrap */
-            font-weight: bold; /* Mais negrito para a aba ativa */
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.05); /* Sombra suave para destacar */
-            z-index: 1; /* Garante que a aba ativa fique por cima */
-        }
-
-        .tab-content {
-            display: none;
-            padding: 25px; /* Mais padding para o conteúdo */
-            /* Removido o border aqui para evitar linhas extras */
-            border-top: none; /* Remove a borda superior para se "conectar" à aba */
-            border-bottom-left-radius: 0.5rem;
-            border-bottom-right-radius: 0.5rem;
-            background-color: #fff; /* Fundo branco para o conteúdo da aba */
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Sombra para o card */
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Esconde as seções de impressão por padrão dentro da aba 'Imprimir' */
-        #print .print-section {
-            display: none;
-        }
-
-        /* Layout principal */
+        
         body {
-            font-family: 'Inter', sans-serif; /* Using Inter font as per instruction */
-            background-color: #f8f9fa; /* Cor de fundo suave */
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            background-color: #f0f2f5;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cg fill='%23d3dce3' fill-opacity='0.4'%3E%3Cpath fill-rule='evenodd' d='M0 0h4v4H0V0zm4 4h4v4H4V4z'/%3E%3C/g%3E%3C/svg%3E");
+            font-family: 'Poppins', sans-serif;
+            padding-top: var(--header-height);
             margin: 0;
-            padding: 0;
             overflow-x: hidden;
         }
 
-        /* Logo Container */
-        .logo-container {
-            display: flex !important;
-            justify-content: center;
-            align-items: center;
-            width: 50%;
-            padding: 10px 0;
-            position: fixed !important;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 999;
-            background: none;
-            pointer-events: none;
+        .header {
+            height: var(--header-height);
+            z-index: 1030;
         }
 
-        .logo-container img {
-            max-width: 75px;
-            height: auto;
-            background: none;
-        }
-
-        /* Side Menu Adjustment */
-        .menu-lateral {
-            width: 200px;
+        .sidebar {
+            width: var(--sidebar-width);
             height: 100vh;
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #343a40; /* Cor original */
-            padding-top: 20px;
-            transition: width 0.3s ease-in-out;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .menu-lateral.recolhido {
-            width: 0px; /* Largura original recolhido */
-        }
-
-        .menu-lateral a {
-            display: block;
-            color: white;
-            padding: 15px;
-            text-decoration: none;
-            font-size: 18px;
-            transition: opacity 0.3s ease-in-out;
-        }
-
-        .menu-lateral.recolhido a {
-            opacity: 0;
-        }
-
-        .menu-lateral a:hover {
-            background-color: #495057; /* Cor de hover original */
-        }
-
-        /* Content Adjustment */
-        .conteudo {
-            flex-grow: 1;
-            padding: 20px;
-            margin-left: 200px;
-            margin-top: 80px;
+            z-index: 1020;
+            background-color: #fff;
+            padding-top: var(--header-height);
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
             transition: margin-left 0.3s ease-in-out;
-            position: relative;
-            min-height: calc(100vh - 80px);
-            overflow: auto;
         }
-
-        .conteudo.menu-recolhido {
-            margin-left: 60px; /* Original */
-            width: calc(100% - 60px);
-        }
-
-        /* Collapse menu button */
-        .toggle-btn {
-            position: fixed;
-            top: 10px;
-            left: 200px; /* Original */
-            background-color: #007bff;
-            color: white;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            z-index: 1002;
-            transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
-            width: auto;
-        }
-
-        .card {
-            background-color: #f8f9fa;
-            border-radius: 0.75rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            border: none; /* Removendo a borda padrão do card */
-        }
-        
-        .card-header {
-            background-color: #e9ecef;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-            border-top-left-radius: 0.75rem;
-            border-top-right-radius: 0.75rem;
-            font-weight: bold;
-            padding: 1rem 1.25rem;
-        }
-
-        .toggle-btn.recolhido {
-            left: 70px; /* Original */
-        }
-        .menu-lateral.recolhido + .toggle-btn {
-            left: 10px; /* Original */
-        }
-        
-        @media (min-width: 769px) {
-            .logo-container {
-                display: flex !important;
-            }
-        }
-        
-        /* Adjustments for screens smaller than 768px (tablets and mobile phones) */
-        @media (max-width: 768px) {
-            .menu-lateral {
-                width: 60px; /* Largura original no mobile */
-            }
-
-            .conteudo {
-                margin-left: 60px;
-            }
-
-            .nav-tabs {
-                flex-direction: column;
-            }
-            
-            .logo-container {
-                transition: none !important;
-            }
-            .logo-container img {
-                max-width: 80px;
-            }
-
-            .toggle-btn {
-                left: 10px !important;
-                position: fixed;
-                top: 10px;
-                z-index: 1001;
-            }
-            
-            .menu-lateral:not(.recolhido) ~ .logo-container {
-                position: absolute !important;
-                top: 100%;
-                left: 50%;
-                transform: translateX(-50%);
-                display: flex !important;
-                pointer-events: none;
-                transition: none !important;
-                opacity: 1 !important;
-            }
-
-            .menu-lateral.recolhido ~ .logo-container {
-                position: fixed !important;
-                top: 10px;
-                left: 50%;
-                transform: translateX(-50%);
-                display: flex !important;
-                pointer-events: all;
-                transition: none !important;
-                opacity: 1 !important;
-            }
-            
-            /* Adjusts the menu button to move when active */
-            .menu-lateral.recolhido ~ .toggle-btn {
-                left: 15px;
-            }
-        }
-
-        /* Adjustments for screens smaller than 480px (small mobile phones) */
-        @media (max-width: 480px) {
-            .menu-lateral {
-                width: 100%;
-                height: 100vh;
-                position: absolute;
-                top: 0;
-                left: 0;
-                background-color: #343a40;
-                z-index: 999;
-                padding: 10px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                padding-bottom: 50px;
-            }
-
-            .menu-lateral.recolhido {
-                transform: translateX(-100%);
-            }
-
-            .conteudo {
-                margin-left: 0;
-                width: 100%;
-                padding: 10px;
-            }
-
-            .nav-tabs {
-                font-size: 14px;
-            }
-
-            .toggle-btn {
-                width: 100px !important;
-                font-size: 12px;
-                padding: 6px 10px;
-            }
-            
-            .menu-lateral:not(.recolhido) ~ .logo-container {
-                opacity: 0;
-                pointer-events: none;
-            }
-
-            .menu-lateral.recolhido ~ .logo-container {
-                opacity: 1;
-                pointer-events: all;
-            }
-            
-            .menu-lateral.recolhido ~ .logo-container {
-                display: flex !important;
-            }
-            
-            table {
-                font-size: 12px;
-                border-collapse: collapse; /* Garante que as bordas da tabela sejam colapsadas */
-            }
-
-            th, td {
-                padding: 5px;
-                border: none; /* Remove as bordas das células */
-            }
-
-            /* Estilo específico para as tabelas dentro das abas */
-            .table-responsive .table {
-                border: none; /* Remove a borda principal da tabela */
-            }
-
-            .table-responsive .table thead th {
-                border-bottom: 1px solid rgba(0, 0, 0, 0.125); /* Mantém a borda inferior do cabeçalho */
-            }
-            .table-responsive .table tbody tr td {
-                border-top: none; /* Remove a borda superior das células do corpo da tabela */
-                border-bottom: 1px solid #e9ecef; /* Adiciona uma borda inferior suave para separar as linhas */
-            }
-            .table-responsive .table tbody tr:last-child td {
-                border-bottom: none; /* Remove a borda inferior da última linha */
-            }
-        }
-
-        /* Custom Alert Modal Styles */
-        .custom-alert-modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1050; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-            justify-content: center;
+        .sidebar .nav-link {
+            color: #555;
+            font-weight: 500;
+            padding: 12px 20px;
+            display: flex;
             align-items: center;
+            gap: 15px;
+        }
+        .sidebar .nav-link .bi {
+            font-size: 1.2rem;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #0d6efd;
+            background-color: #e9f2ff;
+            border-right: 3px solid #0d6efd;
         }
 
-        .custom-alert-modal-content {
-            background-color: #fefefe;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            text-align: center;
-            position: relative;
+        .main-content {
+            padding: 30px;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease-in-out;
+        }
+        
+        @media (max-width: 991.98px) {
+            .sidebar {
+                margin-left: calc(-1 * var(--sidebar-width));
+            }
+            .sidebar.active {
+                margin-left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        /* --- ESTILOS DAS ABAS (ADAPTADOS DE cliente.txt) --- */
+        .card-header-tabs .nav-link {
+            color: #495057;
+            font-weight: 500;
+        }
+        .card-header-tabs .nav-link.active {
+            color: #0d6efd;
+            background-color: #fff;
+            border-color: #dee2e6 #dee2e6 #fff;
+            font-weight: 600;
+        }
+        .tab-content {
+            padding-top: 1rem;
         }
 
-        .custom-alert-close-btn {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            position: absolute;
-            top: 10px;
-            right: 15px;
-        }
+        /* --- CUSTOM ALERT MODAL --- */
+        .custom-alert-modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
+        .custom-alert-modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); text-align: center; position: relative; }
+        .custom-alert-close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 15px; }
+        .custom-alert-close-btn:hover, .custom-alert-close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
 
-        .custom-alert-close-btn:hover,
-        .custom-alert-close-btn:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
+        /* --- ESTILOS DE IMPRESSÃO --- */
+        #print-sections-container .print-section {
+            display: none;
         }
-        </style>
+    </style>
 </head>
 <body>
-    <div class="logo-container">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa">
-    </div>
-    <button class="toggle-btn" onclick="toggleMenu()">☰</button>
-    <div class="menu-lateral recolhido" id="menu">
-        <a href="{{ url_for('main.index') }}">Menu Inicial</a>
-        <a href="{{ url_for('main.inventario') }}">Inventário</a>
-        <a href="{{ url_for('main.client') }}">Lista de Clientes</a>
-        <a href="{{ url_for('main.lista_utilizadores') }}">Usuários</a>
-        {% if current_user.is_authenticated %}
-            <a href="{{ url_for('main.logout') }}">Sair ({{ current_user.nome }})</a>
-        {% else %}
-            <a href="{{ url_for('main.login') }}">Login</a>
-        {% endif %}
-    </div>
 
-    <div class="conteudo" id="conteudo">
+<header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top header">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" id="menu-toggle">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand fw-bold text-primary" href="#">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa" style="max-width: 40px; height: auto; margin-right: 10px;">
+            Oficina Web
+        </a>
+        <div class="d-flex align-items-center">
+            <span class="navbar-text me-3">Bem-vindo, {{ current_user.nome }}!</span>
+            <a href="{{ url_for('main.logout') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-arrow-right"></i> Sair</a>
+        </div>
+    </div>
+</header>
+
+<aside class="sidebar">
+    <div class="p-3"><h5 class="text-muted fw-bold">Menu Lateral</h5></div>
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item">
+            <a href="{{ url_for('main.index') }}" class="nav-link"><i class="bi bi-speedometer2"></i> Página Inicial</a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ url_for('main.client') }}" class="nav-link active"><i class="bi bi-people-fill"></i> Clientes</a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ url_for('main.inventario') }}" class="nav-link"><i class="bi bi-box-seam-fill"></i> Inventário</a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ url_for('main.lista_utilizadores') }}" class="nav-link"><i class="bi bi-people"></i> Usuários</a>
+        </li>
+    </ul>
+</aside>
+
+<main class="main-content">
+    <div class="container-fluid">
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -408,1096 +156,626 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        <div class="card-header mb-4">
-            <h1>Detalhes do Cliente</h1>
-        </div>
-        <p class="mt-3 mb-3"><strong>Clique no botão ☰ para recolher ou expandir o menu.</strong></p>
 
-        <div class="container mt-4">
-            <ul class="nav-tabs mb-4">
-                <li class="nav-tab-item active" onclick="openTab('dados-pessoais')">Dados Pessoais</li>
-                <li class="nav-tab-item" onclick="openTab('veiculos')">Veículos</li>
-                <li class="nav-tab-item" onclick="openTab('telefones')">Telefones</li>
-                <li class="nav-tab-item" onclick="openTab('pagamentos')">Pagamentos</li>
-                <li class="nav-tab-item" onclick="openTab('print')">Imprimir</li>
-            </ul>
-            <div class="card mb-4">
-                <div id="dados-pessoais" class="tab-content active">
-                    <h4 class="mb-3">Dados Pessoais</h4>
-                    <p class="mb-2"><strong>Nome:</strong> {{ cliente.nome }}</p>
-                    <p class="mb-2"><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "Apelido não registado" }}</p>
-                    <p class="mb-2"><strong>CPF:</strong> {{ cliente.cpf or "CPF não registado" }}</p>
-                    <p class="mb-2"><strong>CNPJ:</strong> {{ cliente.cnpj or "CNPJ não registado" }}</p>
-                    {% if cliente.endereco %}
-                        {% for endereco in cliente.endereco.split(';') %}
-                            <p class="mb-2"><strong>Endereço {{ loop.index }}:</strong> {{ endereco.strip() }}</p>
-                        {% endfor %}
-                    {% else %}
-                        <p class="mb-2"><strong>Endereço:</strong> Endereço não registado</p>
-                    {% endif %}
-                    {% if cliente.bairro %}
-                        {% for bairro in cliente.bairro.split(';') %}
-                            <p class="mb-2"><strong>Bairro {{ loop.index }}:</strong> {{ bairro.strip() }}</p>
-                        {% endfor %}
-                    {% else %}
-                        <p class="mb-2"><strong>Bairro:</strong> Bairro não registado</p>
-                    {% endif %}
-                    {% if cliente.cidade %}
-                        {% for cidade in cliente.cidade.split(';') %}
-                            <p class="mb-2"><strong>Cidade {{ loop.index }}:</strong> {{ cidade.strip() }}</p>
-                        {% endfor %}
-                    {% else %}
-                        <p class="mb-2"><strong>Cidade:</strong> Cidade não registada</p>
-                    {% endif %}
-                    <p class="mb-2"><strong>Estado:</strong> {{ cliente.estado or "Estado não registado" }}</p>
-                    {% if cliente.cep %}
-                        {% for cep in cliente.cep.split(';') %}
-                            <p class="mb-2"><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
-                        {% endfor %}
-                    {% else %}
-                        <p class="mb-2"><strong>CEP:</strong> CEP não registado</p>
-                    {% endif %}
-                    <div class="card p-3 mt-4">
-                        <h3 class="mb-3">Atualizar Apelido (Nome Social), CPF, Endereço e Estado</h3>
-                        <form action="{{ url_for('main.update_dados_cliente', cliente_id=cliente.id) }}" method="POST" id="editClientForm">
-                            <div class="mb-3">
-                                <label for ="apelido" class="form-label">Apelido ou Nome Social</label>
-                                <input type="text" name="apelido" class="form-control" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="cpf_cnpj" class="form-label">CPF/CNPJ</label>
-                                <input type="text" id="cpf_cnpj" class="form-control" placeholder="CPF ou CNPJ" value="{{ cliente.cpf or cliente.cnpj or '' }}">
-                                <!-- Campos ocultos para enviar ao backend sem alterar a rota -->
-                                <input type="hidden" name="cpf" id="hidden_cpf" value="{{ cliente.cpf or '' }}">
-                                <input type="hidden" name="cnpj" id="hidden_cnpj" value="{{ cliente.cnpj or '' }}">
-                                <span id="cpfCnpjError" class="text-danger" style="display: none;">Documento inválido.</span>
-                            </div>
-                            <div id="enderecos-container">
-                                <div class="mb-3">
-									<label for="cep" class="form-label">CEP</label>
-                                    <input type="text" name="cep[]" class="form-control cep-input mb-3" placeholder="CEP" value="{{ cliente.cep or ''}}" id="mainCepInput">
-                                    <label for="endereco" class="form-label">Endereço</label>
-                                    <input type="text" name="endereco[]" class="form-control mb-3" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
-                                    <label for="bairro" class="form-label">Bairro</label>
-                                    <input type="text" name="bairro[]" class="form-control mb-3" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
-                                    <label for="cidade" class="form-label">Cidade</label>
-                                    <input type="text" name="cidade[]" class="form-control mb-3" placeholder="Cidade" value="{{ cliente.cidade or ''}}">                                   
-                                </div>
-                                <button type="button" class="btn btn-outline-primary mb-3" onclick="adicionarCampoEndereco()">
-                                    <i class="bi bi-plus-circle"></i> Adicionar outro endereço
-                                </button>
-                            </div>
-                            <div class="mb-3">
-                                <label for="estado" class="form-label">Estado</label>
-                                <select name="estado" class="form-control">
-                                    <option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
-                                    <option value="AL" {% if cliente.estado == 'AL' %}selected{% endif %}>Alagoas</option>
-                                    <option value="AP" {% if cliente.estado == 'AP' %}selected{% endif %}>Amapá</option>
-                                    <option value="AM" {% if cliente.estado == 'AM' %}selected{% endif %}>Amazonas</option>
-                                    <option value="BA" {% if cliente.estado == 'BA' %}selected{% endif %}>Bahia</option>
-                                    <option value="CE" {% if cliente.estado == 'CE' %}selected{% endif %}>Ceará</option>
-                                    <option value="DF" {% if cliente.estado == 'DF' %}selected{% endif %}>Distrito Federal</option>
-                                    <option value="ES" {% if cliente.estado == 'ES' %}selected{% endif %}>Espírito Santo</option>
-                                    <option value="GO" {% if cliente.estado == 'GO' %}selected{% endif %}>Goiás</option>
-                                    <option value="MA" {% if cliente.estado == 'MA' %}selected{% endif %}>Maranhão</option>
-                                    <option value="MT" {% if cliente.estado == 'MT' %}selected{% endif %}>Mato Grosso</option>
-                                    <option value="MS" {% if cliente.estado == 'MS' %}selected{% endif %}>Mato Grosso do Sul</option>
-                                    <option value="MG" {% if cliente.estado == 'MG' %}selected{% endif %}>Minas Gerais</option>
-                                    <option value="PA" {% if cliente.estado == 'PA' %}selected{% endif %}>Pará</option>
-                                    <option value="PB" {% if cliente.estado == 'PB' %}selected{% endif %}>Paraíba</option>
-                                    <option value="PR" {% if cliente.estado == 'PR' %}selected{% endif %}>Paraná</option>
-                                    <option value="PE" {% if cliente.estado == 'PE' %}selected{% endif %}>Pernambuco</option>
-                                    <option value="PI" {% if cliente.estado == 'PI' %}selected{% endif %}>Piauí</option>
-                                    <option value="RJ" {% if cliente.estado == 'RJ' %}selected{% endif %}>Rio de Janeiro</option>
-                                    <option value="RN" {% if cliente.estado == 'RN' %}selected{% endif %}>Rio Grande do Norte</option>
-                                    <option value="RS" {% if cliente.estado == 'RS' %}selected{% endif %}>Rio Grande do Sul</option>
-                                    <option value="RO" {% if cliente.estado == 'RO' %}selected{% endif %}>Rondônia</option>
-                                    <option value="RR" {% if cliente.estado == 'RR' %}selected{% endif %}>Roraima</option>
-                                    <option value="SC" {% if cliente.estado == 'SC' %}selected{% endif %}>Santa Catarina</option>
-                                    <option value="SP" {% if cliente.estado == 'SP' %}selected{% endif %}>São Paulo</option>
-                                    <option value="SE" {% if cliente.estado == 'SE' %}selected{% endif %}>Sergipe</option>
-                                    <option value="TO" {% if cliente.estado == 'TO' %}selected{% endif %}>Tocantins</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-warning">Atualizar</button>
-                        </form>
-                    </div>
-					<div class="card p-3 mt-4">
-                        <h3 class="mb-3">Quer imprimir esta aba?</h3>
-                        <div class="mb-3">
-                            <input type="checkbox" id="checkbox-print-dados-pessoais-local" class="select-to-print">
-                            <label for="checkbox-print-dados-pessoais-local">Sim</label>
-                        </div>
-                        <button type="button" class="btn btn-primary mt-2" onclick="imprimirSelecionados()">Imprimir</button>
-                    </div>
-				</div>
-			</div>
-			<div class="card mb-4">
-                <div id="veiculos" class="tab-content">
-                    <h4 class="mb-3">Carros do Cliente: {{ cliente.nome }} </h4>
-                    {% if carros %}
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle"> <!-- Removido .table-bordered aqui -->
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Marca</th>
-                                        <th>Modelo</th>
-                                        <th>Motor</th>
-                                        <th>Ano</th>
-                                        <th>Placa</th>
-                                        <th>Quilometragem</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for carro in carros %}
-                                    <tr>
-                                        <td>{{ carro.marca }}</td>
-                                        <td>{{ carro.modelo }}</td>
-                                        <td>{{ carro.motor }}</td>
-                                        <td>{{ carro.ano }}</td>
-                                        <td>{{ carro.placa }}</td>
-                                        <td>{{ carro.quilometragem }} KMs rodados</td>
-                                    </tr>
-                                    {% if carro.historicos %}
-                                        <tr><td colspan="6" class="table-secondary"><h5>Histórico de Serviços do veículo: {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}</h5></td></tr>
-                                        <tr>
-                                            <td colspan="6">
-                                                <div class="table-responsive">
-                                                    <table class="table table-sm table-striped table-hover"> <!-- Removido .table-bordered aqui -->
-                                                        <thead class="table-light">
-                                                            <tr>
-                                                                <th>Data e Hora</th>
-                                                                <th>Descrição do Serviço</th>
-                                                                <th>Ações</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {% for historico in carro.historicos %}
-                                                            <tr>
-                                                                <td>{{ historico.data_local.strftime('%d/%m/%Y %H:%M:%S') if historico.data_local else '' }}</td>
-                                                                <td>{{ historico.descricao }}</td>
-                                                                <td>
-                                                                    <button type="button" class="btn btn-sm btn-info me-1" data-bs-toggle="modal" data-bs-target="#editHistoricoModal{{ historico.id }}">Editar</button>
-                                                                    <form action="{{ url_for('main.delete_historico', id=historico.id) }}" method="POST" style="display:inline;">
-                                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja remover este histórico?');">Remover</button>
-                                                                    </form>
-                                                                </td>
-                                                            </tr>
-                                                            <!-- Modal para Editar Histórico -->
-                                                            <div class="modal fade" id="editHistoricoModal{{ historico.id }}" tabindex="-1" aria-labelledby="editHistoricoModalLabel{{ historico.id }}" aria-hidden="true">
-                                                                <div class="modal-dialog">
-                                                                    <div class="modal-content">
-                                                                        <div class="modal-header">
-                                                                            <h5 class="modal-title" id="editHistoricoModalLabel{{ historico.id }}">Editar Histórico de Serviço</h5>
-                                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                        </div>
-                                                                        <form action="{{ url_for('main.edit_historico', id=historico.id) }}" method="POST">
-                                                                            <div class="modal-body">
-                                                                                <div class="mb-3">
-                                                                                    <label for="descricao{{ historico.id }}" class="form-label">Descrição do Serviço</label>
-                                                                                    <input type="text" class="form-control" id="descricao{{ historico.id }}" name="descricao" value="{{ historico.descricao }}" required>
-                                                                                </div>
-                                                                                <div class="mb-3">
-                                                                                    <label for="data{{ historico.id }}" class="form-label">Data do Serviço</label>
-                                                                                    <input type="date" class="form-control" id="data{{ historico.id }}" name="data" value="{{ historico.data_local.strftime('%Y-%m-%d') if historico.data_local else '' }}" required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="modal-footer">
-                                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                                                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                                                                            </div>
-                                                                        </form>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            {% endfor %}
-                                                        </tbody>					
-                                                    </table>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    {% else %}
-                                        <tr><td colspan="6">Nenhum histórico de serviço registado para este veículo.</td></tr>
-                                    {% endif %}
-                                    <tr>
-                                        <td colspan="6">
-                                            <div class="card p-3 mt-3">
-                                                <h4 class="mb-3">Adicionar Histórico de Serviço</h4>
-                                                <form action="/add_historico/{{ carro.id }}" method="POST">
-                                                    <div class="mb-3">
-                                                        <label for="descricao" class="form-label">Descrição do serviço</label>
-                                                        <input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control" required>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label for="data" class="form-label">Data do serviço</label>
-                                                        <input type="date" name="data" class="form-control" required>
-                                                    </div>
-                                                    <button type="submit" class="btn btn-primary">Adicionar Histórico</button>
-                                                </form>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4 fw-bold text-dark mb-0"><i class="bi bi-person-lines-fill text-primary me-2"></i> Detalhes do Cliente: {{ cliente.nome }}</h2>
+            <a href="{{ url_for('main.client') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-2"></i>Voltar para a Lista</a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <ul class="nav nav-tabs card-header-tabs" id="clientTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="dados-pessoais-tab" data-bs-toggle="tab" data-bs-target="#dados-pessoais-pane" type="button" role="tab" aria-controls="dados-pessoais-pane" aria-selected="true">Dados Pessoais</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="veiculos-tab" data-bs-toggle="tab" data-bs-target="#veiculos-pane" type="button" role="tab" aria-controls="veiculos-pane" aria-selected="false">Veículos</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="telefones-tab" data-bs-toggle="tab" data-bs-target="#telefones-pane" type="button" role="tab" aria-controls="telefones-pane" aria-selected="false">Telefones</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pagamentos-tab" data-bs-toggle="tab" data-bs-target="#pagamentos-pane" type="button" role="tab" aria-controls="pagamentos-pane" aria-selected="false">Pagamentos</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="print-tab" data-bs-toggle="tab" data-bs-target="#print-pane" type="button" role="tab" aria-controls="print-pane" aria-selected="false">Imprimir</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="clientTabContent">
+                    
+                    <!-- Aba: Dados Pessoais -->
+                    <div class="tab-pane fade show active" id="dados-pessoais-pane" role="tabpanel" aria-labelledby="dados-pessoais-tab">
+                        <h4 class="mb-3">Dados Pessoais</h4>
+						<div class="row">
+							<div class="col-md-6">
+								<p class="mb-2"><strong>Nome:</strong> {{ cliente.nome }}</p>
+								<p class="mb-2"><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "N/A" }}</p>
+								<p class="mb-2"><strong>CPF:</strong> {{ cliente.cpf or "N/A" }}</p>
+								<p class="mb-2"><strong>CNPJ:</strong> {{ cliente.cnpj or "N/A" }}</p>
+							</div>
+							<div class="col-md-6">
+								{% if cliente.endereco %}
+									{% for endereco in cliente.endereco.split(';') %}
+										<p class="mb-2"><strong>Endereço {{ loop.index }}:</strong> {{ endereco.strip() }}</p>
+									{% endfor %}
+								{% else %}
+									<p class="mb-2"><strong>Endereço:</strong> N/A</p>
+								{% endif %}
+								{% if cliente.bairro %}
+									{% for bairro in cliente.bairro.split(';') %}
+										<p class="mb-2"><strong>Bairro {{ loop.index }}:</strong> {{ bairro.strip() }}</p>
+									{% endfor %}
+								{% else %}
+									<p class="mb-2"><strong>Bairro:</strong> N/A</p>
+								{% endif %}
+								{% if cliente.cidade %}
+									{% for cidade in cliente.cidade.split(';') %}
+										<p class="mb-2"><strong>Cidade {{ loop.index }}:</strong> {{ cidade.strip() }}</p>
+									{% endfor %}
+								{% else %}
+									<p class="mb-2"><strong>Cidade:</strong> N/A</p>
+								{% endif %}
+								<p class="mb-2"><strong>Estado:</strong> {{ cliente.estado or "N/A" }}</p>
+								{% if cliente.cep %}
+									{% for cep in cliente.cep.split(';') %}
+										<p class="mb-2"><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
+									{% endfor %}
+								{% else %}
+									<p class="mb-2"><strong>CEP:</strong> N/A</p>
+								{% endif %}
+							</div>
+						</div>
+						<hr>
+						<div class="mt-4">
+							<h5 class="mb-3">Atualizar Informações</h5>
+							<form action="{{ url_for('main.update_dados_cliente', cliente_id=cliente.id) }}" method="POST" id="editClientForm">
+								<div class="row">
+									<div class="col-md-6 mb-3">
+										<label for ="apelido" class="form-label">Apelido ou Nome Social</label>
+										<input type="text" name="apelido" class="form-control" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
+									</div>
+									<div class="col-md-6 mb-3">
+										<label for="cpf_cnpj" class="form-label">CPF/CNPJ</label>
+										<input type="text" id="cpf_cnpj" class="form-control" placeholder="CPF ou CNPJ" value="{{ cliente.cpf or cliente.cnpj or '' }}">
+										<input type="hidden" name="cpf" id="hidden_cpf" value="{{ cliente.cpf or '' }}">
+										<input type="hidden" name="cnpj" id="hidden_cnpj" value="{{ cliente.cnpj or '' }}">
+										<span id="cpfCnpjError" class="text-danger small" style="display: none;">Documento inválido.</span>
+									</div>
+								</div>
+
+								<div id="enderecos-container">
+                                    <div class="mb-3 border p-3 rounded bg-light">
+                                        <h6 class="mb-3">Endereço Principal</h6>
+                                        <div class="row">
+                                            <div class="col-md-3 mb-3">
+                                                <label for="cep" class="form-label">CEP</label>
+                                                <input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP" value="{{ cliente.cep or ''}}" id="mainCepInput">
                                             </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <p>Nenhum carro registado.</p>
-                    {% endif %}
-				<div class="card p-3 mt-4">
-                    <h4 class="mb-3">Adicionar Informações do Carro</h4>
-                    <form action="{{ url_for('main.add_carros', cliente_id=cliente.id) }}" method="POST" id="addCarroForm">
-                        <div id="carros-container">
-                            <div class="carro-form mb-3 border p-3 rounded bg-light">
-                                <h5 class="mb-3">Novo Carro</h5>
-                                <div class="mb-3">
-                                    <label for="marca[]" class="form-label">Marca</label>
-                                    <input type="text" name="marca[]" class="form-control" placeholder="Marca" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="modelo[]" class="form-label">Modelo</label>
-                                    <input type="text" name="modelo[]" class="form-control" placeholder="Modelo" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="motor[]" class="form-label">Motor</label>
-                                    <input type="text" name="motor[]" class="form-control" placeholder="Motor">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="ano[]" class="form-label">Ano</label>
-                                    <input type="number" name="ano[]" class="form-control ano-input" placeholder="Ano">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="placa[]" class="form-label">Placa</label>
-                                    <input type="text" name="placa[]" class="form-control placa-input" placeholder="Placa">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="quilometragem[]" class="form-label">Quilometragem em KMs rodados</label>
-                                    <input type="number" name="quilometragem[]" class="form-control" placeholder="Quilometragem">
-                                </div>
-                                <button type="button" class="btn btn-danger btn-sm mt-2" onclick="this.closest('.carro-form').remove();">Remover Carro</button>
-                            </div>
-                        </div>
-                        <div class="d-flex gap-2 mt-3">
-                            <button class="btn btn-outline-primary" type="button" onclick="adicionarCarro()"><i class="bi bi-plus-circle me-1"></i> Adicionar mais um carro</button>
-                            <button type="submit" class="btn btn-success">Salvar</button>
-                        </div>
-                    </form>
-				</div>
-				<div class="card p-3 mt-4">
-                    <h4 class="mb-3">Atualizar Informações dos Carros</h4>
-                    {% if carros %}
-                    <form action="{{ url_for('main.update_carros', cliente_id=cliente.id) }}" method="POST" id="updateCarrosForm">
-                        {% for carro in carros %}
-                        <div class="carro-form mb-3 border p-3 rounded">
-                            <input type="hidden" name="carro_id" value="{{ carro.id }}">
-                            <div class="mb-3">
-                                <label for="marca_{{ carro.id }}" class="form-label">Marca</label>
-                                <input type="text" name="marca_{{ carro.id }}" class="form-control" placeholder="Marca" value="{{ carro.marca }}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="modelo_{{ carro.id }}" class="form-label">Modelo</label>
-                                <input type="text" name="modelo_{{ carro.id }}" class="form-control" placeholder="Modelo" value="{{ carro.modelo }}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="motor_{{ carro.id }}" class="form-label">Motor</label>
-                                <input type="text" name="motor_{{ carro.id }}" class="form-control" placeholder="Motor" value="{{ carro.motor }}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="ano_{{ carro.id }}" class="form-label">Ano</label>
-                                <input type="number" name="ano_{{ carro.id }}" class="form-control ano-input" placeholder="Ano" value="{{ carro.ano }}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="placa_{{ carro.id }}" class="form-label">Placa</label>
-                                <input type="text" name="placa_{{ carro.id }}" class="form-control placa-input" placeholder="Placa" value="{{ carro.placa }}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="quilometragem_{{ carro.id }}" class="form-label">Quilometragem em KMs rodados</label>
-                                <input type="number" name="quilometragem_{{ carro.id }}" class="form-control" placeholder="Quilometragem" value="{{ carro.quilometragem }}">
-                            </div>
-                        </div>
-                        {% endfor %}
-                        <button type="submit" class="btn btn-warning mt-3">Atualizar Carros</button>
-                    </form>
-                    {% else %}
-                    <p>Nenhum carro registado para atualizar.</p>
-                    {% endif %}
-				</div>
-				<div class="card p-3 mt-4">
-                    <h3 class="mb-3">Quer imprimir esta aba?</h3>
-                    <div class="mb-3">
-                        <input type="checkbox" id="checkbox-print-veiculos-local" class="select-to-print">
-                        <label for="checkbox-print-veiculos-local">Sim</label>
-                    </div>
-                    <button type="button" class="btn btn-primary mt-2" onclick="imprimirSelecionados()">Imprimir</button>
-                </div>
-			</div>
-			</div>
-			<div class="card mb-4">
-			<div id="telefones" class="tab-content">
-			<h4 class="mb-3">Telefones do cliente: {{ cliente.nome }} </h4>
-			{% if telefones %}
-			<ul class="list-group mb-3">
-				{% for telefone in telefones %}
-					<li class="list-group-item">Telefone {{ loop.index }}: {{ telefone.numero }}</li>
-				{% endfor %}
-			</ul>
-			{% else %}
-				<p>Nenhum telefone registado.</p>
-			{% endif %}
-			<div class="card p-3 mb-4">
-                <h3 class="mb-3">Atualizar Telefones</h3>
-                {% for telefone in telefones %}
-                    <div class="mb-3 d-flex align-items-center">
-                        <label for="numero" class="form-label me-2 mb-0">Número de Telefone</label>
-                        <input type="text" name="numero" class="form-control telefone-input me-2" value="{{ telefone.numero }}">
-                        <form action="{{ url_for('main.update_telefone', telefone_id=telefone.id) }}" method="POST" class="d-inline me-2" id="updateTelefoneForm{{ telefone.id }}">
-                            <button type="submit" class="btn btn-warning btn-sm">Atualizar</button>
-                        </form>
-                        <form action="{{ url_for('main.delete_telefone', telefone_id=telefone.id) }}" method="POST" class="d-inline">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja remover este telefone?');">Remover</button>
-                        </form>
-                    </div>
-                {% endfor %}
-			</div>
-			<div class="card p-3 mb-4">
-                <h3 class="mb-3">Adicionar Telefones</h3>
-                <form action="{{ url_for('main.add_telefone', cliente_id=cliente.id) }}" method="POST" id="addTelefoneForm">
-                    <div id="telefones-container" class="mb-3">
-                        <label for="numeros[]" class="form-label">Digite um telefone</label>
-                        <div class="input-group mb-2">
-                            <input type="text" name="numeros[]" class="form-control telefone-input" placeholder="Digite o Telefone" required>
-                            <button class="btn btn-outline-primary" type="button" onclick="adicionarCampoTelefone()"><i class="bi bi-plus-circle"></i></button>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-success">Salvar Telefone(s)</button>
-                </form>
-			</div>
-				<div class="card p-3 mt-4">
-                    <h3 class="mb-3">Quer imprimir esta aba?</h3>
-                    <div class="mb-3">
-                        <input type="checkbox" id="checkbox-print-telefones-local" class="select-to-print">
-                        <label for="checkbox-print-telefones-local">Sim</label>
-                    </div>
-                    <button type="button" class="btn btn-primary mt-2" onclick="imprimirSelecionados()">Imprimir</button>
-                </div>
-			</div>
-			<div class="card mb-4">
-            <div id="pagamentos" class="tab-content">
-                <h2 class="mb-3">Pagamentos do cliente: {{ cliente.nome }} </h2>
-                {% if pagamentos %}
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle"> <!-- Removido .table-bordered aqui -->
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Veículo</th>
-                                    <th>Serviço Realizado</th>
-                                    <th>Data e Hora</th>
-                                    <th>Valor (R$)</th>
-                                    <th>Método</th>
-                                    <th>Tipo</th>
-                                    <th>Parcelas</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for pagamento in pagamentos %}
-                                <tr>
-                                    <td>
-                                        {% for carro in carros %}
-                                            {% if pagamento.carro_id == carro.id %}
-                                                {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}
-                                            {% endif %}
-                                        {% endfor %} {# <-- Adicionado este fechamento #}
-                                    </td>
-                                    <td>
-                                        {% for historico in historicos %}
-                                            {% if pagamento.historico_id == historico.id %}
-                                                {{ historico.descricao }}
-                                            {% endif %}
-                                        {% endfor %}
-                                    </td>
-                                    <td>{{ pagamento.data_local.strftime('%d/%m/%Y %H:%M:%S') if pagamento.data_local else '' }}</td>
-                                    <td>R$ {{ "%.2f"|format(pagamento.valor) }}</td>
-                                    <td>{{ pagamento.metodo }}</td>
-                                    <td>{{ pagamento.tipo_pagamento if pagamento.tipo_pagamento else 'N/A' }}</td>
-                                    <td>
-                                        {% if pagamento.tipo_pagamento == 'Parcelado' %}
-                                            {{ pagamento.parcelas }}x
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-info me-1" data-bs-toggle="modal" data-bs-target="#editPagamentoModal{{ pagamento.id }}">Editar</button>
-                                        <form action="{{ url_for('main.delete_pagamento', id=pagamento.id) }}" method="POST" style="display:inline;">
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja remover este pagamento?');">Excluir</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                <!-- Modal para Editar Pagamento -->
-                                <div class="modal fade" id="editPagamentoModal{{ pagamento.id }}" tabindex="-1" aria-labelledby="editPagamentoModalLabel{{ pagamento.id }}" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="editPagamentoModalLabel{{ pagamento.id }}">Editar Pagamento</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            <div class="col-md-9 mb-3">
+                                                <label for="endereco" class="form-label">Endereço</label>
+                                                <input type="text" name="endereco[]" class="form-control" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
                                             </div>
-                                            <form action="{{ url_for('main.edit_pagamento', id=pagamento.id) }}" method="POST" id="editPagamentoForm{{ pagamento.id }}">
-                                                <div class="modal-body">
-                                                    <div class="mb-3">
-                                                        <label for="valor{{ pagamento.id }}" class="form-label">Valor (R$)</label>
-                                                        <input type="number" step="0.01" class="form-control" id="valor{{ pagamento.id }}" name="valor" value="{{ "%.2f"|format(pagamento.valor) }}" required>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label for="metodo{{ pagamento.id }}" class="form-label">Método de Pagamento</label>
-                                                        <select class="form-control" id="metodo{{ pagamento.id }}" name="metodo" required onchange="toggleOpcaoPagamento(event)">
-                                                            <option value="Dinheiro" {% if pagamento.metodo == 'Dinheiro' %}selected{% endif %}>Dinheiro</option>
-                                                            <option value="Cartão de Crédito" {% if pagamento.metodo == 'Cartão de Crédito' %}selected{% endif %}>Cartão de Crédito</option>
-                                                            <option value="Cartão de Débito" {% if pagamento.metodo == 'Cartão de Débito' %}selected{% endif %}>Cartão de Débito</option>
-                                                            <option value="Pix" {% if pagamento.metodo == 'Pix' %}selected{% endif %}>Pix</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="opcaoCartao" {% if pagamento.metodo != 'Cartão de Crédito' %}style="display: none;"{% endif %}>
-                                                        <div class="mb-3">
-                                                            <label for="tipo_pagamento{{ pagamento.id }}" class="form-label">Tipo de Pagamento:</label>
-                                                            <select class="form-control" id="tipo_pagamento{{ pagamento.id }}" name="tipo_pagamento" onchange="toggleParcelas(event)">
-                                                                <option value="À vista" {% if pagamento.tipo_pagamento == 'À vista' %}selected{% endif %}>À vista</option>
-                                                                <option value="Parcelado" {% if pagamento.tipo_pagamento == 'Parcelado' %}selected{% endif %}>Parcelado</option>
-                                                            </select>
-                                                        </div>
-                                                        <div class="opcaoParcelado" {% if pagamento.tipo_pagamento != 'Parcelado' %}style="display: none;"{% endif %}>
-                                                            <label for="parcelas{{ pagamento.id }}" class="form-label">Número de Parcelas:</label>
-                                                            <input type="number" class="form-control" id="parcelas{{ pagamento.id }}" name="parcelas" min="1" max="12" placeholder="Número de parcelas" value="{{ pagamento.parcelas if pagamento.parcelas else '' }}">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                                                </div>
-                                            </form>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="bairro" class="form-label">Bairro</label>
+                                                <input type="text" name="bairro[]" class="form-control" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="cidade" class="form-label">Cidade</label>
+                                                <input type="text" name="cidade[]" class="form-control" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+								</div>
+                                <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="adicionarCampoEndereco()">
+                                    <i class="bi bi-plus-circle"></i> Adicionar outro endereço
+                                </button>
+								
+								<div class="row">
+									<div class="col-md-4 mb-3">
+										<label for="estado" class="form-label">Estado</label>
+										<select name="estado" class="form-select">
+											<option value="">Selecione...</option>
+											<option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
+											<option value="AL" {% if cliente.estado == 'AL' %}selected{% endif %}>Alagoas</option>
+											<option value="AP" {% if cliente.estado == 'AP' %}selected{% endif %}>Amapá</option>
+											<option value="AM" {% if cliente.estado == 'AM' %}selected{% endif %}>Amazonas</option>
+											<option value="BA" {% if cliente.estado == 'BA' %}selected{% endif %}>Bahia</option>
+											<option value="CE" {% if cliente.estado == 'CE' %}selected{% endif %}>Ceará</option>
+											<option value="DF" {% if cliente.estado == 'DF' %}selected{% endif %}>Distrito Federal</option>
+											<option value="ES" {% if cliente.estado == 'ES' %}selected{% endif %}>Espírito Santo</option>
+											<option value="GO" {% if cliente.estado == 'GO' %}selected{% endif %}>Goiás</option>
+											<option value="MA" {% if cliente.estado == 'MA' %}selected{% endif %}>Maranhão</option>
+											<option value="MT" {% if cliente.estado == 'MT' %}selected{% endif %}>Mato Grosso</option>
+											<option value="MS" {% if cliente.estado == 'MS' %}selected{% endif %}>Mato Grosso do Sul</option>
+											<option value="MG" {% if cliente.estado == 'MG' %}selected{% endif %}>Minas Gerais</option>
+											<option value="PA" {% if cliente.estado == 'PA' %}selected{% endif %}>Pará</option>
+											<option value="PB" {% if cliente.estado == 'PB' %}selected{% endif %}>Paraíba</option>
+											<option value="PR" {% if cliente.estado == 'PR' %}selected{% endif %}>Paraná</option>
+											<option value="PE" {% if cliente.estado == 'PE' %}selected{% endif %}>Pernambuco</option>
+											<option value="PI" {% if cliente.estado == 'PI' %}selected{% endif %}>Piauí</option>
+											<option value="RJ" {% if cliente.estado == 'RJ' %}selected{% endif %}>Rio de Janeiro</option>
+											<option value="RN" {% if cliente.estado == 'RN' %}selected{% endif %}>Rio Grande do Norte</option>
+											<option value="RS" {% if cliente.estado == 'RS' %}selected{% endif %}>Rio Grande do Sul</option>
+											<option value="RO" {% if cliente.estado == 'RO' %}selected{% endif %}>Rondônia</option>
+											<option value="RR" {% if cliente.estado == 'RR' %}selected{% endif %}>Roraima</option>
+											<option value="SC" {% if cliente.estado == 'SC' %}selected{% endif %}>Santa Catarina</option>
+											<option value="SP" {% if cliente.estado == 'SP' %}selected{% endif %}>São Paulo</option>
+											<option value="SE" {% if cliente.estado == 'SE' %}selected{% endif %}>Sergipe</option>
+											<option value="TO" {% if cliente.estado == 'TO' %}selected{% endif %}>Tocantins</option>
+										</select>
+									</div>
+								</div>
+								<button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-2"></i>Atualizar Dados</button>
+							</form>
+						</div>
                     </div>
-                {% else %}
-                <p>Este cliente ainda não possui pagamentos registados.</p>
-                {% endif %}
-				<div class="card p-3 mt-4">
-                    {% for carro in carros %}
-                        {% for historico in carro.historicos %}
-                            {% if not historico.tem_pagamento %}
-                            <form id="form_pagamento_{{ historico.id }}" action="{{ url_for('main.add_pagamento', cliente_id=cliente.id, carro_id=carro.id, historico_id=historico.id) }}" method="POST" class="mb-4">
-                                <h3 class="mb-3">Registar pagamento para: {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}</h3>
-                                <p class="mb-3"><strong>Serviço realizado:</strong> {{ historico.descricao }}</p>
-                                <div class="mb-3">
-                                    <label for="valor" class="form-label">Valor (R$)</label>
-                                    <input type="number" step="0.01" name="valor" placeholder="Valor (R$)" class="form-control" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="metodo" class="form-label">Método de Pagamento</label>
-                                    <select name="metodo" class="form-control" required onchange="toggleOpcaoPagamento(event)">
-                                        <option value="Dinheiro">Dinheiro</option>
-                                        <option value="Cartão de Crédito">Cartão de Crédito</option>
-                                        <option value="Cartão de Débito">Cartão de Débito</option>
-                                        <option value="Pix">Pix</option>
-                                    </select>
-                                </div>
 
-                                <div class="opcaoCartao" style="display: none;">
-                                    <div class="mb-3">
-                                        <label for="tipo_cartao" class="form-label">Tipo de Pagamento:</label>
-                                        <select name="tipo_cartao" class="form-control" onchange="toggleParcelas(event)">
-                                            <option value="À vista">À vista</option>
-                                            <option value="Parcelado">Parcelado</option>
-                                        </select>
-                                    </div>
-                                    <div class="opcaoParcelado" style="display: none;">
-                                        <label for="parcelas" class="form-label">Número de Parcelas:</label>
-                                        <input type="number" name="parcelas" min="1" max="12" placeholder="Número de parcelas" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="observacoes" class="form-label">Observações</label>
-                                    <textarea name="observacoes" class="form-control" rows="3" placeholder="Observações sobre o pagamento"></textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="data_pagamento" class="form-label">Data do Pagamento</label>
-                                    <input type="date" name="data_pagamento" class="form-control" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Registar Pagamento</button>
-                            </form>
-                            {% else %}
-                            <p class="text-success mb-4"><strong>Pagamento já registado para o serviço "{{ historico.descricao }}" do veículo {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}</strong></p>
-                            {% endif %}
-                        {% endfor %}
-                    {% endfor %}
-                </div>
-				<div class="card p-3 mt-4">
-                    <h3 class="mb-3">Quer imprimir esta aba?</h3>
-                    <div class="mb-3">
-                        <input type="checkbox" id="checkbox-print-pagamentos-local" class="select-to-print">
-                        <label for="checkbox-print-pagamentos-local">Sim</label>
+                    <!-- Aba: Veículos -->
+                    <div class="tab-pane fade" id="veiculos-pane" role="tabpanel" aria-labelledby="veiculos-tab">
+						<div class="d-flex justify-content-between align-items-center mb-3">
+							<h4 class="mb-0">Veículos do Cliente</h4>
+							<button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addCarroModal"><i class="bi bi-plus-circle me-1"></i>Adicionar Veículo</button>
+						</div>
+						
+						{% if carros %}
+							{% for carro in carros %}
+								<div class="card mb-3">
+									<div class="card-header d-flex justify-content-between align-items-center">
+										<h5 class="mb-0">{{ carro.marca }} {{ carro.modelo }} ({{ carro.ano }}) - {{ carro.placa }}</h5>
+										<div>
+											<button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#updateCarroModal{{ carro.id }}"><i class="bi bi-pencil-fill"></i></button>
+										</div>
+									</div>
+									<div class="card-body">
+										<p><strong>Motor:</strong> {{ carro.motor or 'N/A' }} | <strong>Quilometragem:</strong> {{ carro.quilometragem or 'N/A' }} KMs</p>
+										
+										<h6 class="mt-4">Histórico de Serviços</h6>
+										{% if carro.historicos %}
+											<table class="table table-sm table-striped table-hover">
+												<thead>
+													<tr>
+														<th>Data</th>
+														<th>Descrição do Serviço</th>
+														<th class="text-end">Ações</th>
+													</tr>
+												</thead>
+												<tbody>
+													{% for historico in carro.historicos %}
+													<tr>
+														<td>{{ historico.data_local.strftime('%d/%m/%Y %H:%M') if historico.data_local else '' }}</td>
+														<td>{{ historico.descricao }}</td>
+														<td class="text-end">
+															<button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#editHistoricoModal{{ historico.id }}"><i class="bi bi-pencil"></i></button>
+															<form action="{{ url_for('main.delete_historico', id=historico.id) }}" method="POST" class="d-inline">
+																<button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?');"><i class="bi bi-trash"></i></button>
+															</form>
+														</td>
+													</tr>
+													{% endfor %}
+												</tbody>
+											</table>
+										{% else %}
+											<p class="text-muted">Nenhum histórico de serviço registrado.</p>
+										{% endif %}
+										
+										<div class="mt-3">
+											<form action="/add_historico/{{ carro.id }}" method="POST" class="row gx-2 align-items-end">
+												<div class="col">
+													<label for="descricao_hist" class="form-label small">Novo Histórico</label>
+													<input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control form-control-sm" required>
+												</div>
+												<div class="col-md-3">
+													<label for="data_hist" class="form-label small">Data</label>
+													<input type="date" name="data" class="form-control form-control-sm" required>
+												</div>
+												<div class="col-auto">
+													<button type="submit" class="btn btn-primary btn-sm">Adicionar</button>
+												</div>
+											</form>
+										</div>
+									</div>
+								</div>
+
+								<!-- Modal para Editar Carro -->
+								<div class="modal fade" id="updateCarroModal{{ carro.id }}" tabindex="-1" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content">
+											<div class="modal-header">
+												<h5 class="modal-title">Editar Veículo</h5>
+												<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+											</div>
+											<form action="{{ url_for('main.update_carros', cliente_id=cliente.id) }}" method="POST">
+												<div class="modal-body">
+													<input type="hidden" name="carro_id" value="{{ carro.id }}">
+													<div class="mb-3"><label class="form-label">Marca</label><input type="text" name="marca_{{ carro.id }}" class="form-control" value="{{ carro.marca }}" required></div>
+													<div class="mb-3"><label class="form-label">Modelo</label><input type="text" name="modelo_{{ carro.id }}" class="form-control" value="{{ carro.modelo }}" required></div>
+													<div class="mb-3"><label class="form-label">Motor</label><input type="text" name="motor_{{ carro.id }}" class="form-control" value="{{ carro.motor }}"></div>
+													<div class="mb-3"><label class="form-label">Ano</label><input type="number" name="ano_{{ carro.id }}" class="form-control ano-input" value="{{ carro.ano }}"></div>
+													<div class="mb-3"><label class="form-label">Placa</label><input type="text" name="placa_{{ carro.id }}" class="form-control placa-input" value="{{ carro.placa }}"></div>
+													<div class="mb-3"><label class="form-label">Quilometragem</label><input type="number" name="quilometragem_{{ carro.id }}" class="form-control" value="{{ carro.quilometragem }}"></div>
+												</div>
+												<div class="modal-footer">
+													<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+													<button type="submit" class="btn btn-primary">Salvar Alterações</button>
+												</div>
+											</form>
+										</div>
+									</div>
+								</div>
+
+								<!-- Modais para Editar Histórico (um para cada histórico) -->
+								{% for historico in carro.historicos %}
+								<div class="modal fade" id="editHistoricoModal{{ historico.id }}" tabindex="-1" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content">
+											<div class="modal-header"><h5 class="modal-title">Editar Histórico</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+											<form action="{{ url_for('main.edit_historico', id=historico.id) }}" method="POST">
+												<div class="modal-body">
+													<div class="mb-3"><label class="form-label">Descrição</label><input type="text" class="form-control" name="descricao" value="{{ historico.descricao }}" required></div>
+													<div class="mb-3"><label class="form-label">Data</label><input type="date" class="form-control" name="data" value="{{ historico.data_local.strftime('%Y-%m-%d') if historico.data_local else '' }}" required></div>
+												</div>
+												<div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div>
+											</form>
+										</div>
+									</div>
+								</div>
+								{% endfor %}
+							{% endfor %}
+						{% else %}
+							<div class="text-center p-4 border rounded bg-light">
+								<p class="mb-0 text-muted">Nenhum veículo registrado para este cliente.</p>
+							</div>
+						{% endif %}
                     </div>
-                    <button type="button" class="btn btn-primary mt-2" onclick="imprimirSelecionados()">Imprimir</button>
+
+                    <!-- Aba: Telefones -->
+                    <div class="tab-pane fade" id="telefones-pane" role="tabpanel" aria-labelledby="telefones-tab">
+						<h4 class="mb-3">Telefones do Cliente</h4>
+						{% if telefones %}
+							<ul class="list-group mb-4">
+								{% for telefone in telefones %}
+									<li class="list-group-item d-flex justify-content-between align-items-center">
+										<span>{{ telefone.numero }}</span>
+										<div>
+											<!-- Formulário de atualização é melhor em um modal para evitar poluição -->
+											<form action="{{ url_for('main.delete_telefone', telefone_id=telefone.id) }}" method="POST" class="d-inline">
+												<button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?');"><i class="bi bi-trash"></i></button>
+											</form>
+										</div>
+									</li>
+								{% endfor %}
+							</ul>
+						{% else %}
+							<p class="text-muted">Nenhum telefone registrado.</p>
+						{% endif %}
+						<hr>
+						<h5 class="mt-4 mb-3">Adicionar Novos Telefones</h5>
+						<form action="{{ url_for('main.add_telefone', cliente_id=cliente.id) }}" method="POST" id="addTelefoneForm">
+							<div id="telefones-container-add">
+								<div class="input-group mb-2">
+									<input type="text" name="numeros[]" class="form-control telefone-input" placeholder="Digite o Telefone" required>
+									<button class="btn btn-outline-secondary" type="button" onclick="adicionarCampoTelefone()"><i class="bi bi-plus-circle"></i></button>
+								</div>
+							</div>
+							<button type="submit" class="btn btn-primary mt-2">Salvar Telefone(s)</button>
+						</form>
+                    </div>
+
+                    <!-- Aba: Pagamentos -->
+                    <div class="tab-pane fade" id="pagamentos-pane" role="tabpanel" aria-labelledby="pagamentos-tab">
+						<h4 class="mb-3">Pagamentos do Cliente</h4>
+						{% if pagamentos %}
+							<div class="table-responsive">
+								<table class="table table-hover align-middle">
+									<thead class="table-light">
+										<tr>
+											<th>Veículo</th>
+											<th>Serviço</th>
+											<th>Data</th>
+											<th>Valor (R$)</th>
+											<th>Método</th>
+											<th class="text-end">Ações</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for pagamento in pagamentos %}
+										<tr>
+											<td>{{ pagamento.carro.marca }} {{ pagamento.carro.modelo }}</td>
+											<td>{{ pagamento.historico.descricao }}</td>
+											<td>{{ pagamento.data_local.strftime('%d/%m/%Y') if pagamento.data_local else '' }}</td>
+											<td>R$ {{ "%.2f"|format(pagamento.valor) }}</td>
+											<td>{{ pagamento.metodo }} {% if pagamento.tipo_pagamento == 'Parcelado' %}({{ pagamento.parcelas }}x){% endif %}</td>
+											<td class="text-end">
+												<button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#editPagamentoModal{{ pagamento.id }}"><i class="bi bi-pencil"></i></button>
+												<form action="{{ url_for('main.delete_pagamento', id=pagamento.id) }}" method="POST" class="d-inline">
+													<button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?');"><i class="bi bi-trash"></i></button>
+												</form>
+											</td>
+										</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						{% else %}
+							<p class="text-muted">Nenhum pagamento registrado.</p>
+						{% endif %}
+						<hr>
+						<h5 class="mt-4 mb-3">Registrar Novo Pagamento</h5>
+						{% set servicos_sem_pagamento = namespace(count=0) %}
+						{% for carro in carros %}
+							{% for historico in carro.historicos %}
+								{% if not historico.tem_pagamento %}
+									{% set servicos_sem_pagamento.count = servicos_sem_pagamento.count + 1 %}
+									<form id="form_pagamento_{{ historico.id }}" action="{{ url_for('main.add_pagamento', cliente_id=cliente.id, carro_id=carro.id, historico_id=historico.id) }}" method="POST" class="mb-4 p-3 border rounded bg-light">
+										<p class="fw-bold">Para: {{ historico.descricao }} ({{ carro.marca }} {{ carro.modelo }})</p>
+										<div class="row">
+											<div class="col-md-3 mb-3"><label class="form-label">Valor (R$)</label><input type="number" step="0.01" name="valor" class="form-control" required></div>
+											<div class="col-md-3 mb-3"><label class="form-label">Método</label><select name="metodo" class="form-select" required onchange="toggleOpcaoPagamento(event)"><option value="Dinheiro">Dinheiro</option><option value="Cartão de Crédito">Cartão de Crédito</option><option value="Cartão de Débito">Cartão de Débito</option><option value="Pix">Pix</option></select></div>
+											<div class="col-md-4 mb-3 opcaoCartao" style="display: none;">
+												<div class="row">
+													<div class="col-6"><label class="form-label">Tipo</label><select name="tipo_pagamento" class="form-select" onchange="toggleParcelas(event)"><option value="À vista">À vista</option><option value="Parcelado">Parcelado</option></select></div>
+													<div class="col-6 opcaoParcelado" style="display: none;"><label class="form-label">Parcelas</label><input type="number" name="parcelas" min="1" max="12" class="form-control"></div>
+												</div>
+											</div>
+											<div class="col-md-2 mb-3"><label class="form-label">Data</label><input type="date" name="data_pagamento" class="form-control" required></div>
+											<div class="col-md-12"><button type="submit" class="btn btn-primary">Registrar</button></div>
+										</div>
+									</form>
+								{% endif %}
+							{% endfor %}
+						{% endfor %}
+						{% if servicos_sem_pagamento.count == 0 and carros %}
+							<p class="text-success">Todos os serviços já possuem pagamentos registrados.</p>
+						{% endif %}
+
+						<!-- Modais para editar pagamentos -->
+						{% for pagamento in pagamentos %}
+						<div class="modal fade" id="editPagamentoModal{{ pagamento.id }}" tabindex="-1" aria-hidden="true">
+							<div class="modal-dialog">
+								<div class="modal-content">
+									<div class="modal-header"><h5 class="modal-title">Editar Pagamento</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+									<form action="{{ url_for('main.edit_pagamento', id=pagamento.id) }}" method="POST">
+										<div class="modal-body">
+											<div class="mb-3"><label class="form-label">Valor (R$)</label><input type="number" step="0.01" class="form-control" name="valor" value="{{ "%.2f"|format(pagamento.valor) }}" required></div>
+											<div class="mb-3"><label class="form-label">Método</label><select class="form-select" name="metodo" required onchange="toggleOpcaoPagamento(event)"><option value="Dinheiro" {% if pagamento.metodo == 'Dinheiro' %}selected{% endif %}>Dinheiro</option><option value="Cartão de Crédito" {% if pagamento.metodo == 'Cartão de Crédito' %}selected{% endif %}>Cartão de Crédito</option><option value="Cartão de Débito" {% if pagamento.metodo == 'Cartão de Débito' %}selected{% endif %}>Cartão de Débito</option><option value="Pix" {% if pagamento.metodo == 'Pix' %}selected{% endif %}>Pix</option></select></div>
+											<div class="opcaoCartao" {% if pagamento.metodo != 'Cartão de Crédito' %}style="display: none;"{% endif %}>
+												<div class="mb-3"><label class="form-label">Tipo</label><select class="form-select" name="tipo_pagamento" onchange="toggleParcelas(event)"><option value="À vista" {% if pagamento.tipo_pagamento == 'À vista' %}selected{% endif %}>À vista</option><option value="Parcelado" {% if pagamento.tipo_pagamento == 'Parcelado' %}selected{% endif %}>Parcelado</option></select></div>
+												<div class="mb-3 opcaoParcelado" {% if pagamento.tipo_pagamento != 'Parcelado' %}style="display: none;"{% endif %}><label class="form-label">Parcelas</label><input type="number" class="form-control" name="parcelas" min="1" max="12" value="{{ pagamento.parcelas or '' }}"></div>
+											</div>
+										</div>
+										<div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div>
+									</form>
+								</div>
+							</div>
+						</div>
+						{% endfor %}
+                    </div>
+
+                    <!-- Aba: Imprimir -->
+                    <div class="tab-pane fade" id="print-pane" role="tabpanel" aria-labelledby="print-tab">
+						<h4 class="mb-3">Seleção para Impressão</h4>
+						<form id="print-form" class="mb-3">
+							<div class="form-check"><input type="checkbox" id="checkbox-print-dados-pessoais" class="form-check-input"><label class="form-check-label" for="checkbox-print-dados-pessoais">Dados Pessoais</label></div>
+							<div class="form-check"><input type="checkbox" id="checkbox-print-veiculos" class="form-check-input"><label class="form-check-label" for="checkbox-print-veiculos">Veículos e Históricos</label></div>
+							<div class="form-check"><input type="checkbox" id="checkbox-print-telefones" class="form-check-input"><label class="form-check-label" for="checkbox-print-telefones">Telefones</label></div>
+							<div class="form-check"><input type="checkbox" id="checkbox-print-pagamentos" class="form-check-input"><label class="form-check-label" for="checkbox-print-pagamentos">Pagamentos</label></div>
+						</form>
+						<button type="button" class="btn btn-primary" onclick="imprimirSelecionados()"><i class="bi bi-printer-fill me-2"></i>Imprimir Selecionados</button>
+						
+						<!-- Conteúdo oculto para impressão -->
+						<div id="print-sections-container">
+							<div id="print-section-dados-pessoais" class="print-section">
+								<h4>Dados Pessoais</h4>
+								<p><strong>Nome:</strong> {{ cliente.nome }}</p>
+								<p><strong>CPF/CNPJ:</strong> {{ cliente.cpf or cliente.cnpj or "N/A" }}</p>
+								<p><strong>Endereço:</strong> {% if cliente.endereco %}{{ cliente.endereco.split(';')[0].strip() }}, {{ cliente.cidade.split(';')[0].strip() }} - {{ cliente.estado }}{% else %}N/A{% endif %}</p>
+							</div>
+							<div id="print-section-telefones" class="print-section">
+								<h4>Telefones</h4>
+								{% for telefone in telefones %}<p>{{ telefone.numero }}</p>{% endfor %}
+							</div>
+							<div id="print-section-veiculos" class="print-section">
+								<h4>Veículos e Históricos</h4>
+								{% for carro in carros %}
+									<div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ccc;">
+										<p><strong>Veículo:</strong> {{ carro.marca }} {{ carro.modelo }} ({{ carro.ano }}) - Placa: {{ carro.placa }}</p>
+										<ul>{% for historico in carro.historicos %}<li><strong>{{ historico.data_local.strftime('%d/%m/%Y') }}:</strong> {{ historico.descricao }}</li>{% endfor %}</ul>
+									</div>
+								{% endfor %}
+							</div>
+							<div id="print-section-pagamentos" class="print-section">
+								<h4>Pagamentos</h4>
+								<table class="table table-sm">
+									<thead><tr><th>Data</th><th>Serviço</th><th>Valor</th><th>Método</th></tr></thead>
+									<tbody>
+									{% for pagamento in pagamentos %}
+										<tr>
+											<td>{{ pagamento.data_local.strftime('%d/%m/%Y') }}</td>
+											<td>{{ pagamento.historico.descricao }}</td>
+											<td>R$ {{ "%.2f"|format(pagamento.valor) }}</td>
+											<td>{{ pagamento.metodo }}</td>
+										</tr>
+									{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+                    </div>
                 </div>
-			</div>
-			</div>
-			<div class="card mb-4">
-			<div id="print" class="tab-content">
-			 <h4 class="mb-3">Escolha o que imprimir</h4>
-             <form id="print-form" class="mb-3">
-                <div class="form-check mb-2">
-                    <input type="checkbox" id="checkbox-print-dados-pessoais" class="form-check-input select-to-print">
-                    <label class="form-check-label" for="checkbox-print-dados-pessoais">Dados Pessoais</label>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!-- Modal para Adicionar Novo Carro -->
+<div class="modal fade" id="addCarroModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Adicionar Novo Veículo</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <form action="{{ url_for('main.add_carros', cliente_id=cliente.id) }}" method="POST" id="addCarroForm">
+                <div class="modal-body">
+                    <div class="mb-3"><label class="form-label">Marca</label><input type="text" name="marca[]" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Modelo</label><input type="text" name="modelo[]" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Motor</label><input type="text" name="motor[]" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">Ano</label><input type="number" name="ano[]" class="form-control ano-input"></div>
+                    <div class="mb-3"><label class="form-label">Placa</label><input type="text" name="placa[]" class="form-control placa-input"></div>
+                    <div class="mb-3"><label class="form-label">Quilometragem</label><input type="number" name="quilometragem[]" class="form-control"></div>
                 </div>
-                <div class="form-check mb-2">
-                    <input type="checkbox" id="checkbox-print-veiculos" class="form-check-input select-to-print">
-                    <label class="form-check-label" for="checkbox-print-veiculos">Veículos</label>
-                </div>
-                <div class="form-check mb-2">
-                    <input type="checkbox" id="checkbox-print-telefones" class="form-check-input select-to-print">
-                    <label class="form-check-label" for="checkbox-print-telefones">Telefones</label>
-                </div>
-                <div class="form-check mb-2">
-                    <input type="checkbox" id="checkbox-print-pagamentos" class="form-check-input select-to-print">
-                    <label class="form-check-label" for="checkbox-print-pagamentos">Pagamento</label>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Veículo</button>
                 </div>
             </form>
-            <div id="print-sections-container" class="mt-4">
-                <div id="print-section-dados-pessoais" class="print-section mb-4">
-                    <h4 class="mb-3">Dados Pessoais</h4>
-                    <p class="mb-2"><strong>Nome:</strong> {{ cliente.nome }}</p>
-					<p class="mb-2"><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "Apelido ou Nome Social não registado" }}</p>
-					<p class="mb-2"><strong>CPF:</strong> {{ cliente.cpf or "CPF não registado" }}</p>
-					<p class="mb-2"><strong>CNPJ:</strong> {{ cliente.cnpj or "CNPJ não registado" }}</p>
-					{% if cliente.endereco %}
-						{% for endereco in cliente.endereco.split(';') %}
-							<p class="mb-2"><strong>Endereço {{ loop.index }}:</strong> {{ endereco.strip() }}</p>
-						{% endfor %}
-					{% else %}
-						<p class="mb-2"><strong>Endereço:</strong> Endereço não registado</p>
-					{% endif %}
-					{% if cliente.bairro %}
-						{% for bairro in cliente.bairro.split(';') %}
-							<p class="mb-2"><strong>Bairro {{ loop.index }}:</strong> {{ bairro.strip() }}</p>
-						{% endfor %}
-					{% else %}
-						<p class="mb-2"><strong>Bairro:</strong> Bairro não registado</p>
-					{% endif %}
-					{% if cliente.cidade %}
-						{% for cidade in cliente.cidade.split(';') %}
-							<p class="mb-2"><strong>Cidade {{ loop.index }}:</strong> {{ cidade.strip() }}</p>
-						{% endfor %}
-					{% else %}
-						<p class="mb-2"><strong>Cidade:</strong> Cidade não registada</p>
-					{% endif %}
-					<p class="mb-2"><strong>Estado:</strong> {{ cliente.estado or "Estado não registado" }}</p>
-					{% if cliente.cep %}
-						{% for cep in cliente.cep.split(';') %}
-							<p class="mb-2"><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
-						{% endfor %}
-					{% else %}
-						<p class="mb-2"><strong>CEP:</strong> CEP não registado</p>
-					{% endif %}
-                    <p class="mb-2"><strong>Estado:</strong> {{ cliente.estado or "Estado não registado" }}</p>
-                </div>
-                <div id="print-section-telefones" class="print-section mb-4">
-                    <h4 class="mb-3">Telefones do cliente: {{ cliente.nome }} </h4>        
-                    {% for telefone in telefones %}
-                        <p class="mb-2"><strong>Telefone {{ loop.index }}:</strong> {{ telefone.numero }}</p>
-                    {% endfor %}
-                </div>
-                <div id="print-section-veiculos" class="print-section mb-4">
-                    <h4 class="mb-3">Veículos do cliente: {{ cliente.nome }} </h4>            
-                    {% for carro in carros %}
-                        <div class="mb-4">
-                            <h4 class="mb-2">Veículo {{ loop.index }}</h4>
-                            <p class="mb-1"><strong>Marca:</strong> {{ carro.marca }}</p>
-                            <p class="mb-1"><strong>Modelo:</strong> {{ carro.modelo }}</p>
-                            <p class="mb-1"><strong>Motor:</strong> {{ carro.motor }}</p>
-                            <p class="mb-1"><strong>Ano:</strong> {{ carro.ano }}</p>
-                            <p class="mb-1"><strong>Placa:</strong> {{ carro.placa or "Placa não registada" }}</p>
-                            <p class="mb-1"><strong>Quilometragem:</strong> {{ carro.quilometragem }} KMs rodados</p>
-                            <h5 class="mt-3 mb-2">Histórico de Serviços</h5>
-                            {% if carro.historicos %}
-                                <ul class="mb-3">
-                                    {% for historico in carro.historicos %}
-                                        <li class="mb-1">
-                                            <strong>{{ historico.data_local.strftime('%d/%m/%Y %H:%M') if historico.data_local else '' }}</strong> — {{ historico.descricao }}
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p>Nenhum histórico registado para este veículo.</p>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-                <div id="print-section-pagamentos" class="print-section mb-4">
-                    <h2 class="mb-3">Pagamentos do cliente: {{ cliente.nome }}</h2>
-
-                    {% if pagamentos %}
-                    <table class="table table-hover"> <!-- Removido .table-bordered aqui -->
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Veículo</th> <th>Serviço Realizado</th> <th>Data e Hora</th>
-                                <th>Valor (R$)</th>
-                                <th>Método</th>
-                                <th>Tipo</th>
-                                <th>Parcelas</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for pagamento in pagamentos %}
-                            <tr>
-                                <td>
-                                    {% for carro in carros %}
-                                        {% if pagamento.carro_id == carro.id %}
-                                            {{ carro.marca }} {{ carro.modelo }} {{ carro.ano }}
-                                        {% endif %}
-                                    {% endfor %} {# <-- Adicionado este fechamento #}
-                                    </td>
-                                    <td>
-                                        {% for historico in historicos %}
-                                            {% if pagamento.historico_id == historico.id %}
-                                                {{ historico.descricao }}
-                                            {% endif %}
-                                        {% endfor %}
-                                    </td>
-                                    <td>{{ pagamento.data_local.strftime('%d/%m/%Y %H:%M:%S') if pagamento.data_local else '' }}</td>
-                                    <td>R$ {{ "%.2f"|format(pagamento.valor) }}</td>
-                                    <td>{{ pagamento.metodo }}</td>
-                                    <td>{{ pagamento.tipo_pagamento if pagamento.tipo_pagamento else 'N/A' }}</td>
-                                    <td>
-                                        {% if pagamento.tipo_pagamento == 'Parcelado' %}
-                                            {{ pagamento.parcelas }}x
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% else %}
-                    <p>Este cliente ainda não possui pagamentos registados.</p>
-                    {% endif %}
-                </div>
-            </div>
-			<button type="button" class="btn btn-primary mt-2" onclick="imprimirSelecionados()">Imprimir Selecionados</button>
-			</div>
-			</div>
-            </div>
-            </div>
-    <!-- Custom Alert Modal HTML -->
-    <div id="customAlertModal" class="custom-alert-modal">
-        <div class="custom-alert-modal-content">
-            <span class="custom-alert-close-btn">&times;</span>
-            <p id="customAlertMessage"></p>
-            <button class="btn btn-primary" onclick="closeCustomAlert()">OK</button>
         </div>
     </div>
+</div>
 
-    <!-- Bootstrap JS (bundle includes Popper) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    
-    <!-- jQuery and jQuery Mask Plugin -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<!-- Custom Alert Modal HTML -->
+<div id="customAlertModal" class="custom-alert-modal">
+    <div class="custom-alert-modal-content">
+        <span class="custom-alert-close-btn">×</span>
+        <p id="customAlertMessage"></p>
+        <button class="btn btn-primary" onclick="closeCustomAlert()">OK</button>
+    </div>
+</div>
 
-    <script>
-        // Custom Alert Functions
-        function showCustomAlert(message) {
-            document.getElementById('customAlertMessage').innerText = message;
-            document.getElementById('customAlertModal').style.display = 'flex';
-        }
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 
-        function closeCustomAlert() {
-            document.getElementById('customAlertModal').style.display = 'none';
-        }
-
-        // Close button for the custom alert
-        document.querySelector('.custom-alert-close-btn').onclick = function() {
-            closeCustomAlert();
-        }
-
-        // Close when clicking outside the modal content
-        window.onclick = function(event) {
-            if (event.target == document.getElementById('customAlertModal')) {
-                closeCustomAlert();
-            }
-        }
-
-        // Function to open the tab
-        function openTab(tabName) {
-            var i, tabContent, tabLinks;
-            tabContent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabContent.length; i++) {
-                tabContent[i].style.display = "none";
-            }
-            tabLinks = document.getElementsByClassName("nav-tab-item");
-            for (i = 0; i < tabLinks.length; i++) {
-                tabLinks[i].className = tabLinks[i].className.replace(" active", "");
-            }
-            document.getElementById(tabName).style.display = "block";
-            event.currentTarget.className += " active";
-            // Specific logic for the print tab
-            if (tabName === 'print') {
-                // Hides all print sections within the 'Print' tab by default
-                document.querySelectorAll('#print .print-section').forEach(section => {
-                    section.style.display = 'none';
-                });
-                // Unchecks all print selection checkboxes
-                document.querySelectorAll('.select-to-print').forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-            }
-        }
-
-        // Function to toggle visibility of print sections based on checkboxes
-        document.addEventListener('DOMContentLoaded', () => {
-            const checkboxes = document.querySelectorAll('.select-to-print');
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', (event) => {
-                    const originalSectionName = event.target.id.replace('checkbox-print-', '').replace('-local', ''); // Adjusted for local IDs
-                    const sectionIdToToggle = 'print-section-' + originalSectionName;
-                    const section = document.getElementById(sectionIdToToggle);
-                    if (section) {
-                        section.style.display = event.target.checked ? 'block' : 'none';
-                    }
-                });
+<script>
+    // --- LÓGICA DO MENU LATERAL (DE listacliente.txt) ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        if (menuToggle) {
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
             });
+        }
+    });
+
+    // --- FUNÇÕES DE ALERTA ---
+    function showCustomAlert(message) {
+        document.getElementById('customAlertMessage').innerText = message;
+        document.getElementById('customAlertModal').style.display = 'flex';
+    }
+    function closeCustomAlert() {
+        document.getElementById('customAlertModal').style.display = 'none';
+    }
+    document.querySelector('.custom-alert-close-btn').onclick = closeCustomAlert;
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('customAlertModal')) closeCustomAlert();
+    }
+
+    // --- FUNÇÕES DE MANIPULAÇÃO DO FORMULÁRIO ---
+    function adicionarCampoTelefone() {
+        const container = document.getElementById('telefones-container-add');
+        const newDiv = document.createElement('div');
+        newDiv.classList.add('input-group', 'mb-2');
+        newDiv.innerHTML = `
+            <input type="text" name="numeros[]" class="form-control telefone-input" placeholder="Telefone adicional" required>
+            <button type="button" class="btn btn-outline-danger" onclick="this.closest('.input-group').remove();"><i class="bi bi-trash"></i></button>
+        `;
+        container.appendChild(newDiv);
+        $(newDiv).find('.telefone-input').mask('(00) 00000-0000');
+    }
+
+    function adicionarCampoEndereco() {
+        const container = document.getElementById('enderecos-container');
+        const newDiv = document.createElement('div');
+        newDiv.classList.add('mb-3', 'border', 'p-3', 'rounded', 'bg-light', 'position-relative');
+        newDiv.innerHTML = `
+            <button type="button" class="btn-close position-absolute top-0 end-0 m-2" aria-label="Close" onclick="this.closest('.mb-3').remove();"></button>
+            <h6 class="mb-3">Endereço Adicional</h6>
+            <div class="row">
+                <div class="col-md-3 mb-3"><label class="form-label">CEP</label><input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP"></div>
+                <div class="col-md-9 mb-3"><label class="form-label">Endereço</label><input type="text" name="endereco[]" class="form-control" placeholder="Endereço"></div>
+                <div class="col-md-6 mb-3"><label class="form-label">Bairro</label><input type="text" name="bairro[]" class="form-control" placeholder="Bairro"></div>
+                <div class="col-md-6 mb-3"><label class="form-label">Cidade</label><input type="text" name="cidade[]" class="form-control" placeholder="Cidade"></div>
+            </div>
+        `;
+        container.appendChild(newDiv);
+        const newCepInput = newDiv.querySelector('.cep-input');
+        $(newCepInput).mask('00000-000');
+        newCepInput.addEventListener('blur', () => preencherEnderecoPorCep(newCepInput));
+    }
+
+    function toggleOpcaoPagamento(event) {
+        const form = event.target.closest("form, .modal-body");
+        const opcaoCartao = form.querySelector(".opcaoCartao");
+        if (event.target.value === "Cartão de Crédito") {
+            opcaoCartao.style.display = "block";
+        } else {
+            opcaoCartao.style.display = "none";
+            const opcaoParcelado = form.querySelector(".opcaoParcelado");
+            if (opcaoParcelado) opcaoParcelado.style.display = "none";
+        }
+    }
+
+    function toggleParcelas(event) {
+        const form = event.target.closest("form, .modal-body");
+        const opcaoParcelado = form.querySelector(".opcaoParcelado");
+        if (event.target.value === "Parcelado") {
+            opcaoParcelado.style.display = "block";
+        } else {
+            opcaoParcelado.style.display = "none";
+        }
+    }
+
+    function imprimirSelecionados() {
+        const printContent = document.createElement('div');
+        let hasSelection = false;
+        document.querySelectorAll('#print-form .form-check-input').forEach(checkbox => {
+            if (checkbox.checked) {
+                hasSelection = true;
+                const sectionId = checkbox.id.replace('checkbox-print-', 'print-section-');
+                const section = document.getElementById(sectionId);
+                if (section) printContent.innerHTML += section.innerHTML;
+            }
         });
 
-        // Function to add new phone fields
-        function adicionarCampoTelefone() {
-            const container = document.getElementById('telefones-container');
-            const newDiv = document.createElement('div');
-            newDiv.classList.add('input-group', 'mb-2');
-            newDiv.innerHTML = `
-                <input type="text" name="numeros[]" class="form-control telefone-input" placeholder="Digite o telefone adicional" required>
-                <button type="button" class="btn btn-danger" onclick="this.closest('.input-group').remove();">-</button>
-            `;
-            container.appendChild(newDiv);
-             // Applies the mask to the new phone field
-            $(newDiv).find('.telefone-input').mask('(00) 0000-00009', {
-                onKeyPress: function(val, e, field, options) {
-                    var masks = ['(00) 0000-00009', '(00) 00000-0000'];
-                    var mask = (val.length > 14) ? masks[1] : masks[0];
-                    $(field).mask(mask, options);
-                }
-            });
-        }
-		
-		// Function to add other addresses
-		function adicionarCampoEndereco() {
-			const container = document.getElementById('enderecos-container');
-			const newDiv = document.createElement('div');
-			newDiv.classList.add('mb-3', 'border', 'p-3', 'rounded', 'bg-light');
-            newDiv.innerHTML = `
-                <h5 class="mb-3">Endereço Adicional</h5>
-				<div class="mb-3">
-                    <label for="cep" class="form-label">CEP</label>
-				    <input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP adicional">
-                </div>
-				<div class="mb-3">
-                    <label for="endereco" class="form-label">Endereço</label>
-				    <input type="text" name="endereco[]" class="form-control" placeholder="Endereço adicional">
-                </div>
-				<div class="mb-3">
-                    <label for="bairro" class="form-label">Bairro</label>
-				    <input type="text" name="bairro[]" class="form-control" placeholder="Bairro adicional">
-                </div>
-				<div class="mb-3">
-                    <label for="cidade" class="form-label">Cidade</label>
-				    <input type="text" name="cidade[]" class="form-control" placeholder="Cidade adicional">
-                </div>
-                <button type="button" class="btn btn-danger btn-sm mt-2" onclick="this.closest('.mb-3').remove();">Remover Endereço</button>
-			`;
-			container.insertBefore(newDiv, container.querySelector('button.btn-outline-primary')); // Inserts before the "Add another address" button
-
-            // Attaches the event listener to the newly created CEP field
-            const newCepInput = newDiv.querySelector('input[name="cep[]"]');
-            if (newCepInput) {
-                newCepInput.addEventListener('blur', () => preencherEnderecoPorCep(newCepInput));
-                // Applies the mask to the new CEP field
-                $(newCepInput).mask('00000-000');
-            }
+        if (!hasSelection) {
+            showCustomAlert('Selecione pelo menos uma seção para imprimir.');
+            return;
         }
 
-		
-        // Show or hide payment method option field
-		function toggleOpcaoPagamento(event) {
-			const selectMetodo = event.target;
-            const form = selectMetodo.closest("form");
-			const opcaoCartao = form.querySelector(".opcaoCartao");
-			
-			if (selectMetodo.value === "Cartão de Crédito") {
-				opcaoCartao.style.display = "block";
-                // Ensures that the payment type and installments are hidden if not relevant
-                const tipoPagamentoSelect = form.querySelector('select[name="tipo_pagamento"]');
-                if (tipoPagamentoSelect) {
-                    tipoPagamentoSelect.value = "À vista"; // Sets to "At sight" by default
-                }
-                const opcaoParceladoDiv = form.querySelector('.opcaoParcelado');
-                if (opcaoParceladoDiv) {
-                    opcaoParceladoDiv.style.display = "none";
-                }
-			} else {
-				opcaoCartao.style.display = "none";
-				const opcaoParceladoDiv = form.querySelector(".opcaoParcelado");
-                if (opcaoParceladoDiv) {
-                    opcaoParceladoDiv.style.display = "none";
-                }
-			}
-		}
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html><head><title>Impressão do Cliente</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+            <style>body{padding:20px;} h4{margin-top:20px;border-bottom:1px solid #ccc;padding-bottom:5px;}</style>
+            </head><body>
+            <div align="center"><img src="{{ url_for('static', filename='img/logo.png') }}" width="150"></div>
+            <hr>
+            ${printContent.innerHTML}
+            </body></html>`);
+        printWindow.document.close();
+        printWindow.print();
+    }
 
-        // Show or hide number of installments
-		function toggleParcelas(event) {
-			const selectTipoCartao = event.target;
-            const form = selectTipoCartao.closest("form");
-			const opcaoParcelado = form.querySelector(".opcaoParcelado");
-			
-			if (selectTipoCartao.value === "Parcelado") {
-				opcaoParcelado.style.display = "block";
-			} else {
-				opcaoParcelado.style.display = "none";
-			}
-		}
-
-        function adicionarCarro() {
-            const carrosContainer = document.getElementById('carros-container');
-            const novoCarro = document.createElement('div');
-            novoCarro.className = 'carro-form mb-3 border p-3 rounded bg-light';
-            novoCarro.innerHTML = `
-                <h5 class="mb-3">Novo Carro</h5>
-                <div class="mb-3">
-                    <label for="marca[]" class="form-label">Marca</label>
-                    <input type="text" name="marca[]" class="form-control" placeholder="Marca" required>
-                </div>
-                <div class="mb-3">
-                    <label for="modelo[]" class="form-label">Modelo</label>
-                    <input type="text" name="modelo[]" class="form-control" placeholder="Modelo" required>
-                </div>
-                <div class="mb-3">
-                    <label for="motor[]" class="form-label">Motor</label>
-                    <input type="text" name="motor[]" class="form-control" placeholder="Motor">
-                </div>
-                <div class="mb-3">
-                    <label for="ano[]" class="form-label">Ano</label>
-                    <input type="number" name="ano[]" class="form-control ano-input" placeholder="Ano">
-                </div>
-                <div class="mb-3">
-                    <label for="placa[]" class="form-label">Placa</label>
-                    <input type="text" name="placa[]" class="form-control placa-input" placeholder="Placa">
-                </div>
-                <div class="mb-3">
-                    <label for="quilometragem[]" class="form-label">Quilometragem em KMs rodados</label>
-                    <input type="number" name="quilometragem[]" class="form-control" placeholder="Quilometragem">
-                </div>
-                <button type="button" class="btn btn-danger btn-sm mt-2" onclick="this.closest('.carro-form').remove();">Remover Carro</button>
-            `;
-            carrosContainer.appendChild(novoCarro);
-            // Applies masks to the new car fields
-            $(novoCarro).find('.ano-input').mask('0000');
-            $(novoCarro).find('.placa-input').mask('SSS-0000', {
-                'translation': {
-                    S: {
-                        pattern: /[A-Za-z]/
-                    },
-                    '0': {
-                        pattern: /[0-9]/
+    function preencherEnderecoPorCep(cepInput) {
+        let cep = cepInput.value.replace(/\D/g, '');
+        if (cep.length === 8) {
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.erro) {
+                        const group = cepInput.closest('.row');
+                        group.querySelector('input[name="endereco[]"]').value = data.logradouro || '';
+                        group.querySelector('input[name="bairro[]"]').value = data.bairro || '';
+                        group.querySelector('input[name="cidade[]"]').value = data.localidade || '';
+                        document.querySelector('select[name="estado"]').value = data.uf || '';
                     }
-                }
-            });
+                }).catch(error => console.error('Erro na API ViaCEP:', error));
         }
+    }
 
-        // Function for the menu
-		function toggleMenu() {
-			let menu = document.getElementById("menu");
-			let conteudo = document.getElementById("conteudo");
-			let toggleBtn = document.querySelector(".toggle-btn");
-			let logo = document.querySelector(".logo-container");
-
-			if (menu.classList.contains("recolhido")) {
-				menu.classList.remove("recolhido");
-				conteudo.classList.remove("menu-recolhido");
-				toggleBtn.classList.remove("recolhido");
-                if (window.innerWidth <= 768) {
-                    logo.style.display = "flex"; // Shows the logo on mobile when the menu is collapsed
-                }
-			} else {
-				menu.classList.add("recolhido");
-				conteudo.classList.add("menu-recolhido");
-				toggleBtn.classList.add("recolhido");
-                if (window.innerWidth <= 768) {
-                    logo.style.display = "none"; // Hides the logo on mobile when the menu is expanded
-                }
-			}
-		}        
-        
-        // Fix to start the page with the menu closed on mobile and open on desktop
-        window.onload = function() {
-            let menu = document.getElementById("menu");
-            let conteudo = document.getElementById("conteudo");
-            let toggleBtn = document.querySelector(".toggle-btn");
-            let logo = document.querySelector(".logo-container");
-
-            if (window.innerWidth <= 768) {
-                menu.classList.add("recolhido"); // Keeps the menu closed on load
-                conteudo.classList.add("menu-recolhido");
-                toggleBtn.classList.add("recolhido");
-                logo.style.display = "flex"; // Ensures the logo is visible on mobile when the menu is collapsed
-            } else {
-                menu.classList.remove("recolhido"); // On desktop, ensures the menu is open
-                conteudo.classList.remove("menu-recolhido");
-                toggleBtn.classList.remove("recolhido");
-                logo.style.display = "flex"; // Ensures the logo is visible on desktop
-            }
-
-            // Initializes the state of payment fields when the page loads
-            document.querySelectorAll('.opcaoCartao').forEach(opcaoCartaoDiv => {
-                const parentForm = opcaoCartaoDiv.closest('form');
-                if (parentForm) { 
-                    const selectMetodo = parentForm.querySelector('select[name="metodo"]');
-                    if (selectMetodo) { 
-                        if (selectMetodo.value === 'Cartão de Crédito') {
-                            opcaoCartaoDiv.style.display = 'block';
-                            const selectTipoCartao = opcaoCartaoDiv.querySelector('select[name="tipo_pagamento"]'); 
-                            const opcaoParceladoDiv = opcaoCartaoDiv.querySelector('.opcaoParcelado');
-                            if (selectTipoCartao && opcaoParceladoDiv) {
-                                if (selectTipoCartao.value === 'Parcelado') {
-                                    opcaoParceladoDiv.style.display = 'block';
-                                } else {
-                                    opcaoParceladoDiv.style.display = 'none';
-                                }
-                            }
-                        } else {
-                            opcaoCartaoDiv.style.display = 'none';
-                        }
-                    }
-                }
-            });
-            // Applies masks to existing fields on load
-            applyMasks();
-        };
-
-        // Function to print selected data from the "Print" tab
-        function imprimirSelecionados() {
-            const checkboxes = document.querySelectorAll('.select-to-print');
-            const printContent = document.createElement('div');
-
-            // Checks the selected sections
-            checkboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    const originalSectionName = checkbox.id.replace('checkbox-print-', '').replace('-local', ''); 
-                    const sectionIdToPrint = 'print-section-' + originalSectionName;
-                    const sectionContent = document.getElementById(sectionIdToPrint);
-
-                    if (sectionContent) {
-                        printContent.innerHTML += sectionContent.outerHTML;
-                    }
-                }
-            });
-            if (!printContent.innerHTML) {
-                showCustomAlert('Selecione pelo menos uma secção para imprimir.');
-                return;
-            }
-
-            // Opens a new window for printing
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html>
-                <head>
-                    <title>Impressão do cliente</title>
-                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-                    <style>
-                        body { font-family: Arial, sans-serif; }
-                        .print-section { margin-bottom: 15px; display: block !important; }
-                    </style>
-                </head>
-                <body>
-                <div align="center">
-                <img src="{{ url_for('static', filename='img/logo.png')  }}" width="150" height="auto">
-                <p><strong>CNPJ:</strong> Insira aqui <strong>WhatsApp:</strong> Insira aqui</p>
-                </div>
-                <div align="left">
-                    ${printContent.innerHTML}
-                </div>
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
-            printWindow.print();
-        }
-
-        // Function to fill address, neighborhood, city and state from CEP
-        function preencherEnderecoPorCep(cepInput) {
-            let cep = cepInput.value.replace(/\D/g, ''); // Removes non-numeric characters
-
-            if (cep.length === 8) {
-                fetch(`https://viacep.com.br/ws/${cep}/json/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (!data.erro) {
-                            // Finds the address field group to which the CEP belongs
-                            const currentAddressGroup = cepInput.closest('div.mb-3'); // Changed to mb-3
-
-                            // Fills the city field within the same group
-                            const cidadeInput = currentAddressGroup.querySelector('input[name="cidade[]"]');
-                            if (cidadeInput) {
-                                cidadeInput.value = data.localidade || '';
-                            }
-
-                            // Fills the state select (it's a global field, not within the address group)
-                            const estadoSelect = document.querySelector('select[name="estado"]');
-                            if (estadoSelect) {
-                                estadoSelect.value = data.uf || '';
-                            }
-
-                            // Fills the address field within the same group
-                            const enderecoInput = currentAddressGroup.querySelector('input[name="endereco[]"]');
-                            if (enderecoInput) {
-                                enderecoInput.value = data.logradouro || '';
-                            }
-
-                            // Fills the neighborhood field within the same group
-                            const bairroInput = currentAddressGroup.querySelector('input[name="bairro[]"]');
-                            if (bairroInput) {
-                                bairroInput.value = data.bairro || '';
-                            }
-
-                        } else {
-                            console.error('CEP not found or invalid.');
-                            // Optionally, clears the fields if the CEP is not found
-                            const currentAddressGroup = cepInput.closest('div.mb-3'); // Changed to mb-3
-                            
-                            const cidadeInput = currentAddressGroup.querySelector('input[name="cidade[]"]');
-                            if (cidadeInput) cidadeInput.value = '';
-
-                            const estadoSelect = document.querySelector('select[name="estado"]');
-                            if (estadoSelect) estadoSelect.value = '';
-
-                            const enderecoInput = currentAddressGroup.querySelector('input[name="endereco[]"]');
-                            if (enderecoInput) enderecoInput.value = '';
-
-                            const bairroInput = currentAddressGroup.querySelector('input[name="bairro[]"]');
-                            if (bairroInput) bairroInput.value = '';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error consulting CEP API:', error);
-                        // Handles network errors
-                    });
-            }
-        }
-
-        // CPF validation function
-        function validarCPF(cpf) {
+    // --- FUNÇÕES DE VALIDAÇÃO ---
+    function validarCPF(cpf) { 
             cpf = cpf.replace(/[^\d]+/g, ''); // Removes non-numeric characters
             if (cpf == '') return false;
             // Eliminates known invalid CPFs
@@ -1531,12 +809,9 @@
                 rev = 0;
             if (rev != parseInt(cpf.charAt(10)))
                 return false;
-            return true;
-        }
-
-        // New and improved CNPJ validation function
-        function validarCNPJ(cnpj) {
-            cnpj = cnpj.replace(/[^\d]+/g, ''); // Removes non-numeric characters
+        return true; }
+    function validarCNPJ(cnpj) { 
+        cnpj = cnpj.replace(/[^\d]+/g, ''); // Removes non-numeric characters
 
             if (cnpj == '') {
                 return false;
@@ -1595,197 +870,61 @@
             if (resultado != parseInt(digitos.charAt(1))) {
                 return false;
             }
-            return true;
+        return true; }
+    function validateCpfCnpjInput() {
+        var input = $('#cpf_cnpj'), error = $('#cpfCnpjError'), hiddenCpf = $('#hidden_cpf'), hiddenCnpj = $('#hidden_cnpj');
+        var valor = input.val().replace(/\D/g, '');
+        error.hide(); hiddenCpf.val(''); hiddenCnpj.val('');
+        if (valor === '') return true;
+        if (valor.length === 11) {
+            if (validarCPF(valor)) { hiddenCpf.val(valor); return true; } 
+            else { error.text('CPF inválido.').show(); return false; }
+        } else if (valor.length === 14) {
+            if (validarCNPJ(valor)) { hiddenCnpj.val(valor); return true; } 
+            else { error.text('CNPJ inválido.').show(); return false; }
+        } else {
+            error.text('Documento com tamanho inválido.').show(); return false;
         }
+    }
 
-        // Adds an event listener to the main CEP field when the DOM loads
-        document.addEventListener('DOMContentLoaded', function() {
-            const mainCepInput = document.getElementById('mainCepInput'); 
-            if (mainCepInput) {
-                mainCepInput.addEventListener('blur', () => preencherEnderecoPorCep(mainCepInput));
-            }
+    // --- FUNÇÕES DE MÁSCARA E EVENTOS ---
+    function applyMasks() {
+        var cpfCnpjMask = function(val) { return val.replace(/\D/g, '').length <= 11 ? '000.000.000-009' : '00.000.000/0000-00'; };
+        $('#cpf_cnpj').mask(cpfCnpjMask, { onKeyPress: function(val, e, field, options) { field.mask(cpfCnpjMask.apply({}, arguments), options); } });
+        $('.cep-input').mask('00000-000');
+        $('.placa-input').mask('SSS-0A00', { translation: { 'S': { pattern: /[A-Za-z]/ }, 'A': { pattern: /[0-9A-Ja-j]/ } }, onKeyPress: function(val, e, field, options){ $(field).mask(val.length > 4 && /[A-Za-z]/.test(val.charAt(4)) ? 'SSS-0A00' : 'SSS-0000', options); } });
+        $('.ano-input').mask('0000');
+        $('.telefone-input').mask('(00) 00000-0000');
+    }
 
-            const cpfCnpjInput = document.getElementById('cpf_cnpj');
-            if (cpfCnpjInput) {
-                cpfCnpjInput.addEventListener('blur', function() {
-                    validateCpfCnpjInput();
-                });
+    $(document).ready(function() {
+        applyMasks();
+
+        const mainCepInput = document.getElementById('mainCepInput');
+        if (mainCepInput) mainCepInput.addEventListener('blur', () => preencherEnderecoPorCep(mainCepInput));
+        $('#cpf_cnpj').on('blur', validateCpfCnpjInput);
+
+        // Inicializa estado dos formulários de pagamento
+        document.querySelectorAll('form[id^="form_pagamento_"], form[id^="editPagamentoModal"]').forEach(form => {
+            const selectMetodo = form.querySelector('select[name="metodo"]');
+            if (selectMetodo) {
+                toggleOpcaoPagamento({ target: selectMetodo });
+                const selectTipo = form.querySelector('select[name="tipo_pagamento"]');
+                if (selectTipo) toggleParcelas({ target: selectTipo });
             }
         });
 
-        // Overwrites the original addAddressField function to attach an event listener to new CEP fields
-        const originalAdicionarCampoEndereco = adicionarCampoEndereco; 
-        adicionarCampoEndereco = function() {
-            originalAdicionarCampoEndereco(); 
-            // Gets the last added div within #enderecos-container to find its CEP field
-            const lastAddedDiv = document.querySelector('#enderecos-container div.mb-3:last-of-type');
-            if (lastAddedDiv) {
-                const newCepInput = lastAddedDiv.querySelector('input[name="cep[]"]');
-                if (newCepInput) {
-                    newCepInput.addEventListener('blur', () => preencherEnderecoPorCep(newCepInput));
-                }
+        // Limpeza de máscaras antes de enviar
+        $('#editClientForm, #addCarroForm, #updateCarrosForm, #addTelefoneForm').submit(function(event) {
+            if (this.id === 'editClientForm' && !validateCpfCnpjInput()) {
+                event.preventDefault();
+                showCustomAlert('Por favor, corrija o documento (CPF/CNPJ).');
+                return;
             }
-        };
-        
-        // Function to apply masks to inputs
-        function applyMasks() {
-            // Dynamic mask for CPF/CNPJ
-            var cpfCnpjMaskBehavior = function (val) {
-                return val.replace(/\D/g, '').length <= 11 ? '000.000.000-009' : '00.000.000/0000-00';
-            },
-            cpfCnpjOptions = {
-                onKeyPress: function(val, e, field, options) {
-                    field.mask(cpfCnpjMaskBehavior.apply({}, arguments), options);
-                }
-            };
-            $('#cpf_cnpj').mask(cpfCnpjMaskBehavior, cpfCnpjOptions);
-
-            // CEP mask
-            $('.cep-input').mask('00000-000');
-
-            // License Plate mask (Mercosul or standard)
-            $('.placa-input').mask('SSS-0000', {
-                'translation': {
-                    S: {
-                        pattern: /[A-Za-z]/
-                    },
-                    '0': {
-                        pattern: /[0-9]/
-                    }
-                }
-            });
-
-            // Year mask (only 4 numeric digits)
-            $('.ano-input').mask('0000');
-
-            // Flexible phone mask for fields with the 'telefone-input' class
-            $('.telefone-input').mask('(00) 0000-00009', {
-                onKeyPress: function(val, e, field, options) {
-                    var masks = ['(00) 0000-00009', '(00) 00000-0000'];
-                    var mask = (val.length > 14) ? masks[1] : masks[0];
-                    $(field).mask(mask, options); // Uses $(field) to apply the mask only to the current field
-                }
-            });
-        }
-
-        // Function to validate CPF/CNPJ input field
-        function validateCpfCnpjInput() {
-            var cpfCnpjInput = $('#cpf_cnpj');
-            var errorSpan = $('#cpfCnpjError');
-            var hiddenCpf = $('#hidden_cpf');
-            var hiddenCnpj = $('#hidden_cnpj');
-            
-            var valor = cpfCnpjInput.val().replace(/\D/g, '');
-
-            // Reset errors and hidden fields
-            errorSpan.hide();
-            hiddenCpf.val('');
-            hiddenCnpj.val('');
-
-            if (valor === '') {
-                // Field is empty, which is allowed.
-                return true;
-            } else if (valor.length === 11) {
-                if (validarCPF(valor)) {
-                    hiddenCpf.val(valor);
-                    return true;
-                } else {
-                    errorSpan.text('CPF inválido. Por favor, verifique o número.').show();
-                    return false;
-                }
-            } else if (valor.length === 14) {
-                if (validarCNPJ(valor)) {
-                    hiddenCnpj.val(valor);
-                    return true;
-                } else {
-                    errorSpan.text('CNPJ inválido. Por favor, verifique o número.').show();
-                    return false;
-                }
-            } else {
-                // Invalid length
-                errorSpan.text('Documento com tamanho inválido. Digite 11 dígitos para CPF ou 14 para CNPJ.').show();
-                return false;
-            }
-        }
-
-        // Adds a listener for form submission
-        $(document).ready(function() {
-            // Calls the applyMasks function when the DOM is ready
-            applyMasks();
-
-            // Intercepts the client edit form submission
-            $('#editClientForm').submit(function(event) {
-                if (!validateCpfCnpjInput()) {
-                    event.preventDefault(); // Stop submission
-                    showCustomAlert('Por favor, corrija o documento (CPF/CNPJ) antes de continuar.');
-                    return;
-                }
-
-                var cepInputs = $('input[name="cep[]"]');
-                // Removes the hyphen from all CEP fields before submitting
-                cepInputs.each(function() {
-                    if ($(this).val()) {
-                        $(this).val($(this).val().replace(/\D/g, ''));
-                    }
-                });
-            });
-
-            // Intercepts the add phone form submission
-            $('#addTelefoneForm').submit(function() {
-                var telefoneInputs = $(this).find('input[name="numeros[]"]');
-                telefoneInputs.each(function() {
-                    if ($(this).val()) {
-                        $(this).val($(this).val().replace(/\D/g, ''));
-                    }
-                });
-            });
-
-            // Intercepts phone update forms submission (if there are multiple)
-            $('[id^="updateTelefoneForm"]').submit(function() {
-                var telefoneInput = $(this).find('input[name="numero"]');
-                if (telefoneInput.val()) {
-                    telefoneInput.val(telefoneInput.val().replace(/\D/g, ''));
-                }
-            });
-            
-            // Intercepts the add car form submission
-            $('#addCarroForm').submit(function() {
-                $(this).find('input[name="placa[]"]').each(function() {
-                    if ($(this).val()) {
-                        $(this).val($(this).val().replace('-', '').toUpperCase()); 
-                    }
-                });
-                $(this).find('input[name="ano[]"]').each(function() {
-                    if ($(this).val()) {
-                        $(this).val($(this).val().replace(/\D/g, ''));
-                    }
-                });
-            });
-
-            // Intercepts the car update form submission
-            $('#updateCarrosForm').submit(function() {
-                $(this).find('[name^="placa_"]').each(function() { 
-                    if ($(this).val()) {
-                        $(this).val($(this).val().replace('-', '').toUpperCase());
-                    }
-                });
-                $(this).find('[name^="ano_"]').each(function() { 
-                    if ($(this).val()) {
-                        $(this).val($(this).val().replace(/\D/g, ''));
-                    }
-                });
-            });
-
-            // Intercepts add/edit payment forms submission
-            $('[id^="form_pagamento_"], [id^="editPagamentoForm"]').submit(function() {
-                // Just to ensure numeric fields are clean, although Flask already handles float
-                var valorInput = $(this).find('input[name="valor"]');
-                if (valorInput.val()) {
-                    valorInput.val(valorInput.val().replace(',', '.')); 
-                }
-            });
-
+            $(this).find('.cep-input, .telefone-input').each(function() { $(this).val($(this).val().replace(/\D/g, '')); });
+            $(this).find('.placa-input').each(function() { $(this).val($(this).val().replace('-', '').toUpperCase()); });
         });
-    </script>
+    });
+</script>
 </body>
 </html>
