@@ -10,10 +10,10 @@ wait_for_mariadb() {
     current_time=$(date +%s)
     elapsed_time=$((current_time - start_time))
     if [ $elapsed_time -ge $timeout ]; then
-      echo "Ainda aguardando o MariaDB..."
+      echo "Tempo limite excedido ao aguardar o MariaDB."
       exit 1
     fi
-    echo "Tempo limite excedido ao aguardar o MariaDB."
+    echo "Ainda aguardando o MariaDB..."
     sleep 1
   done
   echo "MariaDB iniciou!"
@@ -29,7 +29,8 @@ export FLASK_APP=run.py # Confirme se o seu ficheiro principal é 'run.py'
 # Chama a função para aguardar o MariaDB
 wait_for_mariadb
 
-# Lógica de migração: Inicializa migrações se a pasta não existir,
+# --- LÓGICA DE MIGRAÇÃO (INÍCIO) ---
+# Inicializa migrações se a pasta não existir,
 # e sempre aplica as migrações mais recentes.
 MIGRATIONS_DIR="/app/migrations"
 
@@ -48,19 +49,19 @@ echo "Aplicando migrações de banco de dados..."
 flask db upgrade
 
 echo "Migrações aplicadas com sucesso!"
+# --- LÓGICA DE MIGRAÇÃO (FIM) ---
 
-# Tenta conectar ao banco de dados e verificar/adicionar papéis iniciais
-# ESTA PARTE AGORA RODA DEPOIS do flask db upgrade.
-# Removido 'with app.app_context():' da string Python para simplificar.
-# Isso pode causar erros se 'verify_initial_roles' realmente precisar do contexto de aplicação.
+
+# --- LÓGICA DE VERIFICAÇÃO DE PAPÉIS (INÍCIO) ---
+# AGORA, e SOMENTE AGORA, tentamos conectar ao banco de dados e verificar/adicionar papéis iniciais.
+# Esta parte AGORA RODA DEPOIS do flask db upgrade ter sido concluído com sucesso.
 echo "Verificando e adicionando papéis iniciais ao banco de dados..."
 MAX_RETRIES=10
 RETRY_COUNT=0
 
-# Python command to execute. Now in a single line, without 'with app.app_context()'.
-# IMPORTANT: Adjust 'from app.models' and 'from app.routes' based on your actual project structure.
-# If models.py and routes.py are directly in /app, use 'from models import ...' and 'from routes import ...'
-PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; from app.models import db, Papel; from app.routes import verify_initial_roles; print('Conexão com o banco de dados estabelecida com sucesso para papéis!'); app.app_context().push(); verify_initial_roles(); app.app_context().pop(); sys.exit(0)"
+# Python command to execute. Now in a single line, with corrected quotes.
+# CONFIRMADO: Seus modelos e rotas estão dentro de um pacote 'app' dentro de /app
+PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; from app.models import db, Papel; from app.routes import verify_initial_roles; app.app_context().push(); verify_initial_roles(); app.app_context().pop(); sys.exit(0)"
 
 until python3 -c "$PYTHON_COMMAND" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
     RETRY_COUNT=$((RETRY_COUNT+1))
@@ -73,6 +74,7 @@ if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
     exit 1
 fi
 echo "Verificação e adição de papéis concluída."
+# --- LÓGICA DE VERIFICAÇÃO DE PAPÉIS (FIM) ---
 
 # Inicia a aplicação Flask (comando original do CMD)
 echo "Iniciando a aplicação Flask..."
