@@ -10,10 +10,10 @@ wait_for_mariadb() {
     current_time=$(date +%s)
     elapsed_time=$((current_time - start_time))
     if [ $elapsed_time -ge $timeout ]; then
-      echo "Tempo limite excedido ao aguardar o MariaDB."
+      echo "Ainda aguardando o MariaDB..."
       exit 1
     fi
-    echo "Ainda aguardando o MariaDB..."
+    echo "Tempo limite excedido ao aguardar o MariaDB."
     sleep 1
   done
   echo "MariaDB iniciou!"
@@ -50,36 +50,27 @@ flask db upgrade
 echo "Migrações aplicadas com sucesso!"
 
 # Tenta conectar ao banco de dados e verificar/adicionar papéis iniciais
-# ESTA PARTE AGORA RODA DEPOIS DO flask db upgrade, SEM UM LOOP 'UNTIL' QUE CAUSE ERROS PREMATUROS.
-# Usando 'python3 -c' com uma string de comando Python mais robusta.
+# ESTA PARTE AGORA RODA DEPOIS DO flask db upgrade.
+# Usando 'python3 -c' com uma string de comando Python mais robusta e em UMA ÚNICA LINHA.
 echo "Verificando e adicionando papéis iniciais ao banco de dados..."
+MAX_RETRIES=10
+RETRY_COUNT=0
 
-# Python command to execute. Using triple quotes for multi-line string.
-# CONFIRMADO: Seus modelos e rotas estão dentro de um pacote 'app' dentro de /app
-PYTHON_COMMAND='''
-import sys
-import os
-# Adiciona /app ao Python path para garantir que as importações funcionem corretamente
-sys.path.insert(0, '/app')
-from run import app # Assumindo que 'app' é importado de 'run.py'
-from app.models import db, Papel # CONFIRMADO: Importa de app.models
-from app.routes import verify_initial_roles # CONFIRMADO: Importa de app.routes
+# Python command to execute. Now in a single line.
+# IMPORTANT: Adjust 'from app.models' and 'from app.routes' based on your actual project structure.
+# If models.py and routes.py are directly in /app, use 'from models import ...' and 'from routes import ...'
+PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; from app.models import db, Papel; from app.routes import verify_initial_roles; try: with app.app_context(): print('Conexão com o banco de dados estabelecida com sucesso para papéis!'); verify_initial_roles(); sys.exit(0) except Exception as e: print(f'Erro ao verificar/adicionar papéis: {e}', file=sys.stderr); sys.exit(1)"
 
-try:
-    with app.app_context():
-        print('Conexão com o banco de dados estabelecida com sucesso para papéis!')
-        verify_initial_roles()
-    sys.exit(0) # Sucesso
-except Exception as e:
-    print(f"Erro ao verificar/adicionar papéis: {e}", file=sys.stderr)
-    sys.exit(1) # Falha
-'''
+until python3 -c "$PYTHON_COMMAND" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+    RETRY_COUNT=$((RETRY_COUNT+1))
+    echo "Conexão com o banco de dados ou verificação de papéis falhou. Tentativa $RETRY_COUNT/$MAX_RETRIES. Aguardando 5 segundos..."
+    sleep 5
+done
 
-# Executa o comando Python. O 'set -e' no início do script bash
-# garantirá que se este comando Python falhar (sys.exit(1)),
-# o script bash também sairá.
-python3 -c "$PYTHON_COMMAND"
-
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+    echo "Falha ao conectar ao banco de dados ou verificar papéis após $MAX_RETRIES tentativas. Saindo."
+    exit 1
+fi
 echo "Verificação e adição de papéis concluída."
 
 # Inicia a aplicação Flask (comando original do CMD)
