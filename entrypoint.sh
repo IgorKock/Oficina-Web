@@ -59,10 +59,8 @@ echo "Verificando e adicionando papéis iniciais ao banco de dados..."
 MAX_RETRIES=10
 RETRY_COUNT=0
 
-# Python command to execute. Removido app.app_context().push()/pop().
-# Assumimos que _add_initial_roles_on_startup(app) lida com seu próprio contexto,
-# ou que o contexto já está disponível de outra forma.
-PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; from app import _add_initial_roles_on_startup; print(f'DEBUG: app instance: {app}'); print(f'DEBUG: function: {_add_initial_roles_on_startup}'); _add_initial_roles_on_startup(app); sys.exit(0)"
+# Python command to execute. Adicionado prints de depuração para 'app' e a função.
+PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; print(f'DEBUG: app object type: {type(app)}'); print(f'DEBUG: app object: {app}'); from app import _add_initial_roles_on_startup; print(f'DEBUG: _add_initial_roles_on_startup type: {type(_add_initial_roles_on_startup)}'); print(f'DEBUG: _add_initial_roles_on_startup object: {_add_initial_roles_on_startup}'); app.app_context().push(); _add_initial_roles_on_startup(app); app.app_context().pop(); sys.exit(0)"
 
 until python3 -c "$PYTHON_COMMAND" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
     RETRY_COUNT=$((RETRY_COUNT+1))
