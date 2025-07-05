@@ -31,6 +31,6 @@ Altere o arquivo do docker-compose para trocar o usuário e a senha para um pró
 
 Após isso pode escolher um desses:
 
-Usar o Docker Compose com o comando "docker compose up --build -d".
+Usar o Docker Compose com o comando "docker compose up --build -d" ou "docker compose up --build".
 
 Ou através de um Docker pronto no Docker Hub: https://hub.docker.com/r/igorkock/oficinaweb
