@@ -46,12 +46,30 @@ fi
 
 echo "Aplicando migrações de banco de dados..."
 # É CRUCIAL que este comando seja bem-sucedido para que as tabelas sejam criadas.
-flask db upgrade || { echo "--- ERRO CRÍTICO: FALHA NA APLICAÇÃO DE MIGRAÇÕES ---"; exit 1; }
+# Se o 'flask db upgrade' falhar, o script vai sair devido ao 'set -e'.
+flask db upgrade
 
 echo "Migrações aplicadas com sucesso!"
 
-# 💤 Delay mínimo para garantir que o banco finalize as alterações
-sleep 2
+# Tenta conectar ao banco de dados e verificar/adicionar papéis iniciais
+# Esta parte AGORA roda DEPOIS do flask db upgrade.
+# Assumimos que 'app' é o objeto Flask e 'verify_initial_roles' é uma função acessível.
+# Se a sua lógica de papéis estiver em 'routes.py' ou outro módulo, ajuste o import.
+echo "Verificando e adicionando papéis iniciais ao banco de dados..."
+MAX_RETRIES=10
+RETRY_COUNT=0
+# Tentamos executar a lógica de papéis dentro do contexto da aplicação Flask
+until python -c "from run import app; with app.app_context(): from app.models import db, Papel; from app.routes import verify_initial_roles; print('Conexão com o banco de dados estabelecida com sucesso para papéis!'); verify_initial_roles();" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+    RETRY_COUNT=$((RETRY_COUNT+1))
+    echo "Conexão com o banco de dados ou verificação de papéis falhou. Tentativa $RETRY_COUNT/$MAX_RETRIES. Aguardando 5 segundos..."
+    sleep 5
+done
+
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+    echo "Falha ao conectar ao banco de dados ou verificar papéis após $MAX_RETRIES tentativas. Saindo."
+    exit 1
+fi
+echo "Verificação e adição de papéis concluída."
 
 # Inicia a aplicação Flask (comando original do CMD)
 echo "Iniciando a aplicação Flask..."
