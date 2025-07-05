@@ -59,8 +59,9 @@ echo "Verificando e adicionando papéis iniciais ao banco de dados..."
 MAX_RETRIES=10
 RETRY_COUNT=0
 
-# Python command to execute. Reintroduzido 'with app.app_context():'
-PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; print(f'DEBUG: app object type: {type(app)}'); print(f'DEBUG: app object: {app}'); from app import _add_initial_roles_on_startup; print(f'DEBUG: _add_initial_roles_on_startup type: {type(_add_initial_roles_on_startup)}'); print(f'DEBUG: _add_initial_roles_on_startup object: {_add_initial_roles_on_startup}'); with app.app_context(): _add_initial_roles_on_startup(app); sys.exit(0)"
+# Python command to execute. Usando push/pop manual e removendo prints de depuração para simplificar.
+# CONFIRMADO: Seus modelos e rotas estão dentro de um pacote 'app' dentro de /app
+PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; from app import _add_initial_roles_on_startup; app_ctx = app.app_context(); app_ctx.push(); _add_initial_roles_on_startup(app); app_ctx.pop(); sys.exit(0)"
 
 until python3 -c "$PYTHON_COMMAND" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
     RETRY_COUNT=$((RETRY_COUNT+1))
