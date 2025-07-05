@@ -50,16 +50,15 @@ flask db upgrade
 echo "Migrações aplicadas com sucesso!"
 
 # Tenta conectar ao banco de dados e verificar/adicionar papéis iniciais
-# ESTA PARTE AGORA RODA DEPOIS do flask db upgrade.
+# ESTA PARTE AGORA RODA DEPOIS DO flask db upgrade.
 # Usando 'python3 -c' com uma string de comando Python mais robusta e em UMA ÚNICA LINHA.
 echo "Verificando e adicionando papéis iniciais ao banco de dados..."
 MAX_RETRIES=10
 RETRY_COUNT=0
 
-# Python command to execute. Now in a single line with escaped single quotes.
-# IMPORTANT: Adjust 'from app.models' and 'from app.routes' based on your actual project structure.
-# If models.py and routes.py are directly in /app, use 'from models import ...' and 'from routes import ...'
-PYTHON_COMMAND='import sys; import os; sys.path.insert(0, "/app"); from run import app; from app.models import db, Papel; from app.routes import verify_initial_roles; try: with app.app_context(): print("Conexão com o banco de dados estabelecida com sucesso para papéis!"); verify_initial_roles(); sys.exit(0) except Exception as e: print(f"Erro ao verificar/adicionar papéis: {e}", file=sys.stderr); sys.exit(1)'
+# Python command to execute. Now simplified (removed try-except from string).
+# CONFIRMADO: Seus modelos e rotas estão dentro de um pacote 'app' dentro de /app
+PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; from app.models import db, Papel; from app.routes import verify_initial_roles; with app.app_context(): print('Conexão com o banco de dados estabelecida com sucesso para papéis!'); verify_initial_roles();"
 
 until python3 -c "$PYTHON_COMMAND" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
     RETRY_COUNT=$((RETRY_COUNT+1))
