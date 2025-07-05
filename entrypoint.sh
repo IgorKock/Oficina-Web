@@ -23,7 +23,7 @@ wait_for_mariadb() {
 DB_HOST=${DB_HOST:-db}
 DB_PORT=${DB_PORT:-3306}
 
-# Exporta FLASK_APP para que os comandos flask db e flask shell funcionem corretamente
+# Exporta FLASK_APP para que os comandos flask db funcionem corretamente
 export FLASK_APP=run.py # Confirme se o seu ficheiro principal é 'run.py'
 
 # Chama a função para aguardar o MariaDB
@@ -50,27 +50,36 @@ flask db upgrade
 echo "Migrações aplicadas com sucesso!"
 
 # Tenta conectar ao banco de dados e verificar/adicionar papéis iniciais
-# ESTA PARTE AGORA RODA DEPOIS do flask db upgrade.
-# Usando 'flask shell -c' para executar a lógica de papéis no contexto da aplicação.
+# ESTA PARTE AGORA RODA DEPOIS DO flask db upgrade, SEM UM LOOP 'UNTIL' QUE CAUSE ERROS PREMATUROS.
+# Usando 'python3 -c' com uma string de comando Python mais robusta.
 echo "Verificando e adicionando papéis iniciais ao banco de dados..."
-MAX_RETRIES=10
-RETRY_COUNT=0
-# AJUSTE AS IMPORTAÇÕES ABAIXO CONFORME A SUA ESTRUTURA DE FICHEIROS
-# Exemplo para estrutura com pacote 'app' (seus modelos e rotas estão em 'app/models.py', 'app/routes.py'):
-PYTHON_COMMAND="from app.models import db, Papel; from app.routes import verify_initial_roles; print('Conexão com o banco de dados estabelecida com sucesso para papéis!'); verify_initial_roles();"
-# Exemplo para estrutura sem pacote 'app' (seus modelos e rotas estão em 'models.py', 'routes.py' na raiz):
-# PYTHON_COMMAND="from models import db, Papel; from routes import verify_initial_roles; print('Conexão com o banco de dados estabelecida com sucesso para papéis!'); verify_initial_roles();"
 
-until flask shell -c "$PYTHON_COMMAND" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
-    RETRY_COUNT=$((RETRY_COUNT+1))
-    echo "Conexão com o banco de dados ou verificação de papéis falhou. Tentativa $RETRY_COUNT/$MAX_RETRIES. Aguardando 5 segundos..."
-    sleep 5
-done
+# Python command to execute. Using triple quotes for multi-line string.
+# CONFIRMADO: Seus modelos e rotas estão dentro de um pacote 'app' dentro de /app
+PYTHON_COMMAND='''
+import sys
+import os
+# Adiciona /app ao Python path para garantir que as importações funcionem corretamente
+sys.path.insert(0, '/app')
+from run import app # Assumindo que 'app' é importado de 'run.py'
+from app.models import db, Papel # CONFIRMADO: Importa de app.models
+from app.routes import verify_initial_roles # CONFIRMADO: Importa de app.routes
 
-if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-    echo "Falha ao conectar ao banco de dados ou verificar papéis após $MAX_RETRIES tentativas. Saindo."
-    exit 1
-fi
+try:
+    with app.app_context():
+        print('Conexão com o banco de dados estabelecida com sucesso para papéis!')
+        verify_initial_roles()
+    sys.exit(0) # Sucesso
+except Exception as e:
+    print(f"Erro ao verificar/adicionar papéis: {e}", file=sys.stderr)
+    sys.exit(1) # Falha
+'''
+
+# Executa o comando Python. O 'set -e' no início do script bash
+# garantirá que se este comando Python falhar (sys.exit(1)),
+# o script bash também sairá.
+python3 -c "$PYTHON_COMMAND"
+
 echo "Verificação e adição de papéis concluída."
 
 # Inicia a aplicação Flask (comando original do CMD)
