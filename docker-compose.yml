@@ -53,7 +53,7 @@ services:
     # Comando para executar as migrações e iniciar a aplicação
     # O 'flask db upgrade' garante que o banco de dados esteja atualizado
     # antes da aplicação iniciar.
-    command: bash -c "flask db upgrade && python3 run.py" # Adicionado o comando explícito
+    #command: bash -c "flask db upgrade && python3 run.py" # Adicionado o comando explícito
 
 volumes:
   db_data:

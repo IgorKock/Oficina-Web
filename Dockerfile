@@ -46,4 +46,5 @@ ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # CMD é o comando padrão que é passado como argumento para o ENTRYPOINT.
 # Neste caso, o ENTRYPOINT irá chamar 'python3 run.py' no final.
-CMD ["python3", "run.py"]
+# CMD ["python3", "run.py"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
