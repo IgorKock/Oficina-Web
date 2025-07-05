@@ -4,8 +4,6 @@ set -e # Sai imediatamente se um comando falhar
 # Função para aguardar o MariaDB
 wait_for_mariadb() {
   echo "Aguardando o MariaDB iniciar em $DB_HOST:$DB_PORT..."
-  # O 'nc -z' é usado para testar a conexão TCP sem enviar dados
-  # Usamos um loop com timeout para robustez
   local timeout=30
   local start_time=$(date +%s)
   while ! nc -z "$DB_HOST" "$DB_PORT"; do
@@ -25,7 +23,7 @@ wait_for_mariadb() {
 DB_HOST=${DB_HOST:-db}
 DB_PORT=${DB_PORT:-3306}
 
-# Exporta FLASK_APP para que os comandos flask db funcionem corretamente
+# Exporta FLASK_APP para que os comandos flask db e flask shell funcionem corretamente
 export FLASK_APP=run.py # Confirme se o seu ficheiro principal é 'run.py'
 
 # Chama a função para aguardar o MariaDB
@@ -52,16 +50,18 @@ flask db upgrade
 echo "Migrações aplicadas com sucesso!"
 
 # Tenta conectar ao banco de dados e verificar/adicionar papéis iniciais
-# Esta parte AGORA roda DEPOIS do flask db upgrade.
-# Corrigido os caminhos de importação para assumir que models.py e routes.py
-# estão no mesmo nível que run.py, ou dentro de um pacote 'app' se for o caso.
-# Se a sua estrutura for diferente, ajuste os 'from ... import ...'
+# ESTA PARTE AGORA RODA DEPOIS do flask db upgrade.
+# Usando 'flask shell -c' para executar a lógica de papéis no contexto da aplicação.
 echo "Verificando e adicionando papéis iniciais ao banco de dados..."
 MAX_RETRIES=10
 RETRY_COUNT=0
-# Tentamos executar a lógica de papéis dentro do contexto da aplicação Flask
-# Ajuste os caminhos de importação abaixo conforme a sua estrutura de ficheiros
-until python3 -c "from run import app; with app.app_context(): from models import db, Papel; from routes import verify_initial_roles; print('Conexão com o banco de dados estabelecida com sucesso para papéis!'); verify_initial_roles();" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+# AJUSTE AS IMPORTAÇÕES ABAIXO CONFORME A SUA ESTRUTURA DE FICHEIROS
+# Exemplo para estrutura com pacote 'app' (seus modelos e rotas estão em 'app/models.py', 'app/routes.py'):
+PYTHON_COMMAND="from app.models import db, Papel; from app.routes import verify_initial_roles; print('Conexão com o banco de dados estabelecida com sucesso para papéis!'); verify_initial_roles();"
+# Exemplo para estrutura sem pacote 'app' (seus modelos e rotas estão em 'models.py', 'routes.py' na raiz):
+# PYTHON_COMMAND="from models import db, Papel; from routes import verify_initial_roles; print('Conexão com o banco de dados estabelecida com sucesso para papéis!'); verify_initial_roles();"
+
+until flask shell -c "$PYTHON_COMMAND" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
     RETRY_COUNT=$((RETRY_COUNT+1))
     echo "Conexão com o banco de dados ou verificação de papéis falhou. Tentativa $RETRY_COUNT/$MAX_RETRIES. Aguardando 5 segundos..."
     sleep 5
