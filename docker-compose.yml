@@ -44,6 +44,8 @@ services:
       DB_HOST: db # <--- ISSO É CRUCIAL: 'db' é o nome do serviço MariaDB no Docker Compose
       DB_NAME: oficina_web
       FLASK_APP: run.py # Certifique-se de que FLASK_APP está definido para as migrações
+      FLASK_ENV: development # Define o ambiente Flask como desenvolvimento
+      FLASK_DEBUG: 1       # Ativa o modo debug (opcional, mas comum com development)
     volumes:
       - .:/app # Monta o diretório atual do host para /app no container (seu código da aplicação)
       - ./migrations:/app/migrations # ✅ Correção aqui: agora usa a pasta local de migrações

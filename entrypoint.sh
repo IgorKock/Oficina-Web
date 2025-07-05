@@ -54,12 +54,12 @@ echo "Migrações aplicadas com sucesso!"
 # Tenta conectar ao banco de dados e verificar/adicionar papéis iniciais
 # Esta parte AGORA roda DEPOIS do flask db upgrade.
 # Assumimos que 'app' é o objeto Flask e 'verify_initial_roles' é uma função acessível.
-# Se a sua lógica de papéis estiver em 'routes.py' ou outro módulo, ajuste o import.
+# Usamos 'python3' explicitamente.
 echo "Verificando e adicionando papéis iniciais ao banco de dados..."
 MAX_RETRIES=10
 RETRY_COUNT=0
 # Tentamos executar a lógica de papéis dentro do contexto da aplicação Flask
-until python -c "from run import app; with app.app_context(): from app.models import db, Papel; from app.routes import verify_initial_roles; print('Conexão com o banco de dados estabelecida com sucesso para papéis!'); verify_initial_roles();" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+until python3 -c "from run import app; with app.app_context(): from app.models import db, Papel; from app.routes import verify_initial_roles; print('Conexão com o banco de dados estabelecida com sucesso para papéis!'); verify_initial_roles();" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
     RETRY_COUNT=$((RETRY_COUNT+1))
     echo "Conexão com o banco de dados ou verificação de papéis falhou. Tentativa $RETRY_COUNT/$MAX_RETRIES. Aguardando 5 segundos..."
     sleep 5
