@@ -61,7 +61,7 @@ RETRY_COUNT=0
 
 # Python command to execute. Agora com a importação CORRETA para add_initial_roles_on_startup.
 # Importa 'app' (o pacote) e a função 'add_initial_roles_on_startup' diretamente do pacote.
-PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; from app import add_initial_roles_on_startup; app.app_context().push(); add_initial_roles_on_startup(); app.app_context().pop(); sys.exit(0)"
+PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; from app import add_initial_roles_on_startup; app.app_context().push(); _add_initial_roles_on_startup(); app.app_context().pop(); sys.exit(0)"
 
 until python3 -c "$PYTHON_COMMAND" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
     RETRY_COUNT=$((RETRY_COUNT+1))
