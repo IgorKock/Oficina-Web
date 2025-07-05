@@ -10,10 +10,10 @@ wait_for_mariadb() {
     current_time=$(date +%s)
     elapsed_time=$((current_time - start_time))
     if [ $elapsed_time -ge $timeout ]; then
-      echo "Tempo limite excedido ao aguardar o MariaDB."
+      echo "Ainda aguardando o MariaDB..."
       exit 1
     fi
-    echo "Ainda aguardando o MariaDB..."
+    echo "Tempo limite excedido ao aguardar o MariaDB."
     sleep 1
   done
   echo "MariaDB iniciou!"
@@ -59,9 +59,9 @@ echo "Verificando e adicionando papéis iniciais ao banco de dados..."
 MAX_RETRIES=10
 RETRY_COUNT=0
 
-# Python command to execute. Now in a single line, with corrected quotes.
-# CONFIRMADO: Seus modelos e rotas estão dentro de um pacote 'app' dentro de /app
-PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; from app.models import db, Papel; from app.routes import verify_initial_roles; app.app_context().push(); verify_initial_roles(); app.app_context().pop(); sys.exit(0)"
+# Python command to execute. Agora com a importação CORRETA para add_initial_roles_on_startup.
+# Importa 'app' (o pacote) e a função 'add_initial_roles_on_startup' diretamente do pacote.
+PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; from app import add_initial_roles_on_startup; app.app_context().push(); add_initial_roles_on_startup(); app.app_context().pop(); sys.exit(0)"
 
 until python3 -c "$PYTHON_COMMAND" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
     RETRY_COUNT=$((RETRY_COUNT+1))
