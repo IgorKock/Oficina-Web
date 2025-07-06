@@ -336,7 +336,7 @@
 											<table class="table table-sm table-striped table-hover">
 												<thead>
 													<tr>
-														<th>Data</th>
+														<th>Data e Hora</th>
 														<th>Descrição do Serviço</th>
 														<th class="text-end">Ações</th>
 													</tr>
@@ -473,7 +473,7 @@
 										<tr>
 											<th>Veículo</th>
 											<th>Serviço</th>
-											<th>Data</th>
+											<th>Data e Hora</th>
 											<th>Valor (R$)</th>
 											<th>Método</th>
 											<th class="text-end">Ações</th>
@@ -484,7 +484,7 @@
 										<tr>
 											<td>{{ pagamento.carro.marca }} {{ pagamento.carro.modelo }}</td>
 											<td>{{ pagamento.historico.descricao }}</td>
-											<td>{{ pagamento.data_local.strftime('%d/%m/%Y') if pagamento.data_local else '' }}</td>
+											<td>{{ pagamento.data_local.strftime('%d/%m/%Y %H:%M') if pagamento.data_local else '' }}</td>
 											<td>R$ {{ "%.2f"|format(pagamento.valor) }}</td>
 											<td>{{ pagamento.metodo }} {% if pagamento.tipo_pagamento == 'Parcelado' %}({{ pagamento.parcelas }}x){% endif %}</td>
 											<td class="text-end">
