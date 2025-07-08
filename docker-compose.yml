@@ -3,26 +3,23 @@ version: "3.8"
 services:
   # Serviço para o banco de dados MariaDB
   db:
-    image: mariadb:10.6 # Use uma versão específica do MariaDB, por exemplo 10.6 para maior compatibilidade
-    restart: always # Garante que o container reinicie automaticamente
+    image: mariadb:10.6
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root_password # Altere esta senha para algo seguro em produção
-      MYSQL_DATABASE: oficina_web # Nome do banco de dados que sua aplicação usará
-      MYSQL_USER: user_app # Usuário do banco de dados para sua aplicação
-      MYSQL_PASSWORD: password_app # Senha do usuário do banco de dados para sua aplicação
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: oficina_web
+      MYSQL_USER: user_app
+      MYSQL_PASSWORD: password_app
     volumes:
-      - db_data:/var/lib/mysql # Persiste os dados do banco de dados
-    healthcheck: # Configuração do healthcheck para o MariaDB
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD"] # Testa a conexão com o usuário e senha do app
-      interval: 10s # Verifica a cada 10 segundos
-      timeout: 5s # Tempo limite para a verificação
-      retries: 5 # Número de tentativas antes de considerar "unhealthy"
-      start_period: 30s # Período inicial para o container iniciar sem falhar o healthcheck
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - oficina_network
-    # Opcional: expõe a porta 3306 do MariaDB para o host, útil para ferramentas externas
-    # ports:
-    #   - "3306:3306"
 
   # Seu serviço da aplicação web (Flask)
   web:
@@ -33,32 +30,28 @@ services:
       - "5000:5000"
     networks:
       - oficina_network
-    # A aplicação 'web' depende do serviço 'db' e espera que ele esteja saudável
     depends_on:
       db:
         condition: service_healthy
     environment:
-      # Passe as variáveis individuais que seu __init__.py espera
       DB_USER: user_app
       DB_PASSWORD: password_app
-      DB_HOST: db # <--- ISSO É CRUCIAL: 'db' é o nome do serviço MariaDB no Docker Compose
+      DB_HOST: db
       DB_NAME: oficina_web
-      FLASK_APP: run.py # Certifique-se de que FLASK_APP está definido para as migrações
-      FLASK_ENV: development # Define o ambiente Flask como desenvolvimento
-      FLASK_DEBUG: 1       # Ativa o modo debug (opcional, mas comum com development)
+      FLASK_APP: run.py
+      FLASK_ENV: development
+      FLASK_DEBUG: 1
+      TZ: America/Sao_Paulo # 🔹 NOVO: Define o fuso horário do contentor
+      LANG: pt_BR.UTF-8    # 🔹 NOVO: Define o locale para pt-BR
     volumes:
-      - .:/app # Monta o diretório atual do host para /app no container (seu código da aplicação)
-      - ./migrations:/app/migrations # ✅ Correção aqui: agora usa a pasta local de migrações
-      #- migrations_data:/app/migrations # NOVO: Volume para persistir as migrações
-    # Comando para executar as migrações e iniciar a aplicação
-    # O 'flask db upgrade' garante que o banco de dados esteja atualizado
-    # antes da aplicação iniciar.
-    #command: bash -c "flask db upgrade && python3 run.py" # Adicionado o comando explícito
+      - .:/app
+      - migrations_data:/app/migrations
+    entrypoint: ["/usr/local/bin/entrypoint.sh"]
 
 volumes:
   db_data:
-  #migrations_data: # NOVO: Definição do volume para migrações
+  migrations_data:
 
 networks:
   oficina_network:
-    driver: bridge # Mantido o driver explícito
+    driver: bridge

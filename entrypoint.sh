@@ -30,22 +30,23 @@ export FLASK_APP=run.py # Confirme se o seu ficheiro principal é 'run.py'
 wait_for_mariadb
 
 # --- LÓGICA DE MIGRAÇÃO (INÍCIO) ---
-# Inicializa migrações se a pasta não existir,
-# e sempre aplica as migrações mais recentes.
 MIGRATIONS_DIR="/app/migrations"
 
+# 1. Inicializa migrações se a pasta não existir
+# Isso recria a estrutura se ela foi deletada.
 if [ ! -f "$MIGRATIONS_DIR/env.py" ]; then
   echo "Diretório de migrações '$MIGRATIONS_DIR' não encontrado. Inicializando Flask-Migrate..."
   flask db init || { echo "Erro: 'flask db init' falhou. Saindo."; exit 1; }
-  echo "Gerando migração inicial..."
-  flask db migrate -m "Initial migration" || { echo "Erro: 'flask db migrate' falhou. Saindo."; exit 1; }
 else
   echo "Diretório de migrações '$MIGRATIONS_DIR' já existe."
 fi
 
+# 2. Gera novas migrações (se houver mudanças no models.txt)
+echo "Gerando novas migrações (se houver)..."
+flask db migrate -m "Initial migration or schema sync"
+
+# 3. Aplica todas as migrações pendentes
 echo "Aplicando migrações de banco de dados..."
-# É CRUCIAL que este comando seja bem-sucedido para que as tabelas sejam criadas.
-# Se o 'flask db upgrade' falhar, o script vai sair devido ao 'set -e'.
 flask db upgrade
 
 echo "Migrações aplicadas com sucesso!"
@@ -53,15 +54,14 @@ echo "Migrações aplicadas com sucesso!"
 
 
 # --- LÓGICA DE VERIFICAÇÃO DE PAPÉIS (INÍCIO) ---
-# AGORA, e SOMENTE AGORA, tentamos conectar ao banco de dados e verificar/adicionar papéis iniciais.
-# Esta parte AGORA RODA DEPOIS do flask db upgrade ter sido concluído com sucesso.
 echo "Verificando e adicionando papéis iniciais ao banco de dados..."
 MAX_RETRIES=10
 RETRY_COUNT=0
 
-# Python command to execute. Usando push/pop manual e removendo prints de depuração para simplificar.
-# CONFIRMADO: Seus modelos e rotas estão dentro de um pacote 'app' dentro de /app
-PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; from app import _add_initial_roles_on_startup; app_ctx = app.app_context(); app_ctx.push(); _add_initial_roles_on_startup(app); app_ctx.pop(); sys.exit(0)"
+# Python command to execute. A função _add_initial_roles_on_startup(app)
+# DEVE GERENCIAR SEU PRÓPRIO CONTEXTO INTERNAMENTE.
+# REMOVIDO: sys.exit(0) no final do comando Python
+PYTHON_COMMAND="import sys; import os; sys.path.insert(0, '/app'); from run import app; from app import _add_initial_roles_on_startup; _add_initial_roles_on_startup(app)"
 
 until python3 -c "$PYTHON_COMMAND" || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
     RETRY_COUNT=$((RETRY_COUNT+1))
@@ -76,6 +76,7 @@ fi
 echo "Verificação e adição de papéis concluída."
 # --- LÓGICA DE VERIFICAÇÃO DE PAPÉIS (FIM) ---
 
-# Inicia a aplicação Flask (comando original do CMD)
+# Inicia a aplicação Flask diretamente
 echo "Iniciando a aplicação Flask..."
-exec "$@" # Executa o comando passado para o entrypoint (CMD do Dockerfile)
+# Remove o exec "$@" e chama diretamente o comando Flask
+python3 -m flask run --host=0.0.0.0 --port=5000
