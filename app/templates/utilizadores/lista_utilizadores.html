@@ -1,401 +1,321 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Utilizadores - OficinaWeb</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts - Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
     <style>
-        /* Layout principal */
+        /* ESTILOS DA ESTRUTURA (ADAPTADOS DE cliente.txt) */
+        :root {
+            --sidebar-width: 260px;
+            --header-height: 60px;
+        }
+        
         body {
-            font-family: 'Inter', sans-serif; /* Usando a fonte Inter conforme instrução */
-            background-color: #f8f9fa; /* Cor de fundo suave */
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+            background-color: #f0f2f5;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cg fill='%23d3dce3' fill-opacity='0.4'%3E%3Cpath fill-rule='evenodd' d='M0 0h4v4H0V0zm4 4h4v4H4V4z'/%3E%3C/g%3E%3C/svg%3E");
+            font-family: 'Poppins', sans-serif;
+            padding-top: var(--header-height); /* Espaço para o cabeçalho fixo */
             margin: 0;
-            padding: 0;
-            overflow-x: hidden; /* Evita rolagem horizontal */
+            overflow-x: hidden;
         }
 
-        /* Contêiner da Logo */
-        .logo-container {
-            display: flex !important;
-            justify-content: center; /* Centraliza horizontalmente */
-            align-items: center;
-            width: 50%;
-            padding: 10px 0;
-            position: fixed !important; /* Mantém a logo fixa */
-            top: 10px; /* Ajusta a posição para evitar sobreposição */
-            left: 50%;
-            transform: translateX(-50%); /* Mantém centralizado */
-            z-index: 999;
-            background: none; /* Remove qualquer fundo branco */
-            pointer-events: none; /* Permite que elementos abaixo sejam clicáveis */
+        .header {
+            height: var(--header-height);
+            z-index: 1030;
         }
 
-        .logo-container img {
-            max-width: 75px; /* Tamanho máximo */
-            height: auto; /* Mantém proporção */
-            background: none; /* Remove qualquer fundo da imagem */
-        }
-
-        /* Ajuste no Menu Lateral */
-        .menu-lateral {
-            width: 200px;
-            height: 100vh; /* Garante que ocupe toda a altura da tela */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
             position: fixed;
-            top: 0; /* Começa no topo */
+            top: 0;
             left: 0;
-            background-color: #343a40;
-            padding-top: 20px;
-            transition: width 0.3s ease-in-out;
-            z-index: 1000;
-            overflow-y: auto; /* Adiciona rolagem para evitar cortes */
-        }
-
-        .menu-lateral.recolhido {
-            width: 0px; /* Menu recolhido não ocupa largura */
-        }
-
-        .menu-lateral a {
-            display: block;
-            color: white;
-            padding: 15px;
-            text-decoration: none;
-            font-size: 18px;
-            transition: opacity 0.3s ease-in-out;
-        }
-
-        .menu-lateral.recolhido a {
-            opacity: 0; /* Links ficam invisíveis quando o menu está recolhido */
-        }
-
-        .menu-lateral a:hover {
-            background-color: #495057;
-        }
-
-        /* Ajuste no Conteúdo */
-        .conteudo {
-            flex-grow: 1;
-            padding: 20px;
-            margin-left: 200px; /* Espaço para o menu lateral */
-            margin-top: 80px; /* Espaço para a logo */
+            z-index: 1020;
+            background-color: #fff;
+            padding-top: var(--header-height);
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
             transition: margin-left 0.3s ease-in-out;
-            position: relative;
-            height: calc(100vh - 80px); /* Altura total menos o espaço da logo */
-            overflow: auto; /* Adiciona rolagem se o conteúdo for maior que a tela */
+        }
+        .sidebar .nav-link {
+            color: #555;
+            font-weight: 500;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .sidebar .nav-link .bi {
+            font-size: 1.2rem;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #0d6efd;
+            background-color: #e9f2ff;
+            border-right: 3px solid #0d6efd;
         }
 
-        .conteudo.menu-recolhido {
-            margin-left: 60px; /* Ajuste para quando o menu está recolhido */
-            width: calc(100% - 60px);
-        }
-
-        /* Botão de recolher menu */
-        .toggle-btn {
-            position: fixed;
-            top: 10px;
-            left: 200px; /* Ajuste inicial para desktop */
-            background-color: #007bff;
-            color: white;
-            padding: 8px 12px; /* Corrige tamanho do botão */
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            z-index: 1002;
-            transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
-            width: auto; /* Evita que o botão cresça */
-        }
-
-        .toggle-btn.recolhido {
-            left: 70px; /* Posição do botão quando o menu está recolhido */
+        .main-content {
+            padding: 30px;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease-in-out;
         }
         
-        /* Estilo para os cards */
-        .card {
-            background-color: #ffffff; /* Cor de fundo branca para os cards */
-            border-radius: 0.75rem; /* Cantos mais arredondados para os cards */
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Sombra suave */
-            padding: 1.25rem; /* Espaçamento interno */
-        }
-        
-        .card-header {
-            background-color: #e9ecef; /* Cor de fundo para o cabeçalho do card */
-            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-            border-top-left-radius: 0.75rem; /* Mantém o arredondamento */
-            border-top-right-radius: 0.75rem; /* Mantém o arredondamento */
-            font-weight: bold; /* Texto em negrito */
-            padding: 1rem 1.25rem; /* Espaçamento */
-            margin: -1.25rem -1.25rem 1.25rem -1.25rem; /* Ajusta margens para preencher o topo do card */
-        }
-        
-        .menu-lateral.recolhido + .toggle-btn {
-            left: 10px; /* Move botão para perto da borda ao recolher */
-        }
-        
-        @media (min-width: 769px) {
-            .logo-container {
-                display: flex !important; /* Mantém a logo visível no desktop */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                margin-left: calc(-1 * var(--sidebar-width)); /* Esconde a sidebar */
+            }
+            .sidebar.active {
+                margin-left: 0; /* Mostra a sidebar */
+            }
+            .main-content {
+                margin-left: 0; /* Conteúdo ocupa toda a largura */
             }
         }
         
-        /* Ajustes para telas menores que 768px (tablets e celulares) */
-    @media (max-width: 768px) {
-    .menu-lateral {
-        width: 60px; /* Diminui o tamanho do menu lateral */
-    }
+        /* --- ESTILOS DE FORMULÁRIO/CARD (DE cliente.txt) --- */
+        .card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 20px; /* Ajustado para o conteúdo da lista */
+            margin-top: 20px; /* Ajustado para o layout com header/sidebar */
+            margin-bottom: 50px;
+            border-top: 5px solid;
+            border-image: linear-gradient(to right, #007bff, #00d4ff) 1;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+        }
 
-    .conteudo {
-        margin-left: 60px; /* Ajusta espaço do conteúdo */
-    }
+        .card-header { /* Estilo para o cabeçalho do card, se usado */
+            background-color: #e9ecef;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            font-weight: bold;
+            padding: 15px 20px;
+            margin: -20px -20px 20px -20px; /* Ajusta margens para preencher o topo do card */
+        }
 
-    .nav-tabs {
-        flex-direction: column; /* Transforma abas em coluna */
-    }
-    
-    .logo-container {
-        transition: opacity 0.3s ease-in-out;
-    }
-    .logo-container img {
-        max-width: 80px; /* Reduz tamanho da logo */
-    }
+        .btn-primary {
+            background-image: linear-gradient(to right, #007bff 0%, #0056b3 100%);
+            border: none;
+            transition: all 0.4s ease;
+            background-size: 200% auto;
+        }
 
-    .toggle-btn {
-        left: 10px !important; /* Mantém botão visível */
-        position: fixed;
-        top: 10px;
-        z-index: 1001;
-    }
-    
-    .menu-lateral:not(.recolhido) ~ .logo-container {
-        display: none !important; /* Agora a logo some corretamente apenas no mobile */
-        pointer-events: none; /* Evita que a área da logo bloqueie interações */
-    }
+        .btn-primary:hover {
+            background-position: right center;
+            transform: scale(1.02);
+        }
 
-    .menu-lateral.recolhido ~ .logo-container {
-        display: flex !important; /* Exibe a logo corretamente ao recolher o menu */
-        pointer-events: all;
-    }
-    
-    /* Ajusta o botão de menu para se mover quando ativo */
-    .menu-lateral.recolhido ~ .toggle-btn {
-        left: 15px;
-    }
-}
+        /* --- CUSTOM ALERT MODAL --- */
+        .custom-alert-modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
+        .custom-alert-modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); text-align: center; position: relative; }
+        .custom-alert-close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 15px; }
+        .custom-alert-close-btn:hover, .custom-alert-close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
 
-/* Ajustes para telas menores que 480px (celulares pequenos) */
-@media (max-width: 480px) {
-    .menu-lateral {
-        width: 100%; /* Ocupa toda a tela ao abrir */
-        height: 100vh;
-        position: absolute;
-        top: 0;
-        left: 0;
-        background-color: #343a40;
-        z-index: 999;
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        align-items: center; /* Centraliza os elementos */
-        padding-bottom: 50px; /* Espaço extra para o botão */
-    }
-
-    .menu-lateral.recolhido {
-        transform: translateX(-100%); /* Faz o menu deslizar para fora */
-    }
-
-    .conteudo {
-        margin-left: 0;
-        width: 100%;
-        padding: 10px; /* Ajusta margens */
-    }
-
-    .nav-tabs {
-        font-size: 14px; /* Ajusta tamanho da fonte */
-    }
-
-    .toggle-btn {
-        width: 100px !important; /* Define um tamanho fixo para o botão */
-        font-size: 12px; /* Reduz o tamanho da fonte */
-        padding: 6px 10px; /* Ajusta proporções do botão */
-    }
-    
-    .menu-lateral:not(.recolhido) ~ .logo-container {
-        opacity: 0; /* Faz a logo desaparecer quando o menu está ativo */
-        pointer-events: none; /* Evita que a área da logo bloqueie interações */
-    }
-
-    .menu-lateral.recolhido ~ .logo-container {
-        opacity: 1; /* Exibe a logo novamente quando o menu é recolhido */
-        pointer-events: all;
-    }
-    
-    .menu-lateral.recolhido ~ .logo-container {
-        display: flex !important; /* Exibe a logo corretamente ao recolher o menu */
-    }
-    
-    table {
-        font-size: 12px; /* Ajusta tabelas para melhor leitura */
-    }
-
-    th, td {
-        padding: 5px; /* Reduz espaço interno das células */
-    }
-} 
+        /* Estilos para badges de papéis */
+        .badge {
+            font-size: 0.85em;
+            padding: 0.4em 0.6em;
+            border-radius: 0.25rem;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Contêiner da Logo -->
-    <div class="logo-container">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa">
+<header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top header">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" id="menu-toggle">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand fw-bold text-primary" href="#">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa" style="max-width: 40px; height: auto; margin-right: 10px;">
+            Oficina Web
+        </a>
+        <div class="d-flex align-items-center">
+            <span class="navbar-text me-3">Bem-vindo, {{ current_user.nome }}!</span>
+            <a href="{{ url_for('main.logout') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-arrow-right"></i> Sair</a>
+        </div>
     </div>
+</header>
 
-    <button class="toggle-btn" onclick="toggleMenu()">☰</button>
-    <div class="menu-lateral recolhido" id="menu">
-        <a href="{{ url_for('main.index') }}">Menu Inicial</a>
-        <a href="{{ url_for('main.inventario') }}">Inventário</a>
-        <a href="{{ url_for('main.client') }}">Lista de Clientes</a>
-        <a href="{{ url_for('main.lista_utilizadores') }}">Usuários</a>
-        <!-- Adicione outros links de navegação aqui -->
-        {% if current_user.is_authenticated %}
-            <a href="{{ url_for('main.logout') }}">Sair ({{ current_user.nome }})</a>
-        {% else %}
-            <a href="{{ url_for('main.login') }}">Login</a>
-        {% endif %}
-    </div>
+<aside class="sidebar">
+    <div class="p-3"><h5 class="text-muted fw-bold">Menu Principal</h5></div>
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item">
+            <a href="{{ url_for('main.index') }}" class="nav-link"><i class="bi bi-speedometer2"></i> Página Inicial</a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ url_for('main.client') }}" class="nav-link"><i class="bi bi-people-fill"></i> Clientes</a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ url_for('main.inventario') }}" class="nav-link"><i class="bi bi-box-seam-fill"></i> Inventário</a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ url_for('main.lista_utilizadores') }}" class="nav-link active"><i class="bi bi-people"></i> Usuários</a>
+        </li>
+    </ul>
+</aside>
 
-    <!-- Conteúdo da página -->
-    <div class="conteudo" id="conteudo">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h1>Lista de Utilizadores</h1>
-            </div>
-            <p><strong>Clique no botão ☰ para recolher ou expandir o menu.</strong></p>
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            {% if current_user.is_admin() %}
-                <a href="{{ url_for('main.add_utilizador') }}" class="btn btn-primary mb-3">Adicionar Novo Utilizador</a>
+<main class="main-content">
+    <div class="container-fluid">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
             {% endif %}
+        {% endwith %}
 
-            {% if utilizadores %}
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nome</th>
-                                <th>Email</th>
-                                <th>Telefone</th>
-                                <th>Papéis</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for utilizador in utilizadores %}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4 fw-bold text-dark mb-0"><i class="bi bi-people-fill text-primary me-2"></i> Lista de Utilizadores</h2>
+            {% if current_user.is_admin() %}
+                <a href="{{ url_for('main.add_utilizador') }}" class="btn btn-primary"><i class="bi bi-person-plus-fill me-2"></i>Adicionar Novo Utilizador</a>
+            {% endif %}
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                {% if utilizadores %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle">
+                            <thead>
                                 <tr>
-                                    <td>{{ utilizador.id }}</td>
-                                    <td>{{ utilizador.nome }}</td>
-                                    <td>{{ utilizador.email }}</td>
-                                    <td>{{ utilizador.telefone or 'N/A' }}</td>
-                                    <td>
-                                        {% for papel in utilizador.papeis %}
-                                            <span class="badge bg-info text-dark">{{ papel.nome }}</span>
-                                        {% else %}
-                                            Nenhum
-                                        {% endfor %}
-                                    </td>
-                                    <td>
-                                        {% if current_user.is_admin() %}
-                                            <a href="{{ url_for('main.edit_utilizador', id=utilizador.id) }}" class="btn btn-warning btn-sm me-2">Editar</a>
-                                            <!-- Botão de Apagar -->
-                                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ utilizador.id }}">
-                                                Apagar
-                                            </button>
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
-                                    </td>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Telefone</th>
+                                    <th>Papéis</th>
+                                    <th>Ações</th>
                                 </tr>
+                            </thead>
+                            <tbody>
+                                {% for utilizador in utilizadores %}
+                                    <tr>
+                                        <td>{{ utilizador.id }}</td>
+                                        <td>{{ utilizador.nome }}</td>
+                                        <td>{{ utilizador.email }}</td>
+                                        <td>{{ utilizador.telefone or 'N/A' }}</td>
+                                        <td>
+                                            {% for papel in utilizador.papeis %}
+                                                <span class="badge bg-info text-dark me-1">{{ papel.nome }}</span>
+                                            {% else %}
+                                                Nenhum
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% if current_user.is_admin() %}
+                                                <a href="{{ url_for('main.edit_utilizador', id=utilizador.id) }}" class="btn btn-warning btn-sm me-2"><i class="bi bi-pencil-fill"></i> Editar</a>
+                                                <!-- Botão de Apagar -->
+                                                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ utilizador.id }}">
+                                                    <i class="bi bi-trash-fill"></i> Apagar
+                                                </button>
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                    </tr>
 
-                                <!-- Modal de Confirmação de Exclusão para cada utilizador -->
-                                <div class="modal fade" id="deleteUserModal{{ utilizador.id }}" tabindex="-1" aria-labelledby="deleteUserModalLabel{{ utilizador.id }}" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="deleteUserModalLabel{{ utilizador.id }}">Confirmar Exclusão</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                Tem certeza que deseja apagar o utilizador <strong>{{ utilizador.nome }} ({{ utilizador.email }})</strong>? Esta ação é irreversível.
-                                                {% if utilizador.id == current_user.id %}
-                                                    <p class="text-danger mt-2"><strong>Aviso: Você não pode apagar a sua própria conta enquanto estiver logado.</strong></p>
-                                                {% endif %}
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                <form action="{{ url_for('main.delete_utilizador', id=utilizador.id) }}" method="POST" class="d-inline">
-                                                    <button type="submit" class="btn btn-danger" {% if utilizador.id == current_user.id %}disabled{% endif %}>Apagar</button>
-                                                </form>
+                                    <!-- Modal de Confirmação de Exclusão para cada utilizador -->
+                                    <div class="modal fade" id="deleteUserModal{{ utilizador.id }}" tabindex="-1" aria-labelledby="deleteUserModalLabel{{ utilizador.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteUserModalLabel{{ utilizador.id }}">Confirmar Exclusão</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Tem certeza que deseja apagar o utilizador <strong>{{ utilizador.nome }} ({{ utilizador.email }})</strong>? Esta ação é irreversível.
+                                                    {% if utilizador.id == current_user.id %}
+                                                        <p class="text-danger mt-2"><strong>Aviso: Você não pode apagar a sua própria conta enquanto estiver logado.</strong></p>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                    <form action="{{ url_for('main.delete_utilizador', id=utilizador.id) }}" method="POST" class="d-inline">
+                                                        <button type="submit" class="btn btn-danger" {% if utilizador.id == current_user.id %}disabled{% endif %}>Apagar</button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <p>Nenhum utilizador encontrado.</p>
-            {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center p-4 border rounded bg-light">
+                        <p class="mb-0 text-muted">Nenhum utilizador encontrado.</p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
+</main>
 
-    <!-- Bootstrap JS (bundle inclui Popper) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    
-    <!-- JavaScript para alternar estado do menu -->
-    <script>
-        function toggleMenu() {
-            let menu = document.getElementById("menu");
-            let conteudo = document.getElementById("conteudo");
-            let toggleBtn = document.querySelector(".toggle-btn");
+<!-- Custom Alert Modal HTML (de cliente.txt) -->
+<div id="customAlertModal" class="custom-alert-modal">
+    <div class="custom-alert-modal-content">
+        <span class="custom-alert-close-btn">×</span>
+        <p id="customAlertMessage"></p>
+        <button class="btn btn-primary" onclick="closeCustomAlert()">OK</button>
+    </div>
+</div>
 
-            if (menu.classList.contains("recolhido")) {
-                menu.classList.remove("recolhido");
-                conteudo.classList.remove("menu-recolhido");
-                toggleBtn.classList.remove("recolhido");
-            } else {
-                menu.classList.add("recolhido");
-                conteudo.classList.add("menu-recolhido");
-                toggleBtn.classList.add("recolhido");
-            }
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
+<script>
+    // --- LÓGICA DO MENU LATERAL (DE cliente.txt) ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        if (menuToggle) {
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+            });
         }
+    });
 
-        window.onload = function() {
-            let menu = document.getElementById("menu");
-            let conteudo = document.getElementById("conteudo");
-            let toggleBtn = document.querySelector(".toggle-btn");
+    // --- FUNÇÕES DE ALERTA (DE cliente.txt) ---
+    function showCustomAlert(message) {
+        document.getElementById('customAlertMessage').innerText = message;
+        document.getElementById('customAlertModal').style.display = 'flex';
+    }
+    function closeCustomAlert() {
+        document.getElementById('customAlertModal').style.display = 'none';
+    }
+    document.querySelector('.custom-alert-close-btn').onclick = closeCustomAlert;
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('customAlertModal')) closeCustomAlert();
+    }
 
-            if (window.innerWidth <= 768) {
-                menu.classList.add("recolhido");
-                conteudo.classList.add("menu-recolhido");
-                toggleBtn.classList.add("recolhido");
-            } else {
-                menu.classList.remove("recolhido");
-                conteudo.classList.remove("menu-recolhido");
-                toggleBtn.classList.remove("recolhido");
-            }
-        };
-    </script>
+    // Nenhuma máscara ou lógica de formulário específica de cliente.txt é necessária aqui.
+    // Apenas a lógica de alerta e menu lateral.
+
+    $(document).ready(function() {
+        // Nenhuma máscara de input específica para esta página.
+        // Nenhuma lógica de validação de CPF/CNPJ ou ViaCEP é necessária aqui.
+        // Nenhuma lógica de pagamento é necessária aqui.
+    });
+</script>
 </body>
 </html>
