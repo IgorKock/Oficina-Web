@@ -494,9 +494,9 @@ def add_utilizador():
 @login_required # Protege a rota
 def edit_utilizador(id):
     # Verifica se o utilizador atual é um administrador
-    if not current_user.is_admin():
-        flash('Você não tem permissão para editar utilizadores.', 'danger')
-        return redirect(url_for('main.lista_utilizadores'))
+    #if not current_user.is_admin():
+    #   flash('Você não tem permissão para editar utilizadores.', 'danger')
+    #   return redirect(url_for('main.lista_utilizadores'))
 
     utilizador = Utilizador.query.get_or_404(id)
     papeis = Papel.query.all()
