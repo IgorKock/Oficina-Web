@@ -342,9 +342,9 @@
                         <div class="input-group mb-4">
                             <span class="input-group-text"><i class="bi bi-phone-fill"></i></span>
                             <div class="form-floating flex-grow-1">
-                                <input type="text" class="form-control telefone-input" id="telefone" name="telefone" placeholder="Telefone / WhatsApp">
-                                <label for="telefone">Telefone</label>
-                        </div>
+                                <input type="text" class="form-control me-2 telefone-input" id="numero1" name="numeros[]" placeholder="Telefone" required>
+                                <label for="numero1" class="form-label me-2 mb-0">Telefone</label>
+                            </div>
                         <button type="button" class="btn btn-secondary btn-sm" onclick="adicionarCampoTelefone()">+</button>
                         </div>
                     </div>
@@ -402,7 +402,7 @@
         newDiv.innerHTML = `
             <span class="input-group-text"><i class="bi bi-phone-fill"></i></span>
                             <div class="form-floating flex-grow-1">
-                                <input type="text" class="form-control telefone-input" id="telefone" name="telefone" placeholder="Telefone">
+                                <input type="text" class="form-control telefone-input" id="numero1" name="numeros[]" placeholder="Telefone">
                                 <label for="telefone">Telefone Extra</label>
                                 </div>
             <button type="button" class="btn btn-danger btn-sm" onclick="removerCampo(this)">-</button>
