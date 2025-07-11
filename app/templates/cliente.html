@@ -233,48 +233,82 @@
 							<form action="{{ url_for('main.update_dados_cliente', cliente_id=cliente.id) }}" method="POST" id="editClientForm">
 								<div class="row">
 									<div class="col-md-6 mb-3">
-										<label for ="apelido" class="form-label">Apelido ou Nome Social</label>
-										<input type="text" name="apelido" class="form-control" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
+                                        <div class="input-group mb-4">
+                                            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                                                <div class="form-floating flex-grow-1">
+                                                    <input type="text" name="apelido" class="form-control" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
+                                                    <label for="apelido">Apelido ou Nome Social</label>
+                                            </div>
+										</div>
 									</div>
 									<div class="col-md-6 mb-3">
-										<label for="cpf_cnpj" class="form-label">CPF/CNPJ</label>
-										<input type="text" id="cpf_cnpj" class="form-control" placeholder="CPF ou CNPJ" value="{{ cliente.cpf or cliente.cnpj or '' }}">
-										<input type="hidden" name="cpf" id="hidden_cpf" value="{{ cliente.cpf or '' }}">
-										<input type="hidden" name="cnpj" id="hidden_cnpj" value="{{ cliente.cnpj or '' }}">
-										<span id="cpfCnpjError" class="text-danger small" style="display: none;">Documento inválido.</span>
-									</div>
-								</div>
+                                        <div class="input-group mb-4">
+                                            <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
+                                            <div class="form-floating flex-grow-1">										
+										        <input type="text" id="cpf_cnpj" class="form-control" placeholder="CPF ou CNPJ" value="{{ cliente.cpf or cliente.cnpj or '' }}">
+										        <label for="cpf_cnpj" class="form-label">CPF/CNPJ</label>
+                                                <input type="hidden" name="cpf" id="hidden_cpf" value="{{ cliente.cpf or '' }}">
+										        <input type="hidden" name="cnpj" id="hidden_cnpj" value="{{ cliente.cnpj or '' }}">
+										        <span id="cpfCnpjError" class="text-danger small" style="display: none;">Documento inválido.</span>
+									        </div>
+								        </div>
+                                    </div>
+                                </div>
 
 								<div id="enderecos-container">
                                     <div class="mb-3 border p-3 rounded bg-light">
                                         <h6 class="mb-3">Endereço Principal</h6>
                                         <div class="row">
-                                            <div class="col-md-3 mb-3">
-                                                <label for="cep" class="form-label">CEP</label>
-                                                <input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP" value="{{ cliente.cep or ''}}" id="mainCepInput">
-                                            </div>
-                                            <div class="col-md-9 mb-3">
-                                                <label for="endereco" class="form-label">Endereço</label>
-                                                <input type="text" name="endereco[]" class="form-control" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
+                                            <div class="col-md-6 mb-3">
+                                                <div class="input-group mb-4">
+                                                <span class="input-group-text"><i class="bi bi-signpost-split-fill"></i></span>
+                                                <div class="form-floating flex-grow-1">                                                     
+                                                    <input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP" value="{{ cliente.cep or ''}}" id="mainCepInput">
+                                                    <label for="cep" class="form-label">CEP</label>
+                                                </div>
+                                                </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <label for="bairro" class="form-label">Bairro</label>
-                                                <input type="text" name="bairro[]" class="form-control" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
+                                                <div class="input-group mb-4">
+                                                <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
+                                                <div class="form-floating flex-grow-1">                                            
+                                                    <input type="text" name="endereco[]" class="form-control" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
+                                                    <label for="endereco" class="form-label">Endereço</label>
+                                                </div>
+                                                </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
-                                                <label for="cidade" class="form-label">Cidade</label>
-                                                <input type="text" name="cidade[]" class="form-control" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
+                                                <div class="input-group mb-4">
+                                                <span class="input-group-text"><i class="bi bi-signpost-split-fill"></i></span>
+                                                <div class="form-floating flex-grow-1">
+                                                    <input type="text" name="bairro[]" class="form-control" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
+                                                    <label for="bairro" class="form-label">Bairro</label>
+                                                </div>
+                                                </div>
                                             </div>
+                                            <div class="col-md-6 mb-3">
+                                                <div class="input-group mb-4">
+                                                <span class="input-group-text"><i class="bi bi-pin-map-fill"></i></span>
+                                                <div class="form-floating flex-grow-1">
+                                                    <div class="form-floating flex-grow-1">
+                                                    <input type="text" name="cidade[]" class="form-control" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
+                                                    <label for="cidade" class="form-label">Cidade</label>
+                                                </div>
+                                                </div>
                                         </div>
                                     </div>
-								</div>
+								    </div>
+                                    </div>
+                                </div>
                                 <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="adicionarCampoEndereco()">
                                     <i class="bi bi-plus-circle"></i> Adicionar outro endereço
                                 </button>
 								
 								<div class="row">
-									<div class="col-md-4 mb-3">
-										<label for="estado" class="form-label">Estado</label>
+									<div class="col-md-6 mb-3">
+                                        <div class="input-group mb-4">
+                                            <span class="input-group-text"><i class="bi bi-pin-map-fill"></i></span>
+                                        <div class="form-floating flex-grow-1">										
 										<select name="estado" class="form-select">
 											<option value="">Selecione...</option>
 											<option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
@@ -305,10 +339,13 @@
 											<option value="SE" {% if cliente.estado == 'SE' %}selected{% endif %}>Sergipe</option>
 											<option value="TO" {% if cliente.estado == 'TO' %}selected{% endif %}>Tocantins</option>
 										</select>
-									</div>
+                                            <label for="estado" class="form-label">Estado</label>
+									    </div>
 								</div>
+                                </div>
+                                </div>
 								<button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-2"></i>Atualizar Dados</button>
-							</form>
+							</form>                            
 						</div>
                     </div>
 
@@ -362,14 +399,24 @@
 										
 										<div class="mt-3">
 											<form action="/add_historico/{{ carro.id }}" method="POST" class="row gx-2 align-items-end">
-												<div class="col">
-													<label for="descricao_hist" class="form-label small">Novo Histórico</label>
-													<input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control form-control-sm" required>
-												</div>
-												<div class="col-md-3">
-													<label for="data_hist" class="form-label small">Data</label>
-													<input type="date" name="data" class="form-control form-control-sm" required>
-												</div>
+												<div class="col md-6 mb-3">
+                                                    <div class="input-group mb-4">
+                                                    <span class="input-group-text"><i class="bi bi-tag-fill"></i></span>
+                                                        <div class="form-floating flex-grow-1">													    
+													        <input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control form-control-sm" required>
+                                                            <label for="descricao_hist" class="form-label small">Novo Histórico</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+												<div class="col md-6 mb-3">
+                                                    <div class="input-group mb-4">
+                                                    <span class="input-group-text"><i class="bi bi-calendar-fill"></i></span>
+                                                        <div class="form-floating flex-grow-1">														
+													        <input type="date" name="data" class="form-control form-control-sm" required>
+                                                            <label for="data_hist" class="form-label small">Data</label>
+												        </div>
+                                                    </div>
+                                                </div>
 												<div class="col-auto">
 													<button type="submit" class="btn btn-primary btn-sm">Adicionar</button>
 												</div>
@@ -432,12 +479,14 @@
 
                     <!-- Aba: Telefones -->
                     <div class="tab-pane fade" id="telefones-pane" role="tabpanel" aria-labelledby="telefones-tab">
-						<h4 class="mb-3">Telefones do Cliente</h4>
+						<h4 class="mb-3">Telefones do Cliente</h4>                       
 						{% if telefones %}
-							<ul class="list-group mb-4">
+							<ul class="list-group mb-4">                                 
 								{% for telefone in telefones %}
-									<li class="list-group-item d-flex justify-content-between align-items-center">
-										<span>{{ telefone.numero }}</span>
+                                 
+									<li class="list-group-item d-flex justify-content-between">
+                                        <span class="input-group-text"><i class="bi bi-phone-fill"></i>
+										{{ telefone.numero }}</span>
 										<div>
 											<!-- Formulário de atualização é melhor em um modal para evitar poluição -->
 											<form action="{{ url_for('main.delete_telefone', telefone_id=telefone.id) }}" method="POST" class="d-inline">
@@ -454,9 +503,12 @@
 						<h5 class="mt-4 mb-3">Adicionar Novos Telefones</h5>
 						<form action="{{ url_for('main.add_telefone', cliente_id=cliente.id) }}" method="POST" id="addTelefoneForm">
 							<div id="telefones-container-add">
-								<div class="input-group mb-2">
-									<input type="text" name="numeros[]" class="form-control telefone-input" placeholder="Digite o Telefone" required>
-									<button class="btn btn-outline-secondary" type="button" onclick="adicionarCampoTelefone()"><i class="bi bi-plus-circle"></i></button>
+								<div class="input-group mb-4">                                    
+                                    <span class="input-group-text"><i class="bi bi-phone-fill"></i></span>
+                                    <div class="form-floating flex-grow-1">								
+									    <input type="text" name="numeros[]" class="form-control telefone-input" placeholder="Digite o Telefone" required>
+									</div>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="adicionarCampoTelefone()"><i class="bi bi-plus-circle"></i></button>
 								</div>
 							</div>
 							<button type="submit" class="btn btn-primary mt-2">Salvar Telefone(s)</button>
@@ -482,7 +534,7 @@
 									<tbody>
 										{% for pagamento in pagamentos %}
 										<tr>
-											<td>{{ pagamento.carro.marca }} {{ pagamento.carro.modelo }}</td>
+											<td>{{ pagamento.carro.marca }} {{ pagamento.carro.modelo }} {{ pagamento.carro.ano }}</td>
 											<td>{{ pagamento.historico.descricao }}</td>
 											<td>{{ pagamento.data_local.strftime('%d/%m/%Y %H:%M') if pagamento.data_local else '' }}</td>
 											<td>R$ {{ "%.2f"|format(pagamento.valor) }}</td>
@@ -510,17 +562,68 @@
 									{% set servicos_sem_pagamento.count = servicos_sem_pagamento.count + 1 %}
 									<form id="form_pagamento_{{ historico.id }}" action="{{ url_for('main.add_pagamento', cliente_id=cliente.id, carro_id=carro.id, historico_id=historico.id) }}" method="POST" class="mb-4 p-3 border rounded bg-light">
 										<p class="fw-bold">Para: {{ historico.descricao }} ({{ carro.marca }} {{ carro.modelo }})</p>
-										<div class="row">
-											<div class="col-md-3 mb-3"><label class="form-label">Valor (R$)</label><input type="number" step="0.01" name="valor" class="form-control" required></div>
-											<div class="col-md-3 mb-3"><label class="form-label">Método</label><select name="metodo" class="form-select" required onchange="toggleOpcaoPagamento(event)"><option value="Dinheiro">Dinheiro</option><option value="Cartão de Crédito">Cartão de Crédito</option><option value="Cartão de Débito">Cartão de Débito</option><option value="Pix">Pix</option></select></div>
-											<div class="col-md-4 mb-3 opcaoCartao" style="display: none;">
+                                        <div class="row">
+											<div class="col-md-6 mb-3">
+                                                <div class="input-group mb-4">
+                                                    <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                                                    <div class="form-floating flex-grow-1">
+                                                        <input type="number" step="0.01" name="valor" class="form-control" required>
+                                                        <label class="form-label">Valor (R$)</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+											<div class="col-md-6 mb-3">
+                                                <div class="input-group mb-4">
+                                                    <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
+                                                    <div class="form-floating flex-grow-1">
+                                                        <select name="metodo" class="form-select" required onchange="toggleOpcaoPagamento(event)">
+                                                            <option value="Dinheiro">Dinheiro</option>
+                                                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                                            <option value="Cartão de Débito">Cartão de Débito</option>
+                                                            <option value="Pix">Pix</option>
+                                                        </select>
+                                                        <label class="form-label">Método</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+											<div class="col-md-6 mb-3 opcaoCartao" style="display: none;">
 												<div class="row">
-													<div class="col-6"><label class="form-label">Tipo</label><select name="tipo_pagamento" class="form-select" onchange="toggleParcelas(event)"><option value="À vista">À vista</option><option value="Parcelado">Parcelado</option></select></div>
-													<div class="col-6 opcaoParcelado" style="display: none;"><label class="form-label">Parcelas</label><input type="number" name="parcelas" min="1" max="12" class="form-control"></div>
+													<div class="col-md-6 mb-3">
+                                                        <div class="input-group mb-4">
+                                                            <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>                                          
+                                                                <div class="form-floating flex-grow-1"> 
+                                                                <select name="tipo_pagamento" class="form-select" onchange="toggleParcelas(event)">
+                                                                    <option value="À vista">À vista</option>
+                                                                    <option value="Parcelado">Parcelado</option>
+                                                                </select>
+                                                                <label class="form-label">Tipo</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                                                                    
+													<div class="col-md-6 mb-3 opcaoParcelado" style="display: none;">
+                                                        <div class="input-group mb-4">
+                                                            <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
+                                                                <div class="form-floating flex-grow-1">
+                                                                    <input type="number" name="parcelas" min="1" max="12" class="form-control">
+                                                                    <label class="form-label">Parcelas</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
 												</div>
-											</div>
-											<div class="col-md-2 mb-3"><label class="form-label">Data</label><input type="date" name="data_pagamento" class="form-control" required></div>
-											<div class="col-md-12"><button type="submit" class="btn btn-primary">Registrar</button></div>
+                                            </div>
+											<div class="col-md-6 mb-3">
+                                                <div class="input-group mb-4">
+                                                    <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
+                                                    <div class="form-floating flex-grow-1">                                            
+                                                        <input type="date" name="data_pagamento" class="form-control" required>
+                                                        <label class="form-label">Data</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+											<div class="col-md-12">
+                                                <button type="submit" class="btn btn-primary">Registrar</button>
+                                            </div>
 										</div>
 									</form>
 								{% endif %}
@@ -675,10 +778,15 @@
     function adicionarCampoTelefone() {
         const container = document.getElementById('telefones-container-add');
         const newDiv = document.createElement('div');
-        newDiv.classList.add('input-group', 'mb-2');
+        newDiv.classList.add('input-group', 'mb-4');
         newDiv.innerHTML = `
-            <input type="text" name="numeros[]" class="form-control telefone-input" placeholder="Telefone adicional" required>
-            <button type="button" class="btn btn-outline-danger" onclick="this.closest('.input-group').remove();"><i class="bi bi-trash"></i></button>
+        <div class="input-group mb-4">                                    
+            <span class="input-group-text"><i class="bi bi-phone-fill"></i></span>
+            <div class="form-floating flex-grow-1">
+                <input type="text" name="numeros[]" class="form-control telefone-input" placeholder="Telefone adicional" required>               
+            </div>
+             <button type="button" class="btn btn-outline-danger" onclick="this.closest('.input-group').remove();"><i class="bi bi-trash"></i></button>
+        </div>
         `;
         container.appendChild(newDiv);
         $(newDiv).find('.telefone-input').mask('(00) 00000-0000');
@@ -691,11 +799,19 @@
         newDiv.innerHTML = `
             <button type="button" class="btn-close position-absolute top-0 end-0 m-2" aria-label="Close" onclick="this.closest('.mb-3').remove();"></button>
             <h6 class="mb-3">Endereço Adicional</h6>
-            <div class="row">
-                <div class="col-md-3 mb-3"><label class="form-label">CEP</label><input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP"></div>
-                <div class="col-md-9 mb-3"><label class="form-label">Endereço</label><input type="text" name="endereco[]" class="form-control" placeholder="Endereço"></div>
-                <div class="col-md-6 mb-3"><label class="form-label">Bairro</label><input type="text" name="bairro[]" class="form-control" placeholder="Bairro"></div>
-                <div class="col-md-6 mb-3"><label class="form-label">Cidade</label><input type="text" name="cidade[]" class="form-control" placeholder="Cidade"></div>
+            <div class="row"> 
+                <div class="col-md-6 mb-3"><div class="input-group mb-4">
+                    <span class="input-group-text"><i class="bi bi-signpost-split-fill"></i></span>
+                    <div class="form-floating flex-grow-1"><input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP"><label class="form-label">CEP</label></div></div></div>
+                <div class="col-md-6 mb-3"><div class="input-group mb-4">
+                    <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
+                                            <div class="form-floating flex-grow-1"><input type="text" name="endereco[]" class="form-control" placeholder="Endereço"><label class="form-label">Endereço</label></div></div></div>
+                <div class="col-md-6 mb-3"><div class="input-group mb-4">
+                    <span class="input-group-text"><i class="bi bi-signpost-split-fill"></i></span>
+                    <div class="form-floating flex-grow-1"><input type="text" name="bairro[]" class="form-control" placeholder="Bairro"><label class="form-label">Bairro</label></div></div></div>
+                <div class="col-md-6 mb-3"><div class="input-group mb-4">
+                    <span class="input-group-text"><i class="bi bi-pin-map-fill"></i></span>
+                    <div class="form-floating flex-grow-1"><input type="text" name="cidade[]" class="form-control" placeholder="Cidade"><label class="form-label">Cidade</label></div></div></div>
             </div>
         `;
         container.appendChild(newDiv);
@@ -749,7 +865,10 @@
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
             <style>body{padding:20px;} h4{margin-top:20px;border-bottom:1px solid #ccc;padding-bottom:5px;}</style>
             </head><body>
-            <div align="center"><img src="{{ url_for('static', filename='img/logo.png') }}" width="150"></div>
+            <div align="center">
+			<img src="{{ url_for('static', filename='img/logo.png') }}" width="150">
+			<p><strong>CNPJ:</strong> Insira o seu <strong>WhatsApp:</strong> Insira o seu</p>
+			</div>
             <hr>
             ${printContent.innerHTML}
             </body></html>`);
