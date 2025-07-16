@@ -96,7 +96,7 @@
         }
 
         /* --- CUSTOM ALERT MODAL --- */
-        .custom-alert-modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
+        .custom-alert-modal { display: none; position: fixed; z-index: 1055; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
         .custom-alert-modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); text-align: center; position: relative; }
         .custom-alert-close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 15px; }
         .custom-alert-close-btn:hover, .custom-alert-close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
@@ -187,16 +187,16 @@
                     
                     <!-- Aba: Dados Pessoais -->
                     <div class="tab-pane fade show active" id="dados-pessoais-pane" role="tabpanel" aria-labelledby="dados-pessoais-tab">
-                        <h4 class="mb-3">Dados Pessoais</h4>
-						<div class="row">
-							<div class="col-md-6">
-								<p class="mb-2"><strong>Nome:</strong> {{ cliente.nome }}</p>
-								<p class="mb-2"><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "N/A" }}</p>
-								<p class="mb-2"><strong>CPF:</strong> {{ cliente.cpf or "N/A" }}</p>
-								<p class="mb-2"><strong>CNPJ:</strong> {{ cliente.cnpj or "N/A" }}</p>
-							</div>
-							<div class="col-md-6">
-								{% if cliente.endereco %}
+                        <form action="{{ url_for('main.update_dados_cliente', cliente_id=cliente.id) }}" method="POST" id="editClientForm">
+							<div class="row">
+								<div class="col-md-6">
+									<p class="mb-2"><strong>Nome:</strong> {{ cliente.nome }}</p>
+									<p class="mb-2"><strong>Apelido ou Nome Social:</strong> {{ cliente.apelido or "N/A" }}</p>
+									<p class="mb-2"><strong>CPF:</strong> {{ cliente.cpf or "N/A" }}</p>
+									<p class="mb-2"><strong>CNPJ:</strong> {{ cliente.cnpj or "N/A" }}</p>
+								</div>
+								<div class="col-md-6">
+                                  								{% if cliente.endereco %}
 									{% for endereco in cliente.endereco.split(';') %}
 										<p class="mb-2"><strong>Endereço {{ loop.index }}:</strong> {{ endereco.strip() }}</p>
 									{% endfor %}
@@ -225,128 +225,109 @@
 								{% else %}
 									<p class="mb-2"><strong>CEP:</strong> N/A</p>
 								{% endif %}
+									 <!-- Botão para acionar o modal de endereço -->
+									<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addressModal">
+										<i class="bi bi-geo-alt-fill me-1"></i> Adicionar / Editar Endereços
+									</button>
+								</div>
 							</div>
-						</div>
-						<hr>
-						<div class="mt-4">
-							<h5 class="mb-3">Atualizar Informações</h5>
-							<form action="{{ url_for('main.update_dados_cliente', cliente_id=cliente.id) }}" method="POST" id="editClientForm">
+							<hr>
+							<div class="mt-4">
+								<h5 class="mb-3">Atualizar Informações Gerais</h5>
 								<div class="row">
 									<div class="col-md-6 mb-3">
-                                        <div class="input-group mb-4">
-                                            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                                                <div class="form-floating flex-grow-1">
-                                                    <input type="text" name="apelido" class="form-control" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
-                                                    <label for="apelido">Apelido ou Nome Social</label>
-                                            </div>
+										<div class="input-group mb-4">
+											<span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+											<div class="form-floating flex-grow-1">
+												<input type="text" name="apelido" class="form-control" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
+												<label for="apelido">Apelido ou Nome Social</label>
+											</div>
 										</div>
 									</div>
 									<div class="col-md-6 mb-3">
-                                        <div class="input-group mb-4">
-                                            <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
-                                            <div class="form-floating flex-grow-1">										
-										        <input type="text" id="cpf_cnpj" class="form-control" placeholder="CPF ou CNPJ" value="{{ cliente.cpf or cliente.cnpj or '' }}">
-										        <label for="cpf_cnpj" class="form-label">CPF/CNPJ</label>
-                                                <input type="hidden" name="cpf" id="hidden_cpf" value="{{ cliente.cpf or '' }}">
-										        <input type="hidden" name="cnpj" id="hidden_cnpj" value="{{ cliente.cnpj or '' }}">
-										        <span id="cpfCnpjError" class="text-danger small" style="display: none;">Documento inválido.</span>
-									        </div>
-								        </div>
-                                    </div>
-                                </div>
-
-								<div id="enderecos-container">
-                                    <div class="mb-3 border p-3 rounded bg-light">
-                                        <h6 class="mb-3">Endereço Principal</h6>
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <div class="input-group mb-4">
-                                                <span class="input-group-text"><i class="bi bi-signpost-split-fill"></i></span>
-                                                <div class="form-floating flex-grow-1">                                                     
-                                                    <input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP" value="{{ cliente.cep or ''}}" id="mainCepInput">
-                                                    <label for="cep" class="form-label">CEP</label>
-                                                </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <div class="input-group mb-4">
-                                                <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
-                                                <div class="form-floating flex-grow-1">                                            
-                                                    <input type="text" name="endereco[]" class="form-control" placeholder="Endereço" value="{{ cliente.endereco or ''}}">
-                                                    <label for="endereco" class="form-label">Endereço</label>
-                                                </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <div class="input-group mb-4">
-                                                <span class="input-group-text"><i class="bi bi-signpost-split-fill"></i></span>
-                                                <div class="form-floating flex-grow-1">
-                                                    <input type="text" name="bairro[]" class="form-control" placeholder="Bairro" value="{{ cliente.bairro or ''}}">
-                                                    <label for="bairro" class="form-label">Bairro</label>
-                                                </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <div class="input-group mb-4">
-                                                <span class="input-group-text"><i class="bi bi-pin-map-fill"></i></span>
-                                                <div class="form-floating flex-grow-1">
-                                                    <div class="form-floating flex-grow-1">
-                                                    <input type="text" name="cidade[]" class="form-control" placeholder="Cidade" value="{{ cliente.cidade or ''}}">
-                                                    <label for="cidade" class="form-label">Cidade</label>
-                                                </div>
-                                                </div>
-                                        </div>
-                                    </div>
-								    </div>
-                                    </div>
-                                </div>
-                                <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="adicionarCampoEndereco()">
-                                    <i class="bi bi-plus-circle"></i> Adicionar outro endereço
-                                </button>
-								
-								<div class="row">
-									<div class="col-md-6 mb-3">
-                                        <div class="input-group mb-4">
-                                            <span class="input-group-text"><i class="bi bi-pin-map-fill"></i></span>
-                                        <div class="form-floating flex-grow-1">										
-										<select name="estado" class="form-select">
-											<option value="">Selecione...</option>
-											<option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
-											<option value="AL" {% if cliente.estado == 'AL' %}selected{% endif %}>Alagoas</option>
-											<option value="AP" {% if cliente.estado == 'AP' %}selected{% endif %}>Amapá</option>
-											<option value="AM" {% if cliente.estado == 'AM' %}selected{% endif %}>Amazonas</option>
-											<option value="BA" {% if cliente.estado == 'BA' %}selected{% endif %}>Bahia</option>
-											<option value="CE" {% if cliente.estado == 'CE' %}selected{% endif %}>Ceará</option>
-											<option value="DF" {% if cliente.estado == 'DF' %}selected{% endif %}>Distrito Federal</option>
-											<option value="ES" {% if cliente.estado == 'ES' %}selected{% endif %}>Espírito Santo</option>
-											<option value="GO" {% if cliente.estado == 'GO' %}selected{% endif %}>Goiás</option>
-											<option value="MA" {% if cliente.estado == 'MA' %}selected{% endif %}>Maranhão</option>
-											<option value="MT" {% if cliente.estado == 'MT' %}selected{% endif %}>Mato Grosso</option>
-											<option value="MS" {% if cliente.estado == 'MS' %}selected{% endif %}>Mato Grosso do Sul</option>
-											<option value="MG" {% if cliente.estado == 'MG' %}selected{% endif %}>Minas Gerais</option>
-											<option value="PA" {% if cliente.estado == 'PA' %}selected{% endif %}>Pará</option>
-											<option value="PB" {% if cliente.estado == 'PB' %}selected{% endif %}>Paraíba</option>
-											<option value="PR" {% if cliente.estado == 'PR' %}selected{% endif %}>Paraná</option>
-											<option value="PE" {% if cliente.estado == 'PE' %}selected{% endif %}>Pernambuco</option>
-											<option value="PI" {% if cliente.estado == 'PI' %}selected{% endif %}>Piauí</option>
-											<option value="RJ" {% if cliente.estado == 'RJ' %}selected{% endif %}>Rio de Janeiro</option>
-											<option value="RN" {% if cliente.estado == 'RN' %}selected{% endif %}>Rio Grande do Norte</option>
-											<option value="RS" {% if cliente.estado == 'RS' %}selected{% endif %}>Rio Grande do Sul</option>
-											<option value="RO" {% if cliente.estado == 'RO' %}selected{% endif %}>Rondônia</option>
-											<option value="RR" {% if cliente.estado == 'RR' %}selected{% endif %}>Roraima</option>
-											<option value="SC" {% if cliente.estado == 'SC' %}selected{% endif %}>Santa Catarina</option>
-											<option value="SP" {% if cliente.estado == 'SP' %}selected{% endif %}>São Paulo</option>
-											<option value="SE" {% if cliente.estado == 'SE' %}selected{% endif %}>Sergipe</option>
-											<option value="TO" {% if cliente.estado == 'TO' %}selected{% endif %}>Tocantins</option>
-										</select>
-                                            <label for="estado" class="form-label">Estado</label>
-									    </div>
+										<div class="input-group mb-4">
+											<span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
+											<div class="form-floating flex-grow-1">
+												<input type="text" id="cpf_cnpj" class="form-control" placeholder="CPF ou CNPJ" value="{{ cliente.cpf or cliente.cnpj or '' }}">
+												<label for="cpf_cnpj" class="form-label">CPF/CNPJ</label>
+												<input type="hidden" name="cpf" id="hidden_cpf" value="{{ cliente.cpf or '' }}">
+												<input type="hidden" name="cnpj" id="hidden_cnpj" value="{{ cliente.cnpj or '' }}">
+												<span id="cpfCnpjError" class="text-danger small" style="display: none;">Documento inválido.</span>
+											</div>
+										</div>
+									</div>
 								</div>
-                                </div>
-                                </div>
 								<button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-2"></i>Atualizar Dados</button>
-							</form>                            
-						</div>
+							</div>
+
+							<!-- Modal de Endereço -->
+							<div class="modal fade" id="addressModal" tabindex="-1" aria-labelledby="addressModalLabel" aria-hidden="true">
+								<div class="modal-dialog modal-lg modal-dialog-scrollable">
+									<div class="modal-content">
+										<div class="modal-header">
+											<h5 class="modal-title" id="addressModalLabel">Endereços de {{ cliente.nome }}</h5>
+											<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+										</div>
+										<div class="modal-body">
+											<h5 class="mt-4 mb-3">Editar/Adicionar Endereços</h5>
+											<div id="enderecos-container">
+												<!-- Campos de endereço existentes e novos serão adicionados aqui -->
+											</div>
+											<button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="adicionarCampoEndereco()">
+												<i class="bi bi-plus-circle"></i> Adicionar campo de endereço
+											</button>
+                                            
+                                            <hr>
+
+                                            <div class="row mt-3">
+                                                <div class="col-md-8">
+                                                    <div class="input-group mb-4">
+                                                        <span class="input-group-text"><i class="bi bi-pin-map-fill"></i></span>
+                                                        <div class="form-floating flex-grow-1">
+                                                            <select name="estado" class="form-select">
+                                                                <option value="">Selecione o Estado...</option>
+                                                                <option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
+                                                                <option value="AL" {% if cliente.estado == 'AL' %}selected{% endif %}>Alagoas</option>
+                                                                <option value="AP" {% if cliente.estado == 'AP' %}selected{% endif %}>Amapá</option>
+                                                                <option value="AM" {% if cliente.estado == 'AM' %}selected{% endif %}>Amazonas</option>
+                                                                <option value="BA" {% if cliente.estado == 'BA' %}selected{% endif %}>Bahia</option>
+                                                                <option value="CE" {% if cliente.estado == 'CE' %}selected{% endif %}>Ceará</option>
+                                                                <option value="DF" {% if cliente.estado == 'DF' %}selected{% endif %}>Distrito Federal</option>
+                                                                <option value="ES" {% if cliente.estado == 'ES' %}selected{% endif %}>Espírito Santo</option>
+                                                                <option value="GO" {% if cliente.estado == 'GO' %}selected{% endif %}>Goiás</option>
+                                                                <option value="MA" {% if cliente.estado == 'MA' %}selected{% endif %}>Maranhão</option>
+                                                                <option value="MT" {% if cliente.estado == 'MT' %}selected{% endif %}>Mato Grosso</option>
+                                                                <option value="MS" {% if cliente.estado == 'MS' %}selected{% endif %}>Mato Grosso do Sul</option>
+                                                                <option value="MG" {% if cliente.estado == 'MG' %}selected{% endif %}>Minas Gerais</option>
+                                                                <option value="PA" {% if cliente.estado == 'PA' %}selected{% endif %}>Pará</option>
+                                                                <option value="PB" {% if cliente.estado == 'PB' %}selected{% endif %}>Paraíba</option>
+                                                                <option value="PR" {% if cliente.estado == 'PR' %}selected{% endif %}>Paraná</option>
+                                                                <option value="PE" {% if cliente.estado == 'PE' %}selected{% endif %}>Pernambuco</option>
+                                                                <option value="PI" {% if cliente.estado == 'PI' %}selected{% endif %}>Piauí</option>
+                                                                <option value="RJ" {% if cliente.estado == 'RJ' %}selected{% endif %}>Rio de Janeiro</option>
+                                                                <option value="RN" {% if cliente.estado == 'RN' %}selected{% endif %}>Rio Grande do Norte</option>
+                                                                <option value="RS" {% if cliente.estado == 'RS' %}selected{% endif %}>Rio Grande do Sul</option>
+                                                                <option value="RO" {% if cliente.estado == 'RO' %}selected{% endif %}>Rondônia</option>
+                                                                <option value="RR" {% if cliente.estado == 'RR' %}selected{% endif %}>Roraima</option>
+                                                                <option value="SC" {% if cliente.estado == 'SC' %}selected{% endif %}>Santa Catarina</option>
+                                                                <option value="SP" {% if cliente.estado == 'SP' %}selected{% endif %}>São Paulo</option>
+                                                                <option value="SE" {% if cliente.estado == 'SE' %}selected{% endif %}>Sergipe</option>
+                                                                <option value="TO" {% if cliente.estado == 'TO' %}selected{% endif %}>Tocantins</option>
+                                                            </select>
+                                                            <label for="estado" class="form-label">Estado</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+										</div>
+										<div class="modal-footer">
+											<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+											<button type="submit" class="btn btn-primary" form="editClientForm">Salvar Alterações</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</form>
                     </div>
 
                     <!-- Aba: Veículos -->
@@ -950,26 +931,29 @@
         $(newDiv).find('.telefone-input').mask('(00) 00000-0000');
     }
 
-    function adicionarCampoEndereco() {
+    function adicionarCampoEndereco(cep = '', endereco = '', bairro = '', cidade = '', isFirst = false) {
         const container = document.getElementById('enderecos-container');
         const newDiv = document.createElement('div');
         newDiv.classList.add('mb-3', 'border', 'p-3', 'rounded', 'bg-light', 'position-relative');
+        
+        let removeButton = isFirst ? '' : '<button type="button" class="btn-close position-absolute top-0 end-0 m-2" aria-label="Close" onclick="this.closest(\'.mb-3\').remove();"></button>';
+        
         newDiv.innerHTML = `
-            <button type="button" class="btn-close position-absolute top-0 end-0 m-2" aria-label="Close" onclick="this.closest('.mb-3').remove();"></button>
-            <h6 class="mb-3">Endereço Adicional</h6>
+            ${removeButton}
+            <h6 class="mb-3">${isFirst ? 'Endereço Principal' : 'Endereço Adicional'}</h6>
             <div class="row"> 
                 <div class="col-md-6 mb-3"><div class="input-group mb-4">
                     <span class="input-group-text"><i class="bi bi-signpost-split-fill"></i></span>
-                    <div class="form-floating flex-grow-1"><input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP"><label class="form-label">CEP</label></div></div></div>
+                    <div class="form-floating flex-grow-1"><input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP" value="${cep}"><label class="form-label">CEP</label></div></div></div>
                 <div class="col-md-6 mb-3"><div class="input-group mb-4">
                     <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
-                                            <div class="form-floating flex-grow-1"><input type="text" name="endereco[]" class="form-control" placeholder="Endereço"><label class="form-label">Endereço</label></div></div></div>
+                                            <div class="form-floating flex-grow-1"><input type="text" name="endereco[]" class="form-control" placeholder="Endereço" value="${endereco}"><label class="form-label">Endereço</label></div></div></div>
                 <div class="col-md-6 mb-3"><div class="input-group mb-4">
                     <span class="input-group-text"><i class="bi bi-signpost-split-fill"></i></span>
-                    <div class="form-floating flex-grow-1"><input type="text" name="bairro[]" class="form-control" placeholder="Bairro"><label class="form-label">Bairro</label></div></div></div>
+                    <div class="form-floating flex-grow-1"><input type="text" name="bairro[]" class="form-control" placeholder="Bairro" value="${bairro}"><label class="form-label">Bairro</label></div></div></div>
                 <div class="col-md-6 mb-3"><div class="input-group mb-4">
                     <span class="input-group-text"><i class="bi bi-pin-map-fill"></i></span>
-                    <div class="form-floating flex-grow-1"><input type="text" name="cidade[]" class="form-control" placeholder="Cidade"><label class="form-label">Cidade</label></div></div></div>
+                    <div class="form-floating flex-grow-1"><input type="text" name="cidade[]" class="form-control" placeholder="Cidade" value="${cidade}"><label class="form-label">Cidade</label></div></div></div>
             </div>
         `;
         container.appendChild(newDiv);
@@ -1041,11 +1025,16 @@
                 .then(response => response.json())
                 .then(data => {
                     if (!data.erro) {
+                        const formContainer = cepInput.closest('.modal-body'); // Procura o select de estado dentro do modal
                         const group = cepInput.closest('.row');
                         group.querySelector('input[name="endereco[]"]').value = data.logradouro || '';
                         group.querySelector('input[name="bairro[]"]').value = data.bairro || '';
                         group.querySelector('input[name="cidade[]"]').value = data.localidade || '';
-                        document.querySelector('select[name="estado"]').value = data.uf || '';
+                        
+                        const estadoSelect = formContainer.querySelector('select[name="estado"]');
+                        if(estadoSelect) {
+                            estadoSelect.value = data.uf || '';
+                        }
                     }
                 }).catch(error => console.error('Erro na API ViaCEP:', error));
         }
@@ -1176,10 +1165,36 @@
 
     $(document).ready(function() {
         applyMasks();
-
-        const mainCepInput = document.getElementById('mainCepInput');
-        if (mainCepInput) mainCepInput.addEventListener('blur', () => preencherEnderecoPorCep(mainCepInput));
         $('#cpf_cnpj').on('blur', validateCpfCnpjInput);
+        
+        const addressModal = document.getElementById('addressModal');
+        addressModal.addEventListener('show.bs.modal', function () {
+            // Limpa o container para não duplicar campos ao reabrir o modal
+            const container = document.getElementById('enderecos-container');
+            container.innerHTML = ''; 
+
+            // Pega os dados de endereço do Jinja e cria os campos dinamicamente
+            const ceps = "{{ cliente.cep or '' }}".split(';');
+            const enderecos = "{{ cliente.endereco or '' }}".split(';');
+            const bairros = "{{ cliente.bairro or '' }}".split(';');
+            const cidades = "{{ cliente.cidade or '' }}".split(';');
+
+            if (ceps[0] !== '' && enderecos[0] !== '') {
+                for (let i = 0; i < ceps.length; i++) {
+                    adicionarCampoEndereco(
+                        (ceps[i] || '').trim(),
+                        (enderecos[i] || '').trim(),
+                        (bairros[i] || '').trim(),
+                        (cidades[i] || '').trim(),
+                        i === 0 // Marca o primeiro como principal
+                    );
+                }
+            } else {
+                // Se não houver nenhum endereço, adiciona um campo em branco
+                adicionarCampoEndereco('', '', '', '', true);
+            }
+        });
+
 
         // Inicializa estado dos formulários de pagamento
         document.querySelectorAll('form[id^="form_pagamento_"], form[id^="editPagamentoModal"]').forEach(form => {
