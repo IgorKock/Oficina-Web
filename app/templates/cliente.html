@@ -225,42 +225,61 @@
 								{% else %}
 									<p class="mb-2"><strong>CEP:</strong> N/A</p>
 								{% endif %}
-									 <!-- Botão para acionar o modal de endereço -->
-									<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addressModal">
-										<i class="bi bi-geo-alt-fill me-1"></i> Adicionar / Editar Endereços
-									</button>
 								</div>
 							</div>
 							<hr>
-							<div class="mt-4">
-								<h5 class="mb-3">Atualizar Informações Gerais</h5>
-								<div class="row">
-									<div class="col-md-6 mb-3">
-										<div class="input-group mb-4">
-											<span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-											<div class="form-floating flex-grow-1">
-												<input type="text" name="apelido" class="form-control" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
-												<label for="apelido">Apelido ou Nome Social</label>
+							<!-- Botões de Ação -->
+                            <div class="mt-3 d-flex gap-2">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editGeraisModal">
+                                    <i class="bi bi-pencil-square me-1"></i> Adicionar / Editar Dados Gerais
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addressModal">
+                                    <i class="bi bi-geo-alt-fill me-1"></i> Adicionar / Editar Endereços
+                                </button>
+                            </div>
+
+							<!-- Caixa de Diálogo (Modal) de Edição de Dados Gerais -->
+							<div class="modal fade" id="editGeraisModal" tabindex="-1" aria-labelledby="editGeraisModalLabel" aria-hidden="true">
+								<div class="modal-dialog modal-lg">
+									<div class="modal-content">
+										<div class="modal-header">
+											<h5 class="modal-title" id="editGeraisModalLabel">Editar Informações Gerais</h5>
+											<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+										</div>
+										<div class="modal-body">
+											<div class="row">
+												<div class="col-md-6 mb-3">
+													<div class="input-group mb-4">
+														<span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+														<div class="form-floating flex-grow-1">
+															<input type="text" name="apelido" class="form-control" placeholder="Apelido ou Nome Social" value="{{ cliente.apelido or '' }}">
+															<label for="apelido">Apelido ou Nome Social</label>
+														</div>
+													</div>
+												</div>
+												<div class="col-md-6 mb-3">
+													<div class="input-group mb-4">
+														<span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
+														<div class="form-floating flex-grow-1">
+															<input type="text" id="cpf_cnpj" class="form-control" placeholder="CPF ou CNPJ" value="{{ cliente.cpf or cliente.cnpj or '' }}">
+															<label for="cpf_cnpj" class="form-label">CPF/CNPJ</label>
+															<input type="hidden" name="cpf" id="hidden_cpf" value="{{ cliente.cpf or '' }}">
+															<input type="hidden" name="cnpj" id="hidden_cnpj" value="{{ cliente.cnpj or '' }}">
+															<span id="cpfCnpjError" class="text-danger small" style="display: none;">Documento inválido.</span>
+														</div>
+													</div>
+												</div>
 											</div>
 										</div>
-									</div>
-									<div class="col-md-6 mb-3">
-										<div class="input-group mb-4">
-											<span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
-											<div class="form-floating flex-grow-1">
-												<input type="text" id="cpf_cnpj" class="form-control" placeholder="CPF ou CNPJ" value="{{ cliente.cpf or cliente.cnpj or '' }}">
-												<label for="cpf_cnpj" class="form-label">CPF/CNPJ</label>
-												<input type="hidden" name="cpf" id="hidden_cpf" value="{{ cliente.cpf or '' }}">
-												<input type="hidden" name="cnpj" id="hidden_cnpj" value="{{ cliente.cnpj or '' }}">
-												<span id="cpfCnpjError" class="text-danger small" style="display: none;">Documento inválido.</span>
-											</div>
+										<div class="modal-footer">
+											<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+											<button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-2"></i>Atualizar Dados</button>
 										</div>
 									</div>
 								</div>
-								<button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-2"></i>Atualizar Dados</button>
 							</div>
 
-							<!-- Modal de Endereço -->
+							<!-- Caixa de Diálogo (Modal) de Endereço -->
 							<div class="modal fade" id="addressModal" tabindex="-1" aria-labelledby="addressModalLabel" aria-hidden="true">
 								<div class="modal-dialog modal-lg modal-dialog-scrollable">
 									<div class="modal-content">
