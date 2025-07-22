@@ -1,12 +1,12 @@
-from flask import Flask
+from flask import Flask, session # 🔹 Adicionado 'session'
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 from sqlalchemy.exc import OperationalError, ProgrammingError
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user # 🔹 Adicionado 'current_user'
 import os
-import pytz # Manter pytz, pois é usado nos modelos
-import time # Manter time, pode ser útil para depuração mas não estritamente necessário aqui
+import pytz
+import time
 
 # A instância 'db' é criada aqui, fora da função create_app
 db = SQLAlchemy()
@@ -41,8 +41,18 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        # Utiliza o modelo Utilizador importado de '.models'
-        return models.Utilizador.query.get(int(user_id))
+        # 🔹 NOVO: Lógica de verificação de sessão única no user_loader
+        user = models.Utilizador.query.get(int(user_id))
+        
+        if user:
+            # Verifica se o token de sessão do navegador corresponde ao do banco de dados
+            # Se não corresponder, ou se o token do banco de dados for None (sessão inválida ou não iniciada)
+            if 'session_token' not in session or user.session_token != session['session_token']:
+                # Se os tokens não correspondem, ou se o token do DB é None,
+                # isso significa que a sessão atual não é válida ou foi sobrescrita.
+                # Retorna None para desautenticar o usuário.
+                return None
+        return user # Retorna o usuário se os tokens corresponderem ou se não houver token na sessão
 
     from .routes import main as main_blueprint
     app.register_blueprint(main_blueprint)

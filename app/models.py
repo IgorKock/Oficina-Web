@@ -3,8 +3,8 @@ from sqlalchemy.event import listens_for
 import pytz
 from datetime import datetime
 from sqlalchemy.sql import func
-from werkzeug.security import generate_password_hash, check_password_hash # Importação para segurança de senha
-from flask_login import UserMixin # Importa UserMixin para integração com Flask-Login
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 
 def para_utc(data_local, fuso_local='America/Sao_Paulo'):
     """
@@ -22,7 +22,6 @@ def para_utc(data_local, fuso_local='America/Sao_Paulo'):
     return data_local.astimezone(pytz.utc)
 
 # Tabela de associação para o relacionamento muitos-para-muitos entre Utilizadores e Papéis
-# Esta tabela liga um utilizador a um ou mais papéis.
 utilizador_papeis = db.Table(
     'utilizador_papeis',
     db.Column('id_utilizador', db.Integer, db.ForeignKey('utilizadores.id'), primary_key=True),
@@ -55,6 +54,11 @@ class Utilizador(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     
+    # 🔹 NOVO: Campo para armazenar observações do utilizador
+    observacoes = db.Column(db.Text, nullable=True)
+    # 🔹 NOVO: Campo para armazenar o token de sessão para controle de login único
+    session_token = db.Column(db.String(255), nullable=True)
+
     # Relacionamento muitos-para-muitos com Papel através da tabela de associação
     papeis = db.relationship('Papel', secondary=utilizador_papeis, backref=db.backref('utilizadores', lazy='dynamic'))
 
@@ -71,7 +75,16 @@ class Utilizador(UserMixin, db.Model):
         # Se 'papeis' for None ou não tiver um 'id' atribuído
         if not self.papeis:
             return False
-        return any(papel.nome == 'admin' for papel in self.papeis)
+        return any(papel.nome == 'Administrador' for papel in self.papeis) # 🔹 Corrigido para 'Administrador'
+
+    def is_mecanico(self):
+        return any(papel.nome == 'Mecânico' for papel in self.papeis)
+
+    def is_recepcionista(self):
+        return any(papel.nome == 'Recepcionista' for papel in self.papeis)
+
+    def is_gerente(self):
+        return any(papel.nome == 'Gerente' for papel in self.papeis)
 
     def __repr__(self):
         return f'<Utilizador {self.nome}>'
@@ -159,7 +172,7 @@ class Carro(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
-    historicos = db.relationship('Historico', backref='carro', lazy='dynamic', cascade="all, delete-orphan")
+    historicos = db.relationship('Historico', backref='carro', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Relacionamento com Historico (mantido)
     pagamentos = db.relationship('Pagamento', backref='carro', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Relacionamento com Pagamento
 
     def __repr__(self):
@@ -200,7 +213,7 @@ def update_peca_timestamps(mapper, connection, target):
     target.updated_at = agora.astimezone(pytz.utc)
 
 
-class Historico(db.Model):
+class Historico(db.Model): # 🔹 MANTIDO COMO 'Historico'
     __tablename__ = 'historicos'
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
@@ -210,8 +223,7 @@ class Historico(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
-    # CORREÇÃO AQUI: Removido lazy='dynamic' da backref 'historico' para o relacionamento many-to-one
-    pagamentos = db.relationship('Pagamento', backref='historico') 
+    pagamentos = db.relationship('Pagamento', backref='historico', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Relacionamento com Pagamento (mantido)
 
     def __repr__(self):
         return f'<Historico {self.id}>'
@@ -237,7 +249,7 @@ class Pagamento(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
     carro_id = db.Column(db.Integer, db.ForeignKey('carros.id'), nullable=False)  # 🔹 Associando ao veículo
-    historico_id = db.Column(db.Integer, db.ForeignKey('historicos.id'), nullable=False)  # 🔹 Associando ao serviço
+    historico_id = db.Column(db.Integer, db.ForeignKey('historicos.id'), nullable=False)  # 🔹 Associando ao serviço (referencia 'historicos')
     data = db.Column(db.DateTime, nullable=False) # Removido o default para controle manual no routes.py
     valor = db.Column(db.Float, nullable=False)
     metodo = db.Column(db.String(50), nullable=False)

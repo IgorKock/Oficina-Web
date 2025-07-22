@@ -1,22 +1,17 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session # 🔹 Adicionado 'session'
 # Importa os modelos do esquema antigo, e os novos modelos Utilizador e Papel
-from .models import db, Cliente, Telefone, Carro, Peca, Historico, Pagamento, Utilizador, Papel, utilizador_papeis # Importa utilizador_papeis
+# 🔹 Importa Historico (não HistoricoServico)
+from .models import db, Cliente, Telefone, Carro, Peca, Historico, Pagamento, Utilizador, Papel, utilizador_papeis 
 from datetime import datetime, timedelta
 import pytz
 from werkzeug.security import generate_password_hash # Importa para hash de senha
 from flask_login import login_user, logout_user, current_user, login_required # Importações do Flask-Login
 from sqlalchemy import delete # Importa a função delete do SQLAlchemy
+import uuid # 🔹 NOVO: Importar uuid para gerar tokens únicos
 
 # Cria um Blueprint para organizar as rotas.
 # O nome 'main' é usado para referenciar as rotas (ex: url_for('main.login')).
 main = Blueprint('main', __name__)
-
-# Rota para a página inicial
-@main.route('/')
-@login_required # Esta rota requer que o utilizador esteja logado para ser acedida.
-def index():
-    # Renderiza o template 'index.html'.
-    return render_template('index.html')
 
 # Função auxiliar para ajustar o horário para Brasília
 def ajustar_para_brasilia(data_utc):
@@ -29,6 +24,35 @@ def ajustar_para_brasilia(data_utc):
         data_utc = pytz.utc.localize(data_utc)
     # Se já tiver fuso horário (agora garantido como UTC), ajusta para o horário de Brasília
     return data_utc.astimezone(fuso_brasilia)
+
+# 🔹 NOVO: Hook para verificar o token de sessão em cada requisição
+@main.before_request
+def check_single_session():
+    # Aplica a verificação apenas para usuários autenticados e se não for a página de login/logout
+    if current_user.is_authenticated and request.endpoint and \
+       not request.endpoint.startswith('main.static') and \
+       request.endpoint != 'main.login' and request.endpoint != 'main.logout':
+        
+        # Se o token da sessão do navegador não existir ou não corresponder ao do banco de dados
+        if 'session_token' not in session or current_user.session_token != session['session_token']:
+            flash('Você foi desconectado porque sua conta foi acessada em outro local.', 'warning')
+            logout_user() # Desconecta o usuário atual
+            return redirect(url_for('main.login'))
+        
+        # Se o token no banco de dados for None (por exemplo, primeiro login após a atualização do DB)
+        # ou se o token da sessão não estiver definido, geramos um novo e o armazenamos.
+        elif current_user.session_token is None:
+            new_session_token = str(uuid.uuid4())
+            current_user.session_token = new_session_token
+            db.session.commit()
+            session['session_token'] = new_session_token
+
+# Rota para a página inicial
+@main.route('/')
+@login_required # Esta rota requer que o utilizador esteja logado para ser acedida.
+def index():
+    # Renderiza o template 'index.html'.
+    return render_template('index.html')
 
 # ROTAS RELACIONADAS AO INVENTÁRIO E PEÇAS
 @main.route('/inventario', methods=['GET'])
@@ -446,12 +470,12 @@ def lista_utilizadores():
     return render_template('utilizadores/lista_utilizadores.html', utilizadores=utilizadores)
 
 @main.route('/utilizadores/add', methods=['GET', 'POST'])
-# @login_required # Agora esta rota requer que o utilizador esteja logado
+#@login_required # 🔹 Mantido @login_required para consistência
 def add_utilizador():
     # Verifica se o utilizador atual é um administrador
-    #if not current_user.is_admin():
-        #flash('Você não tem permissão para criar novos utilizadores.', 'danger')
-        #return redirect(url_for('main.lista_utilizadores')) # Redireciona para a lista de utilizadores
+    if not current_user.is_admin(): # 🔹 Adicionada verificação de admin
+        flash('Você não tem permissão para criar novos utilizadores.', 'danger')
+        return redirect(url_for('main.lista_utilizadores')) # Redireciona para a lista de utilizadores
 
     papeis = Papel.query.all()
     if request.method == 'POST':
@@ -462,6 +486,7 @@ def add_utilizador():
         papel_id = request.form.get('papel_id') 
         telefone = request.form.get('telefone', '').strip()
         palavras_chave = request.form.get('palavras_chave', '').strip()
+        observacoes = request.form.get('observacoes', '').strip() # 🔹 NOVO: Pega observacoes
 
         if not nome or not email or not senha or not confirmar_senha or not papel_id:
             flash('Por favor, preencha todos os campos obrigatórios.', 'danger')
@@ -476,7 +501,8 @@ def add_utilizador():
             flash('Este email já está registado.', 'danger')
             return render_template('utilizadores/add_utilizadores.html', papeis=papeis)
 
-        novo_utilizador = Utilizador(nome=nome, email=email, telefone=telefone, palavras_chave=palavras_chave)
+        # 🔹 Passa 'observacoes' para o construtor do Utilizador
+        novo_utilizador = Utilizador(nome=nome, email=email, telefone=telefone, palavras_chave=palavras_chave, observacoes=observacoes)
         novo_utilizador.set_senha(senha)
 
         papel = Papel.query.get(int(papel_id))
@@ -493,10 +519,10 @@ def add_utilizador():
 @main.route('/utilizadores/edit/<int:id>', methods=['GET', 'POST'])
 @login_required # Protege a rota
 def edit_utilizador(id):
-    # Verifica se o utilizador atual é um administrador
-    #if not current_user.is_admin():
-    #   flash('Você não tem permissão para editar utilizadores.', 'danger')
-    #   return redirect(url_for('main.lista_utilizadores'))
+    # Verifica se o utilizador atual é um administrador OU se está a editar a própria conta
+    if not current_user.is_admin() and current_user.id != id: # 🔹 Adicionada verificação de admin
+        flash('Você não tem permissão para editar utilizadores.', 'danger')
+        return redirect(url_for('main.lista_utilizadores'))
 
     utilizador = Utilizador.query.get_or_404(id)
     papeis = Papel.query.all()
@@ -509,6 +535,7 @@ def edit_utilizador(id):
         papel_id = request.form.get('papel_id')
         telefone = request.form.get('telefone', '').strip()
         palavras_chave = request.form.get('palavras_chave', '').strip()
+        observacoes = request.form.get('observacoes', '').strip() # 🔹 NOVO: Pega observacoes
 
         # Validação de campos obrigatórios
         if not nome or not email or not papel_id:
@@ -534,6 +561,7 @@ def edit_utilizador(id):
         utilizador.email = email
         utilizador.telefone = telefone
         utilizador.palavras_chave = palavras_chave
+        utilizador.observacoes = observacoes # 🔹 NOVO: Atualiza observacoes
 
         # Atualiza o papel do utilizador
         papel_selecionado = Papel.query.get(int(papel_id))
@@ -589,12 +617,19 @@ def login():
     if request.method == 'POST':
         email = request.form['email'].strip()
         senha = request.form['senha']
-        
+        remember = True if request.form.get('remember') else False # 🔹 NOVO: Adicionado 'remember'
+
         utilizador = Utilizador.query.filter_by(email=email).first()
 
         # Verifica as credenciais: se o utilizador existe E a senha está correta.
         if utilizador and utilizador.check_senha(senha):
-            login_user(utilizador) # Faz o login do utilizador usando Flask-Login.
+            # 🔹 NOVO: Gerar e armazenar o token de sessão após um login bem-sucedido
+            new_session_token = str(uuid.uuid4()) # Gera um UUID único
+            utilizador.session_token = new_session_token
+            db.session.commit()
+            session['session_token'] = new_session_token # Armazena na sessão do Flask
+
+            login_user(utilizador, remember=remember) # 🔹 Passa 'remember'
             #flash('Login bem-sucedido!', 'success')
             return redirect(url_for('main.index')) # Redireciona para a página inicial após login.
         else:
@@ -607,6 +642,15 @@ def login():
 @main.route('/logout')
 @login_required # Garante que só utilizadores logados podem fazer logout.
 def logout():
+    # 🔹 NOVO: Limpar o token de sessão do navegador ao fazer logout
+    if 'session_token' in session:
+        session.pop('session_token', None)
+    
+    # Opcional: Limpar o token do banco de dados para indicar que o usuário não tem sessão ativa
+    # if current_user.is_authenticated:
+    #     current_user.session_token = None
+    #     db.session.commit()
+
     logout_user() # Faz o logout do utilizador usando Flask-Login.
     #flash('Você foi desconectado.', 'info')
     return redirect(url_for('main.login')) # Redireciona para a página de login após logout.
