@@ -472,10 +472,6 @@ def lista_utilizadores():
 @main.route('/utilizadores/add', methods=['GET', 'POST'])
 #@login_required # 🔹 Mantido @login_required para consistência
 def add_utilizador():
-    # Verifica se o utilizador atual é um administrador
-    if not current_user.is_admin(): # 🔹 Adicionada verificação de admin
-        flash('Você não tem permissão para criar novos utilizadores.', 'danger')
-        return redirect(url_for('main.lista_utilizadores')) # Redireciona para a lista de utilizadores
 
     papeis = Papel.query.all()
     if request.method == 'POST':
