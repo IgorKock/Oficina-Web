@@ -478,7 +478,7 @@
                                                         <div class="input-group mb-4">
                                                             <span class="input-group-text"><i class="bi bi-tags-fill"></i></span>
                                                             <div class="form-floating flex-grow-1">                                                                
-                                                                <input type="text" name="placa_{{ carro.id }}" class="form-control placa-input" value="{{ carro.placa }}">
+                                                                <input type="text" name="placa_{{ carro.id }}" class="form-control placa-input" value="{{ carro.placa }}" required>
                                                                 <label class="form-label">Placa</label>
                                                             </div>
                                                         </div>
@@ -869,7 +869,7 @@
                         <div class="input-group mb-4">
                             <span class="input-group-text"><i class="bi bi-tags-fill"></i></span>
                             <div class="form-floating flex-grow-1">                                    
-                                <input type="text" name="placa[]" class="form-control placa-input">
+                                <input type="text" name="placa[]" class="form-control placa-input" required>
                                 <label class="form-label">Placa</label>
                             </div>
                         </div>
