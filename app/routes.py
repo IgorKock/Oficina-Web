@@ -362,13 +362,23 @@ def update_carros(cliente_id):
 @main.route('/add_pagamento/<int:carro_id>/<int:historico_id>', methods=['POST'])
 @login_required # Protege a rota
 def add_pagamento(carro_id, historico_id):
-    valor = float(request.form['valor'])  
+    # 🔹 CORREÇÃO: Substituir vírgula por ponto antes de converter para float
+    valor_str = request.form['valor'].replace(',', '.')
+    valor = float(valor_str)  
+    
+    # 🔹 CORREÇÃO AQUI: Obter o valor do campo 'tipo_pagamento' do formulário
     metodo = request.form['metodo']
-    tipo_pagamento = request.form.get('tipo_cartao')  
-    parcelas_str = request.form.get('parcelas') # Pega como string
+    tipo_pagamento = request.form.get('tipo_pagamento') # Corrigido de 'tipo_cartao' para 'tipo_pagamento'
+    parcelas_str = request.form.get('parcelas')
 
-    # Se a string estiver vazia, define parcelas como None; caso contrário, converte para int
-    parcelas = int(parcelas_str) if parcelas_str and parcelas_str.strip() else None
+    # A lógica para parcelas só deve ser aplicada se o tipo de pagamento for 'Parcelado'
+    parcelas = None
+    if tipo_pagamento == 'Parcelado' and parcelas_str and parcelas_str.strip():
+        try:
+            parcelas = int(parcelas_str)
+        except ValueError:
+            flash('Número de parcelas inválido.', 'danger')
+            return redirect(url_for('main.cliente', id=Carro.query.get_or_404(carro_id).cliente_id))
 
     carro = Carro.query.get_or_404(carro_id)
     historico = Historico.query.get_or_404(historico_id)
@@ -379,8 +389,8 @@ def add_pagamento(carro_id, historico_id):
         historico_id=historico.id,
         valor=valor,
         metodo=metodo,
-        tipo_pagamento=tipo_pagamento,
-        parcelas=parcelas, # Passa None se a string for vazia
+        tipo_pagamento=tipo_pagamento, # Agora virá corretamente do formulário
+        parcelas=parcelas, # Será None se não for parcelado ou se o valor for inválido
         data=datetime.now(pytz.utc) 
     )
 
@@ -394,18 +404,27 @@ def add_pagamento(carro_id, historico_id):
 def edit_pagamento(id):
     pagamento = Pagamento.query.get_or_404(id)
     
-    # Atualiza os campos do pagamento com base nos dados do formulário
-    pagamento.valor = float(request.form['valor'])
-    pagamento.metodo = request.form['metodo']
-    pagamento.tipo_pagamento = request.form.get('tipo_cartao')
+    valor_str = request.form['valor'].replace(',', '.')
+    pagamento.valor = float(valor_str)
     
+    # 🔹 CORREÇÃO AQUI: Obter o valor do campo 'tipo_pagamento' do formulário
+    pagamento.metodo = request.form['metodo']
+    pagamento.tipo_pagamento = request.form.get('tipo_pagamento') # Corrigido de 'tipo_cartao' para 'tipo_pagamento'
     parcelas_str = request.form.get('parcelas')
-    pagamento.parcelas = int(parcelas_str) if parcelas_str and parcelas_str.strip() else None # Lida com parcelas vazias
+
+    # A lógica para parcelas só deve ser aplicada se o tipo de pagamento for 'Parcelado'
+    pagamento.parcelas = None # Reinicia para None
+    if pagamento.tipo_pagamento == 'Parcelado' and parcelas_str and parcelas_str.strip():
+        try:
+            pagamento.parcelas = int(parcelas_str)
+        except ValueError:
+            flash('Número de parcelas inválido.', 'danger')
+            return redirect(url_for('main.cliente', id=pagamento.cliente_id))
+
 
     db.session.commit()
     flash('Pagamento atualizado com sucesso!', 'success')
     return redirect(url_for('main.cliente', id=pagamento.cliente_id))
-
 
 @main.route('/delete_pagamento/<int:id>', methods=['POST']) # Adicionada a nova rota de delete
 @login_required # Protege a rota

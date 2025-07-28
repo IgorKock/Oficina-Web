@@ -108,13 +108,13 @@ class Cliente(db.Model):
     cpf = db.Column(db.String(20), nullable=True)
     cnpj = db.Column(db.String(20), nullable=True)
     apelido = db.Column(db.String(100), nullable=True)
-    endereco = db.Column(db.String(255), nullable=True)
-    numero = db.Column(db.String(20), nullable=True)
-    complemento = db.Column(db.String(100), nullable=True)
-    bairro = db.Column(db.String(100), nullable=True)
-    cidade = db.Column(db.String(100), nullable=True)
-    estado = db.Column(db.String(2), nullable=True)
-    cep = db.Column(db.String(10), nullable=True)
+    endereco = db.Column(db.String(500), nullable=True) # Aumentado para 500
+    numero = db.Column(db.String(100), nullable=True)   # Aumentado para 100
+    complemento = db.Column(db.String(255), nullable=True) # Aumentado para 255
+    bairro = db.Column(db.String(255), nullable=True)   # Aumentado para 255
+    cidade = db.Column(db.String(255), nullable=True)   # Aumentado para 255
+    estado = db.Column(db.String(50), nullable=True)    # Aumentado para 50 (para múltiplos estados abreviados)
+    cep = db.Column(db.String(100), nullable=True)      # Aumentado para 100 (para múltiplos CEPs)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
