@@ -201,26 +201,30 @@ def delete_telefone(telefone_id):
 @main.route('/update_dados_cliente/<int:cliente_id>', methods=['POST'])
 @login_required # Protege a rota
 def update_dados_cliente(cliente_id):
-    # Trata campos que podem vir como lista ou string única
-    endereco = request.form.getlist('endereco[]')[0].strip() if request.form.getlist('endereco[]') else request.form.get('endereco', '').strip()
-    bairro = request.form.getlist('bairro[]')[0].strip() if request.form.getlist('bairro[]') else request.form.get('bairro', '').strip()
-    cidade = request.form.getlist('cidade[]')[0].strip() if request.form.getlist('cidade[]') else request.form.get('cidade', '').strip()
-    cep = request.form.getlist('cep[]')[0].strip() if request.form.getlist('cep[]') else request.form.get('cep', '').strip()
+    cliente = Cliente.query.get_or_404(cliente_id) # 🔹 Movido para o início
 
-    estado = request.form.get('estado', '').strip()
-    cpf = request.form.get('cpf', '').strip()
-    cnpj = request.form.get('cnpj', '').strip()
-    apelido = request.form.get('apelido', '').strip()
+    # Captura todos os campos de endereço como listas, garantindo que sejam listas vazias se a chave não existir
+    enderecos = request.form.getlist('endereco[]') if 'endereco[]' in request.form else []
+    numeros = request.form.getlist('numero[]') if 'numero[]' in request.form else [] 
+    complementos = request.form.getlist('complemento[]') if 'complemento[]' in request.form else [] 
+    bairros = request.form.getlist('bairro[]') if 'bairro[]' in request.form else []
+    cidades = request.form.getlist('cidade[]') if 'cidade[]' in request.form else []
+    ceps = request.form.getlist('cep[]') if 'cep[]' in request.form else []
 
-    cliente = Cliente.query.get_or_404(cliente_id)
-    cliente.cpf = cpf
-    cliente.cnpj = cnpj
-    cliente.endereco = endereco
-    cliente.cidade = cidade
-    cliente.estado = estado
-    cliente.cep = cep
-    cliente.bairro = bairro
-    cliente.apelido = apelido 
+    # Converte as listas para strings separadas por ';'
+    # Usa filter(None, ...) para remover strings vazias antes de juntar
+    cliente.endereco = "; ".join(filter(None, enderecos)) if any(filter(None, enderecos)) else None
+    cliente.numero = "; ".join(filter(None, numeros)) if any(filter(None, numeros)) else None 
+    cliente.complemento = "; ".join(filter(None, complementos)) if any(filter(None, complementos)) else None 
+    cliente.bairro = "; ".join(filter(None, bairros)) if any(filter(None, bairros)) else None
+    cliente.cidade = "; ".join(filter(None, cidades)) if any(filter(None, cidades)) else None
+    cliente.cep = "; ".join(filter(None, ceps)) if any(filter(None, ceps)) else None
+
+    # Campos que não são listas
+    cliente.estado = request.form.get('estado', '').strip()
+    cliente.cpf = request.form.get('cpf', '').strip()
+    cliente.cnpj = request.form.get('cnpj', '').strip()
+    cliente.apelido = request.form.get('apelido', '').strip()
 
     db.session.commit()
     flash('Dados do cliente atualizados com sucesso!', 'success')

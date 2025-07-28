@@ -196,35 +196,24 @@
 									<p class="mb-2"><strong>CNPJ:</strong> {{ cliente.cnpj or "N/A" }}</p>
 								</div>
 								<div class="col-md-6">
-                                  								{% if cliente.endereco %}
-									{% for endereco in cliente.endereco.split(';') %}
-										<p class="mb-2"><strong>Endereço {{ loop.index }}:</strong> {{ endereco.strip() }}</p>
-									{% endfor %}
-								{% else %}
-									<p class="mb-2"><strong>Endereço:</strong> N/A</p>
-								{% endif %}
-								{% if cliente.bairro %}
-									{% for bairro in cliente.bairro.split(';') %}
-										<p class="mb-2"><strong>Bairro {{ loop.index }}:</strong> {{ bairro.strip() }}</p>
-									{% endfor %}
-								{% else %}
-									<p class="mb-2"><strong>Bairro:</strong> N/A</p>
-								{% endif %}
-								{% if cliente.cidade %}
-									{% for cidade in cliente.cidade.split(';') %}
-										<p class="mb-2"><strong>Cidade {{ loop.index }}:</strong> {{ cidade.strip() }}</p>
-									{% endfor %}
-								{% else %}
-									<p class="mb-2"><strong>Cidade:</strong> N/A</p>
-								{% endif %}
-								<p class="mb-2"><strong>Estado:</strong> {{ cliente.estado or "N/A" }}</p>
-								{% if cliente.cep %}
-									{% for cep in cliente.cep.split(';') %}
-										<p class="mb-2"><strong>CEP {{ loop.index }}:</strong> {{ cep.strip() }}</p>
-									{% endfor %}
-								{% else %}
-									<p class="mb-2"><strong>CEP:</strong> N/A</p>
-								{% endif %}
+                                    {% if cliente.endereco %}
+                                        {% for i in range(cliente.endereco.split(';')|length) %}
+                                            <p class="mb-2"><strong>Endereço {{ loop.index }}:</strong> {{ cliente.endereco.split(';')[i].strip() }}</p>
+                                            <p class="mb-2"><strong>Número {{ loop.index }}:</strong> {{ cliente.numero.split(';')[i].strip() if cliente.numero and cliente.numero.split(';')|length > i else 'N/A' }}</p> {# 🔹 NOVO CAMPO #}
+                                            <p class="mb-2"><strong>Complemento {{ loop.index }}:</strong> {{ cliente.complemento.split(';')[i].strip() if cliente.complemento and cliente.complemento.split(';')|length > i else 'N/A' }}</p> {# 🔹 NOVO CAMPO #}
+                                            <p class="mb-2"><strong>Bairro {{ loop.index }}:</strong> {{ cliente.bairro.split(';')[i].strip() if cliente.bairro and cliente.bairro.split(';')|length > i else 'N/A' }}</p>
+                                            <p class="mb-2"><strong>Cidade {{ loop.index }}:</strong> {{ cliente.cidade.split(';')[i].strip() if cliente.cidade and cliente.cidade.split(';')|length > i else 'N/A' }}</p>
+                                            <p class="mb-2"><strong>CEP {{ loop.index }}:</strong> {{ cliente.cep.split(';')[i].strip() if cliente.cep and cliente.cep.split(';')|length > i else 'N/A' }}</p>
+                                        {% endfor %}
+                                    {% else %}
+                                        <p class="mb-2"><strong>Endereço:</strong> N/A</p>
+                                        <p class="mb-2"><strong>Número:</strong> N/A</p>
+                                        <p class="mb-2"><strong>Complemento:</strong> N/A</p>
+                                        <p class="mb-2"><strong>Bairro:</strong> N/A</p>
+                                        <p class="mb-2"><strong>Cidade:</strong> N/A</p>
+                                        <p class="mb-2"><strong>CEP:</strong> N/A</p>
+                                    {% endif %}
+                                    <p class="mb-2"><strong>Estado:</strong> {{ cliente.estado or "N/A" }}</p>
 								</div>
 							</div>
 							<hr>
@@ -437,7 +426,7 @@
 											<form action="{{ url_for('main.update_carros', cliente_id=cliente.id) }}" method="POST">
 												<div class="modal-body">
 													<input type="hidden" name="carro_id" value="{{ carro.id }}">
-													<div class="col md-6 mb-3">
+													<div class="col mb-3">
                                                         <div class="input-group mb-4">
                                                         <span class="input-group-text"><i class="bi bi-car-front-fill"></i></span>
                                                             <div class="form-floating flex-grow-1">                                                                  
@@ -446,8 +435,7 @@
                                                             </div>
                                                         </div>
 													</div>                                                                                                     
-													<input type="hidden" name="carro_id" value="{{ carro.id }}">
-													<div class="col md-6 mb-3">
+													<div class="col mb-3">
                                                         <div class="input-group mb-4">
                                                             <span class="input-group-text"><i class="bi bi-car-front-fill"></i></span>
                                                             <div class="form-floating flex-grow-1">                                                               
@@ -456,7 +444,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-													<div class="col md-6 mb-3">
+													<div class="col mb-3">
                                                         <div class="input-group mb-4">
                                                             <span class="input-group-text"><i class="bi bi-car-front"></i></span>
                                                             <div class="form-floating flex-grow-1">                                                                
@@ -465,7 +453,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-													<div class="col md-6 mb-3">
+													<div class="col mb-3">
                                                         <div class="input-group mb-4">
                                                             <span class="input-group-text"><i class="bi bi-calendar"></i></span>
                                                             <div class="form-floating flex-grow-1">                                                                
@@ -474,7 +462,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-													<div class="col md-6 mb-3">
+													<div class="col mb-3">
                                                         <div class="input-group mb-4">
                                                             <span class="input-group-text"><i class="bi bi-tags-fill"></i></span>
                                                             <div class="form-floating flex-grow-1">                                                                
@@ -483,7 +471,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-													<div class="col md-6 mb-3">
+													<div class="col mb-3">
                                                         <div class="input-group mb-4">
                                                             <span class="input-group-text"><i class="bi bi-speedometer2"></i></span>
                                                             <div class="form-floating flex-grow-1">                                                                
@@ -512,7 +500,7 @@
                                             </div>
 											<form action="{{ url_for('main.edit_historico', id=historico.id) }}" method="POST">
 												<div class="modal-body">
-													<div class="col md-6 mb-3">
+													<div class="col mb-3">
                                                         <div class="input-group mb-4">
                                                         <span class="input-group-text"><i class="bi bi-tag-fill"></i></span>
                                                             <div class="form-floating flex-grow-1">                                                                
@@ -521,7 +509,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-													<div class="col md-6 mb-3">
+													<div class="col mb-3">
                                                         <div class="input-group mb-4">
                                                             <span class="input-group-text"><i class="bi bi-calendar"></i></span>
                                                             <div class="form-floating flex-grow-1">                                                                
@@ -632,7 +620,7 @@
                                                 <div class="input-group mb-4">
                                                     <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
                                                     <div class="form-floating flex-grow-1">
-                                                        <input type="number" step="0.01" name="valor" class="form-control" required>
+                                                        <input type="text" class="form-control money-input" name="valor" required> {# 🔹 Alterado para type="text" e adicionado class="money-input" #}
                                                         <label class="form-label">Valor (R$)</label>
                                                     </div>
                                                 </div>
@@ -641,7 +629,7 @@
                                                 <div class="input-group mb-4">
                                                     <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
                                                     <div class="form-floating flex-grow-1">
-                                                        <select name="metodo" class="form-select" required onchange="toggleOpcaoPagamento(event)">
+                                                        <select name="metodo" class="form-select" required onchange="toggleOpcaoPagamento(this)"> {# 🔹 Passando 'this' #}
                                                             <option value="Dinheiro">Dinheiro</option>
                                                             <option value="Cartão de Crédito">Cartão de Crédito</option>
                                                             <option value="Cartão de Débito">Cartão de Débito</option>
@@ -657,7 +645,7 @@
                                                         <div class="input-group mb-4">
                                                             <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>                                          
                                                                 <div class="form-floating flex-grow-1"> 
-                                                                <select name="tipo_pagamento" class="form-select" onchange="toggleParcelas(event)">
+                                                                <select name="tipo_pagamento" class="form-select" onchange="toggleParcelas(this)"> {# 🔹 Passando 'this' #}
                                                                     <option value="À vista">À vista</option>
                                                                     <option value="Parcelado">Parcelado</option>
                                                                 </select>
@@ -710,7 +698,7 @@
                                                 <div class="input-group mb-4">
                                                     <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
                                                     <div class="form-floating flex-grow-1">                                                        
-                                                        <input type="number" step="0.01" class="form-control" name="valor" value="{{ "%.2f"|format(pagamento.valor) }}" required>
+                                                        <input type="text" class="form-control money-input" name="valor" value="{{ "%.2f"|format(pagamento.valor) }}" required> {# 🔹 Alterado para type="text" e adicionado class="money-input" #}
                                                         <label class="form-label">Valor (R$)</label>
                                                     </div>
                                                 </div>
@@ -719,7 +707,7 @@
                                                 <div class="input-group mb-4">
                                                     <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
                                                     <div class="form-floating flex-grow-1">                                                
-                                                        <select class="form-select" name="metodo" required onchange="toggleOpcaoPagamento(event)">
+                                                        <select class="form-select" name="metodo" required onchange="toggleOpcaoPagamento(this)"> {# 🔹 Passando 'this' #}
                                                             <option value="Dinheiro" {% if pagamento.metodo == 'Dinheiro' %}selected{% endif %}>Dinheiro</option>
                                                             <option value="Cartão de Crédito" {% if pagamento.metodo == 'Cartão de Crédito' %}selected{% endif %}>Cartão de Crédito</option>
                                                             <option value="Cartão de Débito" {% if pagamento.metodo == 'Cartão de Débito' %}selected{% endif %}>Cartão de Débito</option>
@@ -734,7 +722,7 @@
                                                     <div class="input-group mb-4">
                                                         <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>                                          
                                                         <div class="form-floating flex-grow-1">                                                   
-                                                            <select class="form-select" name="tipo_pagamento" onchange="toggleParcelas(event)">
+                                                            <select class="form-select" name="tipo_pagamento" onchange="toggleParcelas(this)"> {# 🔹 Passando 'this' #}
                                                                 <option value="À vista" {% if pagamento.tipo_pagamento == 'À vista' %}selected{% endif %}>À vista</option>
                                                                 <option value="Parcelado" {% if pagamento.tipo_pagamento == 'Parcelado' %}selected{% endif %}>Parcelado</option>
                                                             </select>
@@ -778,7 +766,7 @@
 								<h4>Dados Pessoais</h4>
 								<p><strong>Nome:</strong> {{ cliente.nome }}</p>
 								<p><strong>CPF/CNPJ:</strong> {{ cliente.cpf or cliente.cnpj or "N/A" }}</p>
-								<p><strong>Endereço:</strong> {% if cliente.endereco %}{{ cliente.endereco.split(';')[0].strip() }}, {{ cliente.cidade.split(';')[0].strip() }} - {{ cliente.estado }}{% else %}N/A{% endif %}, {{ cliente.cep }}</p>
+								<p><strong>Endereço:</strong> {% if cliente.endereco %}{{ cliente.endereco.split(';')[0].strip() }}, {{ cliente.numero.split(';')[0].strip() if cliente.numero and cliente.numero.split(';')|length > 0 else '' }} {% if cliente.complemento and cliente.complemento.split(';')|length > 0 %} ({{ cliente.complemento.split(';')[0].strip() }}) {% endif %}, {{ cliente.cidade.split(';')[0].strip() }} - {{ cliente.estado }}{% else %}N/A{% endif %}, {{ cliente.cep.split(';')[0].strip() if cliente.cep and cliente.cep.split(';')|length > 0 else '' }}</p>
 							</div>
 							<div id="print-section-telefones" class="print-section">
 								<h4>Telefones</h4>
@@ -829,16 +817,16 @@
             </div>
             <form action="{{ url_for('main.add_carros', cliente_id=cliente.id) }}" method="POST" id="addCarroForm">
                 <div class="modal-body">
-                    <div class="col-md-6 mb-3">
+                    <div class="col mb-3">
                         <div class="input-group mb-4">
                             <span class="input-group-text"><i class="bi bi-car-front-fill"></i></span>
                             <div class="form-floating flex-grow-1">
-                                <input type="text" name="marca[]" class="form-control" required>
+								<input type="text" name="marca[]" class="form-control" required>                        
                                 <label class="form-label">Marca</label>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col mb-3">
                         <div class="input-group mb-4">
                             <span class="input-group-text"><i class="bi bi-car-front-fill"></i></span>
                             <div class="form-floating flex-grow-1">                                
@@ -847,7 +835,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col mb-3">
                         <div class="input-group mb-4">
                             <span class="input-group-text"><i class="bi bi-car-front"></i></span>
                             <div class="form-floating flex-grow-1">                                
@@ -856,7 +844,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col mb-3">
                         <div class="input-group mb-4">
                             <span class="input-group-text"><i class="bi bi-calendar"></i></span>
                             <div class="form-floating flex-grow-1">                                
@@ -865,7 +853,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col md-6 mb-3">
+                    <div class="col mb-3">
                         <div class="input-group mb-4">
                             <span class="input-group-text"><i class="bi bi-tags-fill"></i></span>
                             <div class="form-floating flex-grow-1">                                    
@@ -874,7 +862,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col md-6 mb-3">
+                    <div class="col mb-3">
                         <div class="input-group mb-4">
                             <span class="input-group-text"><i class="bi bi-speedometer2"></i></span>
                             <div class="form-floating flex-grow-1">                                
@@ -950,7 +938,7 @@
         $(newDiv).find('.telefone-input').mask('(00) 00000-0000');
     }
 
-    function adicionarCampoEndereco(cep = '', endereco = '', bairro = '', cidade = '', isFirst = false) {
+    function adicionarCampoEndereco(cep = '', endereco = '', numero = '', complemento = '', bairro = '', cidade = '', isFirst = false) { // 🔹 Adicionado numero e complemento
         const container = document.getElementById('enderecos-container');
         const newDiv = document.createElement('div');
         newDiv.classList.add('mb-3', 'border', 'p-3', 'rounded', 'bg-light', 'position-relative');
@@ -961,18 +949,61 @@
             ${removeButton}
             <h6 class="mb-3">${isFirst ? 'Endereço Principal' : 'Endereço Adicional'}</h6>
             <div class="row"> 
-                <div class="col-md-6 mb-3"><div class="input-group mb-4">
-                    <span class="input-group-text"><i class="bi bi-signpost-split-fill"></i></span>
-                    <div class="form-floating flex-grow-1"><input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP" value="${cep}"><label class="form-label">CEP</label></div></div></div>
-                <div class="col-md-6 mb-3"><div class="input-group mb-4">
-                    <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
-                                            <div class="form-floating flex-grow-1"><input type="text" name="endereco[]" class="form-control" placeholder="Endereço" value="${endereco}"><label class="form-label">Endereço</label></div></div></div>
-                <div class="col-md-6 mb-3"><div class="input-group mb-4">
-                    <span class="input-group-text"><i class="bi bi-signpost-split-fill"></i></span>
-                    <div class="form-floating flex-grow-1"><input type="text" name="bairro[]" class="form-control" placeholder="Bairro" value="${bairro}"><label class="form-label">Bairro</label></div></div></div>
-                <div class="col-md-6 mb-3"><div class="input-group mb-4">
-                    <span class="input-group-text"><i class="bi bi-pin-map-fill"></i></span>
-                    <div class="form-floating flex-grow-1"><input type="text" name="cidade[]" class="form-control" placeholder="Cidade" value="${cidade}"><label class="form-label">Cidade</label></div></div></div>
+                <div class="col-md-6 mb-3">
+				    <div class="input-group mb-4">
+                        <span class="input-group-text"><i class="bi bi-signpost-split-fill"></i></span>
+						<div class="form-floating flex-grow-1">
+							<input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP" value="${cep}">
+							<label class="form-label">CEP</label>
+						</div>
+					</div>
+				</div>
+                <div class="col-md-6 mb-3">
+				    <div class="input-group mb-4">
+                        <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
+						<div class="form-floating flex-grow-1">
+							<input type="text" name="endereco[]" class="form-control" placeholder="Endereço" value="${endereco}">
+							<label class="form-label">Endereço</label>
+						</div>
+				    </div>
+				</div>
+                {# 🔹 NOVO: Campos Número e Complemento no modal de endereço #}
+                <div class="col-md-6 mb-3">
+                    <div class="input-group mb-4">
+                        <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                        <div class="form-floating flex-grow-1">
+                            <input type="text" name="numero[]" class="form-control" placeholder="Número" value="${numero}">
+                            <label class="form-label">Número</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="input-group mb-4">
+                        <span class="input-group-text"><i class="bi bi-house"></i></span>
+                        <div class="form-floating flex-grow-1">
+                            <input type="text" name="complemento[]" class="form-control" placeholder="Complemento" value="${complemento}">
+                            <label class="form-label">Complemento</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+				    <div class="input-group mb-4">
+                        <span class="input-group-text"><i class="bi bi-signpost-split"></i></span>
+						<div class="form-floating flex-grow-1">
+							<input type="text" name="bairro[]" class="form-control" placeholder="Bairro" value="${bairro}">
+							<label class="form-label">Bairro</label>
+						</div>
+				    </div>
+				</div>
+                <div class="col-md-6 mb-3">
+				    <div class="input-group mb-4">
+						<span class="input-group-text"><i class="bi bi-pin-map-fill"></i></span>
+						<div class="form-floating flex-grow-1">
+							<input type="text" name="cidade[]" class="form-control" placeholder="Cidade" value="${cidade}">
+							<label class="form-label">Cidade</label>
+						</div>
+				    </div>
+				</div>
             </div>
         `;
         container.appendChild(newDiv);
@@ -981,10 +1012,11 @@
         newCepInput.addEventListener('blur', () => preencherEnderecoPorCep(newCepInput));
     }
 
-    function toggleOpcaoPagamento(event) {
-        const form = event.target.closest("form, .modal-body");
+    // 🔹 Alterado para receber o elemento 'select' diretamente
+    function toggleOpcaoPagamento(selectElement) {
+        const form = selectElement.closest("form") || selectElement.closest(".modal-body");
         const opcaoCartao = form.querySelector(".opcaoCartao");
-        if (event.target.value === "Cartão de Crédito") {
+        if (selectElement.value === "Cartão de Crédito") {
             opcaoCartao.style.display = "block";
         } else {
             opcaoCartao.style.display = "none";
@@ -993,10 +1025,11 @@
         }
     }
 
-    function toggleParcelas(event) {
-        const form = event.target.closest("form, .modal-body");
+    // 🔹 Alterado para receber o elemento 'select' diretamente
+    function toggleParcelas(selectElement) {
+        const form = selectElement.closest("form") || selectElement.closest(".modal-body");
         const opcaoParcelado = form.querySelector(".opcaoParcelado");
-        if (event.target.value === "Parcelado") {
+        if (selectElement.value === "Parcelado") {
             opcaoParcelado.style.display = "block";
         } else {
             opcaoParcelado.style.display = "none";
@@ -1050,12 +1083,22 @@
                         group.querySelector('input[name="bairro[]"]').value = data.bairro || '';
                         group.querySelector('input[name="cidade[]"]').value = data.localidade || '';
                         
+                        // 🔹 Preenche Número e Complemento se disponíveis na API (geralmente não vêm do ViaCEP)
+                        // Por simplicidade, vamos deixá-los vazios se não vierem da API, já que ViaCEP não os fornece.
+                        // group.querySelector('input[name="numero[]"]').value = ''; 
+                        // group.querySelector('input[name="complemento[]"]').value = '';
+
                         const estadoSelect = formContainer.querySelector('select[name="estado"]');
                         if(estadoSelect) {
                             estadoSelect.value = data.uf || '';
                         }
+                    } else {
+                        showCustomAlert('CEP não encontrado.', 'warning');
                     }
-                }).catch(error => console.error('Erro na API ViaCEP:', error));
+                }).catch(error => {
+                    console.error('Erro na API ViaCEP:', error);
+                    showCustomAlert('Erro ao buscar CEP. Tente novamente.', 'danger');
+                });
         }
     }
 
@@ -1180,6 +1223,7 @@
         $('.placa-input').mask('SSS-0A00', { translation: { 'S': { pattern: /[A-Za-z]/ }, 'A': { pattern: /[0-9A-Ja-j]/ } }, onKeyPress: function(val, e, field, options){ $(field).mask(val.length > 4 && /[A-Za-z]/.test(val.charAt(4)) ? 'SSS-0A00' : 'SSS-0000', options); } });
         $('.ano-input').mask('0000');
         $('.telefone-input').mask('(00) 00000-0000');
+        $('.money-input').mask('000.000.000.000.000,00', {reverse: true, placeholder: "0,00"}); // 🔹 Aplicando máscara de dinheiro
     }
 
     $(document).ready(function() {
@@ -1195,6 +1239,8 @@
             // Pega os dados de endereço do Jinja e cria os campos dinamicamente
             const ceps = "{{ cliente.cep or '' }}".split(';');
             const enderecos = "{{ cliente.endereco or '' }}".split(';');
+            const numeros = "{{ cliente.numero or '' }}".split(';'); // 🔹 NOVO
+            const complementos = "{{ cliente.complemento or '' }}".split(';'); // 🔹 NOVO
             const bairros = "{{ cliente.bairro or '' }}".split(';');
             const cidades = "{{ cliente.cidade or '' }}".split(';');
 
@@ -1203,6 +1249,8 @@
                     adicionarCampoEndereco(
                         (ceps[i] || '').trim(),
                         (enderecos[i] || '').trim(),
+                        (numeros[i] || '').trim(), // 🔹 NOVO
+                        (complementos[i] || '').trim(), // 🔹 NOVO
                         (bairros[i] || '').trim(),
                         (cidades[i] || '').trim(),
                         i === 0 // Marca o primeiro como principal
@@ -1210,18 +1258,23 @@
                 }
             } else {
                 // Se não houver nenhum endereço, adiciona um campo em branco
-                adicionarCampoEndereco('', '', '', '', true);
+                adicionarCampoEndereco('', '', '', '', '', '', true); // 🔹 Adicionado 2x '' para numero e complemento
             }
         });
 
 
         // Inicializa estado dos formulários de pagamento
-        document.querySelectorAll('form[id^="form_pagamento_"], form[id^="editPagamentoModal"]').forEach(form => {
-            const selectMetodo = form.querySelector('select[name="metodo"]');
+        // 🔹 Reforçada a inicialização para garantir que os elementos são encontrados
+        $('form[id^="form_pagamento_"], form[id^="editPagamentoModal"]').each(function() {
+            const selectMetodo = this.querySelector('select[name="metodo"]');
             if (selectMetodo) {
-                toggleOpcaoPagamento({ target: selectMetodo });
-                const selectTipo = form.querySelector('select[name="tipo_pagamento"]');
-                if (selectTipo) toggleParcelas({ target: selectTipo });
+                // Chama a função com o elemento diretamente
+                toggleOpcaoPagamento(selectMetodo); 
+                const selectTipo = this.querySelector('select[name="tipo_pagamento"]');
+                if (selectTipo) {
+                    // Chama a função com o elemento diretamente
+                    toggleParcelas(selectTipo);
+                }
             }
         });
 
@@ -1234,6 +1287,12 @@
             }
             $(this).find('.cep-input, .telefone-input').each(function() { $(this).val($(this).val().replace(/\D/g, '')); });
             $(this).find('.placa-input').each(function() { $(this).val($(this).val().replace('-', '').toUpperCase()); });
+            $(this).find('.money-input').each(function() { // 🔹 Limpeza para campos de dinheiro
+                let val = $(this).val();
+                val = val.replace(/\./g, ''); // Remove pontos de milhar
+                val = val.replace(',', '.'); // Troca vírgula por ponto decimal
+                $(this).val(val);
+            });
         });
     });
 </script>
