@@ -765,7 +765,16 @@
 							<div id="print-section-dados-pessoais" class="print-section">
 								<h4>Dados Pessoais</h4>
 								<p><strong>Nome:</strong> {{ cliente.nome }}</p>
-								<p><strong>CPF/CNPJ:</strong> {{ cliente.cpf or cliente.cnpj or "N/A" }}</p>
+								<p><strong>CPF/CNPJ:</strong>
+								{% set doc = cliente.cpf or cliente.cnpj %}
+								{% if doc and doc|length == 11 %}
+									{{ doc[0:3] }}.{{ doc[3:6] }}.{{ doc[6:9] }}-{{ doc[9:11] }}
+								{% elif doc and doc|length == 14 %}
+									{{ doc[0:2] }}.{{ doc[2:5] }}.{{ doc[5:8] }}/{{ doc[8:12] }}-{{ doc[12:14] }}
+								{% else %}
+									{{ doc or "N/A" }}
+								{% endif %}
+								</p>
 								<p><strong>Endereço:</strong> {% if cliente.endereco %}{{ cliente.endereco.split(';')[0].strip() }}, {{ cliente.numero.split(';')[0].strip() if cliente.numero and cliente.numero.split(';')|length > 0 else '' }} {% if cliente.complemento and cliente.complemento.split(';')|length > 0 %} ({{ cliente.complemento.split(';')[0].strip() }}) {% endif %}, {{ cliente.cidade.split(';')[0].strip() }} - {{ cliente.estado }}{% else %}N/A{% endif %}, {{ cliente.cep.split(';')[0].strip() if cliente.cep and cliente.cep.split(';')|length > 0 else '' }}</p>
 							</div>
 							<div id="print-section-telefones" class="print-section">
