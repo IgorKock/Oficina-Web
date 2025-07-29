@@ -188,7 +188,7 @@
                     <!-- Aba: Dados Pessoais -->
                     <div class="tab-pane fade show active" id="dados-pessoais-pane" role="tabpanel" aria-labelledby="dados-pessoais-tab">
                         <form action="{{ url_for('main.update_dados_cliente', cliente_id=cliente.id) }}" method="POST" id="editClientForm">
-                            {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                            {# 🔹 Campo oculto para persistir a aba ativa #}
                             <input type="hidden" name="active_tab" id="active_tab_input_dados_pessoais">
 
 							<div class="row">
@@ -307,7 +307,7 @@
 
                     <!-- Aba: Veículos -->
                     <div class="tab-pane fade" id="veiculos-pane" role="tabpanel" aria-labelledby="veiculos-tab">
-                        {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                        {# 🔹 Campo oculto para persistir a aba ativa #}
                         <input type="hidden" name="active_tab" form="addCarroForm" id="active_tab_input_veiculos">
 
 						<div class="d-flex justify-content-between align-items-center mb-3">
@@ -345,7 +345,7 @@
 														<td class="text-end">
 															<button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#editHistoricoModal{{ historico.id }}"><i class="bi bi-pencil"></i></button>
 															<form action="{{ url_for('main.delete_historico', id=historico.id) }}" method="POST" class="d-inline">
-                                                                {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                                                {# 🔹 Campo oculto para persistir a aba ativa #}
                                                                 <input type="hidden" name="active_tab" value="veiculos-pane">
 																<button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?');"><i class="bi bi-trash"></i></button>
 															</form>
@@ -360,7 +360,7 @@
 										
 										<div class="mt-3">
 											<form action="/add_historico/{{ carro.id }}" method="POST" class="row gx-2 align-items-end">
-                                                {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                                {# 🔹 Campo oculto para persistir a aba ativa #}
                                                 <input type="hidden" name="active_tab" value="veiculos-pane">
                                                 <h4 class="md-6 mb-3">Adicionar novo histórico de serviços</h4>
 												<div class="col md-6 mb-3">
@@ -398,7 +398,7 @@
 												<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 											</div>
 											<form action="{{ url_for('main.update_carros', cliente_id=cliente.id) }}" method="POST">
-                                                {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                                {# 🔹 Campo oculto para persistir a aba ativa #}
                                                 <input type="hidden" name="active_tab" value="veiculos-pane">
 												<div class="modal-body">
 													<input type="hidden" name="carro_id" value="{{ carro.id }}">
@@ -475,7 +475,7 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
 											<form action="{{ url_for('main.edit_historico', id=historico.id) }}" method="POST">
-                                                {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                                {# 🔹 Campo oculto para persistir a aba ativa #}
                                                 <input type="hidden" name="active_tab" value="veiculos-pane">
 												<div class="modal-body">
 													<div class="col mb-3">
@@ -513,7 +513,7 @@
 
                     <!-- Aba: Telefones -->
                     <div class="tab-pane fade" id="telefones-pane" role="tabpanel" aria-labelledby="telefones-tab">
-                        {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                        {# 🔹 Campo oculto para persistir a aba ativa #}
                         <input type="hidden" name="active_tab" form="addTelefoneForm" id="active_tab_input_telefones">
 
 						<h4 class="mb-3">Telefones do Cliente</h4>                       
@@ -524,7 +524,7 @@
 										<i class="bi bi-phone-fill me-2 text-secondary"></i>
 										<span class="fw-medium" style="font-size: 0.9rem;">{{ telefone.numero }}</span>
 										<form action="{{ url_for('main.delete_telefone', telefone_id=telefone.id) }}" method="POST" class="d-inline ms-2">
-                                            {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                            {# 🔹 Campo oculto para persistir a aba ativa #}
                                             <input type="hidden" name="active_tab" value="telefones-pane">
                                             <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja remover este telefone?');" title="Remover"><i class="bi bi-trash"></i></button>
 										</form>
@@ -578,7 +578,7 @@
 											<td class="text-end">
 												<button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#editPagamentoModal{{ pagamento.id }}"><i class="bi bi-pencil"></i></button>
 												<form action="{{ url_for('main.delete_pagamento', id=pagamento.id) }}" method="POST" class="d-inline">
-                                                    {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                                    {# 🔹 Campo oculto para persistir a aba ativa #}
                                                     <input type="hidden" name="active_tab" value="pagamentos-pane">
 													<button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?');"><i class="bi bi-trash"></i></button>
 												</form>
@@ -599,7 +599,7 @@
 								{% if not historico.tem_pagamento %}
 									{% set servicos_sem_pagamento.count = servicos_sem_pagamento.count + 1 %}
 									<form id="form_pagamento_{{ historico.id }}" action="{{ url_for('main.add_pagamento', cliente_id=cliente.id, carro_id=carro.id, historico_id=historico.id) }}" method="POST" class="mb-4 p-3 border rounded bg-light">
-                                        {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                        {# 🔹 Campo oculto para persistir a aba ativa #}
                                         <input type="hidden" name="active_tab" value="pagamentos-pane">
 										<p class="fw-bold">Para: {{ historico.descricao }} ({{ carro.marca }} {{ carro.modelo }})</p>
                                         <div class="row">
@@ -680,7 +680,7 @@
 								<div class="modal-content">
 									<div class="modal-header"><h5 class="modal-title">Editar Pagamento</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
 									<form action="{{ url_for('main.edit_pagamento', id=pagamento.id) }}" method="POST">
-                                        {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                        {# 🔹 Campo oculto para persistir a aba ativa #}
                                         <input type="hidden" name="active_tab" value="pagamentos-pane">
 										<div class="modal-body">
 											<div class="col-md-6 mb-3">
@@ -831,7 +831,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ url_for('main.add_carros', cliente_id=cliente.id) }}" method="POST" id="addCarroForm">
-                {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                {# 🔹 Campo oculto para persistir a aba ativa #}
                 <input type="hidden" name="active_tab" value="veiculos-pane">
                 <div class="modal-body">
                     <div class="col mb-3">
@@ -1115,15 +1115,15 @@
         }
     }
 
-    // 🔹 Função para mascarar CPF/CNPJ para impressão
-    function maskCpfCnpjForPrint(value) {
+    // 🔹 Função para formatar CPF/CNPJ para impressão (sem censura)
+    function formatCpfCnpjForPrint(value) {
         if (!value) return '';
         const cleanedValue = value.replace(/\D/g, ''); // Remove todos os não-dígitos
 
         if (cleanedValue.length === 11) { // CPF
-            return cleanedValue.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '***.$2.***-**'); // Mantém o segundo grupo de 3 dígitos
+            return cleanedValue.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
         } else if (cleanedValue.length === 14) { // CNPJ
-            return cleanedValue.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '**.***.***/****-**');
+            return cleanedValue.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
         }
         return value; // Retorna o original se não for um CPF/CNPJ válido
     }
@@ -1132,10 +1132,10 @@
         const printContent = document.createElement('div');
         let hasSelection = false;
         
-        // Mascara o CPF/CNPJ antes de gerar o conteúdo para impressão
+        // Formata o CPF/CNPJ antes de gerar o conteúdo para impressão
         const printCpfCnpjSpan = document.getElementById('print-cpf-cnpj');
         const originalCpfCnpjText = printCpfCnpjSpan.innerText;
-        printCpfCnpjSpan.innerText = maskCpfCnpjForPrint(originalCpfCnpjText);
+        printCpfCnpjSpan.innerText = formatCpfCnpjForPrint(originalCpfCnpjText); // 🔹 Usa a nova função de formatação
 
         document.querySelectorAll('#print-form .form-check-input').forEach(checkbox => {
             if (checkbox.checked) {
@@ -1216,7 +1216,7 @@
             let add = 0;
             for (let i = 0; i < 9; i++)
                 add += parseInt(cpf.charAt(i)) * (10 - i);
-            let rev = 11 - (add % 11); // First declaration of rev
+            let rev = 11 - (add % 11); 
             if (rev == 10 || rev == 11)
                 rev = 0;
             if (rev != parseInt(cpf.charAt(9)))
@@ -1225,7 +1225,7 @@
             add = 0;
             for (let i = 0; i < 10; i++)
                 add += parseInt(cpf.charAt(i)) * (11 - i);
-            rev = 11 - (add % 11); // 🔹 CORREÇÃO: Removido 'let' para reatribuição
+            rev = 11 - (add % 11); 
             if (rev == 10 || rev == 11)
                 rev = 0;
             if (rev != parseInt(cpf.charAt(10)))
@@ -1270,7 +1270,7 @@
                 }
             }
             
-            let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11; // Declaration of resultado
+            let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11; 
             if (resultado != parseInt(digitos.charAt(0))) {
                 return false;
             }
@@ -1287,7 +1287,7 @@
                 }
             }
             
-            resultado = soma % 11 < 2 ? 0 : 11 - soma % 11; // Reassignment, not re-declaration. This one is fine.
+            resultado = soma % 11 < 2 ? 0 : 11 - soma % 11; 
             if (resultado != parseInt(digitos.charAt(1))) {
                 return false;
             }
@@ -1412,7 +1412,7 @@
             }
         });
 
-        // 🔹 NOVO: Adiciona listener para todos os formulários para preencher o campo active_tab
+        // 🔹 Adiciona listener para todos os formulários para preencher o campo active_tab
         document.querySelectorAll('form').forEach(form => {
             form.addEventListener('submit', function() {
                 let activeTabInput = form.querySelector('input[name="active_tab"]');
@@ -1443,7 +1443,7 @@
             });
         });
 
-        // 🔹 NOVO: Ativa a aba correta ao carregar a página
+        // 🔹 Ativa a aba correta ao carregar a página
         setActiveTabOnLoad();
     });
 </script>
