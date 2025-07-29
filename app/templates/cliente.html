@@ -188,6 +188,9 @@
                     <!-- Aba: Dados Pessoais -->
                     <div class="tab-pane fade show active" id="dados-pessoais-pane" role="tabpanel" aria-labelledby="dados-pessoais-tab">
                         <form action="{{ url_for('main.update_dados_cliente', cliente_id=cliente.id) }}" method="POST" id="editClientForm">
+                            {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                            <input type="hidden" name="active_tab" id="active_tab_input_dados_pessoais">
+
 							<div class="row">
 								<div class="col-md-6">
 									<p class="mb-2"><strong>Nome:</strong> {{ cliente.nome }}</p>
@@ -196,33 +199,33 @@
 									<p class="mb-2"><strong>CNPJ:</strong> {{ cliente.cnpj or "N/A" }}</p>
 								</div>
 								<div class="col-md-6">
-                                {# 🔹 INÍCIO: Exibição de Múltiplos Endereços para Impressão #}
-                                {% if cliente.endereco and cliente.endereco.split(';')|length > 0 %}
-                                    {% for i in range(cliente.endereco.split(';')|length) %}
-                                        {% set current_endereco = cliente.endereco.split(';')[i].strip() if cliente.endereco and cliente.endereco.split(';')|length > i else 'N/A' %}
-                                        {% set current_numero = cliente.numero.split(';')[i].strip() if cliente.numero and cliente.numero.split(';')|length > i else 'N/A' %}
-                                        {% set current_complemento = cliente.complemento.split(';')[i].strip() if cliente.complemento and cliente.complemento.split(';')|length > i else 'N/A' %}
-                                        {% set current_bairro = cliente.bairro.split(';')[i].strip() if cliente.bairro and cliente.bairro.split(';')|length > i else 'N/A' %}
-                                        {% set current_cidade = cliente.cidade.split(';')[i].strip() if cliente.cidade and cliente.cidade.split(';')|length > i else 'N/A' %}
-                                        {% set current_cep = cliente.cep.split(';')[i].strip() if cliente.cep and cliente.cep.split(';')|length > i else 'N/A' %}
-                                        
+                                    {# 🔹 INÍCIO: Exibição de Múltiplos Endereços no painel de Dados Pessoais #}
+                                    {% if cliente.endereco and cliente.endereco.split(';')|length > 0 %}
+                                        {% for i in range(cliente.endereco.split(';')|length) %}
+                                            {% set current_endereco = cliente.endereco.split(';')[i].strip() if cliente.endereco and cliente.endereco.split(';')|length > i else 'N/A' %}
+                                            {% set current_numero = cliente.numero.split(';')[i].strip() if cliente.numero and cliente.numero.split(';')|length > i else 'N/A' %}
+                                            {% set current_complemento = cliente.complemento.split(';')[i].strip() if cliente.complemento and cliente.complemento.split(';')|length > i else 'N/A' %}
+                                            {% set current_bairro = cliente.bairro.split(';')[i].strip() if cliente.bairro and cliente.bairro.split(';')|length > i else 'N/A' %}
+                                            {% set current_cidade = cliente.cidade.split(';')[i].strip() if cliente.cidade and cliente.cidade.split(';')|length > i else 'N/A' %}
+                                            {% set current_cep = cliente.cep.split(';')[i].strip() if cliente.cep and cliente.cep.split(';')|length > i else 'N/A' %}
+                                            {% set current_estado = cliente.estado.split(';')[i].strip() if cliente.estado and cliente.estado.split(';')|length > i else 'N/A' %}
 
-                                        <p class="mb-2"><strong>Endereço {{ loop.index }}:</strong> 
-                                            {{ current_endereco }}{% if current_numero != 'N/A' %}, {{ current_numero }}{% endif %}
-                                            {% if current_complemento != 'N/A' %} ({{ current_complemento }}){% endif %}, 
-                                            {{ current_bairro }}, {{ current_cidade }} - {{ current_cep }}
-                                        </p>
-                                    {% endfor %}
-                                {% else %}
-                                    <p class="mb-2"><strong>Endereço:</strong> N/A</p>
-                                    <p class="mb-2"><strong>Número:</strong> N/A</p>
-                                    <p class="mb-2"><strong>Complemento:</strong> N/A</p>
-                                    <p class="mb-2"><strong>Bairro:</strong> N/A</p>
-                                    <p class="mb-2"><strong>Cidade:</strong> N/A</p>                                    
-                                    <p class="mb-2"><strong>CEP:</strong> N/A</p>
-                                {% endif %}
-                                {# 🔹 FIM: Exibição de Múltiplos Endereços para Impressão #}
-                                    <p class="mb-2"><strong>Estado:</strong> {{ cliente.estado or "N/A" }}</p>
+                                            <p class="mb-2"><strong>Endereço {{ loop.index }}:</strong> 
+                                                {{ current_endereco }}{% if current_numero != 'N/A' %}, {{ current_numero }}{% endif %}
+                                                {% if current_complemento != 'N/A' %} ({{ current_complemento }}){% endif %}, 
+                                                {{ current_bairro }}, {{ current_cidade }} - {{ current_estado }} {{ current_cep }}
+                                            </p>
+                                        {% endfor %}
+                                    {% else %}
+                                        <p class="mb-2"><strong>Endereço:</strong> N/A</p>
+                                        <p class="mb-2"><strong>Número:</strong> N/A</p>
+                                        <p class="mb-2"><strong>Complemento:</strong> N/A</p>
+                                        <p class="mb-2"><strong>Bairro:</strong> N/A</p>
+                                        <p class="mb-2"><strong>Cidade:</strong> N/A</p>
+                                        <p class="mb-2"><strong>Estado:</strong> N/A</p>
+                                        <p class="mb-2"><strong>CEP:</strong> N/A</p>
+                                    {% endif %}
+                                    {# 🔹 FIM: Exibição de Múltiplos Endereços #}
 								</div>
 							</div>
 							<hr>
@@ -277,7 +280,7 @@
 								</div>
 							</div>
 
-							<!--  restorative Caixa de Diálogo (Modal) de Endereço (VERSÃO ANTIGA) -->
+							<!-- Caixa de Diálogo (Modal) de Endereço -->
 							<div class="modal fade" id="addressModal" tabindex="-1" aria-labelledby="addressModalLabel" aria-hidden="true">
 								<div class="modal-dialog modal-lg modal-dialog-scrollable">
 									<div class="modal-content">
@@ -288,54 +291,9 @@
 										<div class="modal-body">
 											<h5 class="mt-4 mb-3">Editar/Adicionar Endereços</h5>
 											<div id="enderecos-container">
-												<!-- Campos de endereço existentes e novos serão adicionados aqui -->
+												<!-- Campos de endereço existentes e novos serão adicionados aqui dinamicamente pelo JS -->
 											</div>
-											<button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="adicionarCampoEndereco()">
-												<i class="bi bi-plus-circle"></i> Adicionar campo de endereço
-											</button>
-                                            
-                                            <hr>
-
-                                            <div class="row mt-3">
-                                                <div class="col-md-8">
-                                                    <div class="input-group mb-4">
-                                                        <span class="input-group-text"><i class="bi bi-pin-map-fill"></i></span>
-                                                        <div class="form-floating flex-grow-1">
-                                                            <select name="estado" class="form-select">
-                                                                <option value="">Selecione o Estado...</option>
-                                                                <option value="AC" {% if cliente.estado == 'AC' %}selected{% endif %}>Acre</option>
-                                                                <option value="AL" {% if cliente.estado == 'AL' %}selected{% endif %}>Alagoas</option>
-                                                                <option value="AP" {% if cliente.estado == 'AP' %}selected{% endif %}>Amapá</option>
-                                                                <option value="AM" {% if cliente.estado == 'AM' %}selected{% endif %}>Amazonas</option>
-                                                                <option value="BA" {% if cliente.estado == 'BA' %}selected{% endif %}>Bahia</option>
-                                                                <option value="CE" {% if cliente.estado == 'CE' %}selected{% endif %}>Ceará</option>
-                                                                <option value="DF" {% if cliente.estado == 'DF' %}selected{% endif %}>Distrito Federal</option>
-                                                                <option value="ES" {% if cliente.estado == 'ES' %}selected{% endif %}>Espírito Santo</option>
-                                                                <option value="GO" {% if cliente.estado == 'GO' %}selected{% endif %}>Goiás</option>
-                                                                <option value="MA" {% if cliente.estado == 'MA' %}selected{% endif %}>Maranhão</option>
-                                                                <option value="MT" {% if cliente.estado == 'MT' %}selected{% endif %}>Mato Grosso</option>
-                                                                <option value="MS" {% if cliente.estado == 'MS' %}selected{% endif %}>Mato Grosso do Sul</option>
-                                                                <option value="MG" {% if cliente.estado == 'MG' %}selected{% endif %}>Minas Gerais</option>
-                                                                <option value="PA" {% if cliente.estado == 'PA' %}selected{% endif %}>Pará</option>
-                                                                <option value="PB" {% if cliente.estado == 'PB' %}selected{% endif %}>Paraíba</option>
-                                                                <option value="PR" {% if cliente.estado == 'PR' %}selected{% endif %}>Paraná</option>
-                                                                <option value="PE" {% if cliente.estado == 'PE' %}selected{% endif %}>Pernambuco</option>
-                                                                <option value="PI" {% if cliente.estado == 'PI' %}selected{% endif %}>Piauí</option>
-                                                                <option value="RJ" {% if cliente.estado == 'RJ' %}selected{% endif %}>Rio de Janeiro</option>
-                                                                <option value="RN" {% if cliente.estado == 'RN' %}selected{% endif %}>Rio Grande do Norte</option>
-                                                                <option value="RS" {% if cliente.estado == 'RS' %}selected{% endif %}>Rio Grande do Sul</option>
-                                                                <option value="RO" {% if cliente.estado == 'RO' %}selected{% endif %}>Rondônia</option>
-                                                                <option value="RR" {% if cliente.estado == 'RR' %}selected{% endif %}>Roraima</option>
-                                                                <option value="SC" {% if cliente.estado == 'SC' %}selected{% endif %}>Santa Catarina</option>
-                                                                <option value="SP" {% if cliente.estado == 'SP' %}selected{% endif %}>São Paulo</option>
-                                                                <option value="SE" {% if cliente.estado == 'SE' %}selected{% endif %}>Sergipe</option>
-                                                                <option value="TO" {% if cliente.estado == 'TO' %}selected{% endif %}>Tocantins</option>
-                                                            </select>
-                                                            <label for="estado" class="form-label">Estado</label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+											<button type="button" class="btn btn-outline-primary btn-sm mt-2" id="addEnderecoBtn"><i class="bi bi-plus-circle"></i> Adicionar campo de endereço</button>
 										</div>
 										<div class="modal-footer">
 											<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -349,6 +307,9 @@
 
                     <!-- Aba: Veículos -->
                     <div class="tab-pane fade" id="veiculos-pane" role="tabpanel" aria-labelledby="veiculos-tab">
+                        {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                        <input type="hidden" name="active_tab" form="addCarroForm" id="active_tab_input_veiculos">
+
 						<div class="d-flex justify-content-between align-items-center mb-3">
 							<h4 class="mb-0">Veículos do Cliente</h4>
 							<button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addCarroModal"><i class="bi bi-plus-circle me-1"></i>Adicionar Veículo</button>
@@ -384,6 +345,8 @@
 														<td class="text-end">
 															<button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#editHistoricoModal{{ historico.id }}"><i class="bi bi-pencil"></i></button>
 															<form action="{{ url_for('main.delete_historico', id=historico.id) }}" method="POST" class="d-inline">
+                                                                {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                                                <input type="hidden" name="active_tab" value="veiculos-pane">
 																<button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?');"><i class="bi bi-trash"></i></button>
 															</form>
 														</td>
@@ -397,6 +360,8 @@
 										
 										<div class="mt-3">
 											<form action="/add_historico/{{ carro.id }}" method="POST" class="row gx-2 align-items-end">
+                                                {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                                <input type="hidden" name="active_tab" value="veiculos-pane">
                                                 <h4 class="md-6 mb-3">Adicionar novo histórico de serviços</h4>
 												<div class="col md-6 mb-3">
                                                     <div class="input-group mb-4">
@@ -433,6 +398,8 @@
 												<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 											</div>
 											<form action="{{ url_for('main.update_carros', cliente_id=cliente.id) }}" method="POST">
+                                                {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                                <input type="hidden" name="active_tab" value="veiculos-pane">
 												<div class="modal-body">
 													<input type="hidden" name="carro_id" value="{{ carro.id }}">
 													<div class="col mb-3">
@@ -508,6 +475,8 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
 											<form action="{{ url_for('main.edit_historico', id=historico.id) }}" method="POST">
+                                                {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                                <input type="hidden" name="active_tab" value="veiculos-pane">
 												<div class="modal-body">
 													<div class="col mb-3">
                                                         <div class="input-group mb-4">
@@ -544,6 +513,9 @@
 
                     <!-- Aba: Telefones -->
                     <div class="tab-pane fade" id="telefones-pane" role="tabpanel" aria-labelledby="telefones-tab">
+                        {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                        <input type="hidden" name="active_tab" form="addTelefoneForm" id="active_tab_input_telefones">
+
 						<h4 class="mb-3">Telefones do Cliente</h4>                       
 						{% if telefones %}
 							<div class="d-flex flex-wrap gap-2 mb-4">
@@ -552,6 +524,8 @@
 										<i class="bi bi-phone-fill me-2 text-secondary"></i>
 										<span class="fw-medium" style="font-size: 0.9rem;">{{ telefone.numero }}</span>
 										<form action="{{ url_for('main.delete_telefone', telefone_id=telefone.id) }}" method="POST" class="d-inline ms-2">
+                                            {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                            <input type="hidden" name="active_tab" value="telefones-pane">
                                             <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja remover este telefone?');" title="Remover"><i class="bi bi-trash"></i></button>
 										</form>
 									</span>
@@ -604,6 +578,8 @@
 											<td class="text-end">
 												<button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#editPagamentoModal{{ pagamento.id }}"><i class="bi bi-pencil"></i></button>
 												<form action="{{ url_for('main.delete_pagamento', id=pagamento.id) }}" method="POST" class="d-inline">
+                                                    {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                                    <input type="hidden" name="active_tab" value="pagamentos-pane">
 													<button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?');"><i class="bi bi-trash"></i></button>
 												</form>
 											</td>
@@ -623,6 +599,8 @@
 								{% if not historico.tem_pagamento %}
 									{% set servicos_sem_pagamento.count = servicos_sem_pagamento.count + 1 %}
 									<form id="form_pagamento_{{ historico.id }}" action="{{ url_for('main.add_pagamento', cliente_id=cliente.id, carro_id=carro.id, historico_id=historico.id) }}" method="POST" class="mb-4 p-3 border rounded bg-light">
+                                        {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                        <input type="hidden" name="active_tab" value="pagamentos-pane">
 										<p class="fw-bold">Para: {{ historico.descricao }} ({{ carro.marca }} {{ carro.modelo }})</p>
                                         <div class="row">
 											<div class="col-md-6 mb-3">
@@ -702,6 +680,8 @@
 								<div class="modal-content">
 									<div class="modal-header"><h5 class="modal-title">Editar Pagamento</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
 									<form action="{{ url_for('main.edit_pagamento', id=pagamento.id) }}" method="POST">
+                                        {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                                        <input type="hidden" name="active_tab" value="pagamentos-pane">
 										<div class="modal-body">
 											<div class="col-md-6 mb-3">
                                                 <div class="input-group mb-4">
@@ -774,17 +754,8 @@
 							<div id="print-section-dados-pessoais" class="print-section">
 								<h4>Dados Pessoais</h4>
 								<p><strong>Nome:</strong> {{ cliente.nome }}</p>
-								<p><strong>CPF/CNPJ:</strong>
-								{% set doc = cliente.cpf or cliente.cnpj %}
-								{% if doc and doc|length == 11 %}
-									{{ doc[0:3] }}.{{ doc[3:6] }}.{{ doc[6:9] }}-{{ doc[9:11] }}
-								{% elif doc and doc|length == 14 %}
-									{{ doc[0:2] }}.{{ doc[2:5] }}.{{ doc[5:8] }}/{{ doc[8:12] }}-{{ doc[12:14] }}
-								{% else %}
-									{{ doc or "N/A" }}
-								{% endif %}
-								</p>
-								{# 🔹 INÍCIO: Exibição de Múltiplos Endereços para Impressão #}
+								<p><strong>CPF/CNPJ:</strong> <span id="print-cpf-cnpj">{{ cliente.cpf or cliente.cnpj or "N/A" }}</span></p>
+                                {# 🔹 INÍCIO: Exibição de Múltiplos Endereços para Impressão #}
                                 {% if cliente.endereco and cliente.endereco.split(';')|length > 0 %}
                                     {% for i in range(cliente.endereco.split(';')|length) %}
                                         {% set current_endereco = cliente.endereco.split(';')[i].strip() if cliente.endereco and cliente.endereco.split(';')|length > i else 'N/A' %}
@@ -792,24 +763,25 @@
                                         {% set current_complemento = cliente.complemento.split(';')[i].strip() if cliente.complemento and cliente.complemento.split(';')|length > i else 'N/A' %}
                                         {% set current_bairro = cliente.bairro.split(';')[i].strip() if cliente.bairro and cliente.bairro.split(';')|length > i else 'N/A' %}
                                         {% set current_cidade = cliente.cidade.split(';')[i].strip() if cliente.cidade and cliente.cidade.split(';')|length > i else 'N/A' %}
-                                        {% set current_cep = cliente.cep.split(';')[i].strip() if cliente.cep and cliente.cep.split(';')|length > i else 'N/A' %}                                        
+                                        {% set current_cep = cliente.cep.split(';')[i].strip() if cliente.cep and cliente.cep.split(';')|length > i else 'N/A' %}
+                                        {% set current_estado = cliente.estado.split(';')[i].strip() if cliente.estado and cliente.estado.split(';')|length > i else 'N/A' %}
 
-                                        <p class="mb"><strong>Endereço {{ loop.index }}:</strong> 
+                                        <p class="mb-2"><strong>Endereço {{ loop.index }}:</strong> 
                                             {{ current_endereco }}{% if current_numero != 'N/A' %}, {{ current_numero }}{% endif %}
                                             {% if current_complemento != 'N/A' %} ({{ current_complemento }}){% endif %}, 
-                                            {{ current_bairro }}, {{ current_cidade }} - {{ current_cep }}
+                                            {{ current_bairro }}, {{ current_cidade }} - {{ current_estado }} {{ current_cep }}
                                         </p>
                                     {% endfor %}
                                 {% else %}
-                                    <p class="mb"><strong>Endereço:</strong> N/A</p>
-                                    <p class="mb"><strong>Número:</strong> N/A</p>
-                                    <p class="mb"><strong>Complemento:</strong> N/A</p>
-                                    <p class="mb"><strong>Bairro:</strong> N/A</p>
-                                    <p class="mb"><strong>Cidade:</strong> N/A</p>                                   
-                                    <p class="mb"><strong>CEP:</strong> N/A</p>
+                                    <p class="mb-2"><strong>Endereço:</strong> N/A</p>
+                                    <p class="mb-2"><strong>Número:</strong> N/A</p>
+                                    <p class="mb-2"><strong>Complemento:</strong> N/A</p>
+                                    <p class="mb-2"><strong>Bairro:</strong> N/A</p>
+                                    <p class="mb-2"><strong>Cidade:</strong> N/A</p>
+                                    <p class="mb-2"><strong>Estado:</strong> N/A</p>
+                                    <p class="mb-2"><strong>CEP:</strong> N/A</p>
                                 {% endif %}
                                 {# 🔹 FIM: Exibição de Múltiplos Endereços para Impressão #}
-								<p class="mb-2"><strong>Estado:</strong> {{ cliente.estado or "N/A" }}</p>
 							</div>
 							<div id="print-section-telefones" class="print-section">
 								<h4>Telefones</h4>
@@ -835,7 +807,7 @@
 											<td>{{ pagamento.data_local.strftime('%d/%m/%Y %H:%M') }}</td>
 											<td>{{ pagamento.historico.descricao }}</td>
 											<td>R$ {{ "%.2f"|format(pagamento.valor) }}</td>
-											<td>{{ pagamento.metodo }}  {% if pagamento.tipo_pagamento == 'Parcelado' %}({{ pagamento.parcelas }}x){% endif %}  {% if not pagamento.tipo_pagamento == 'Parcelado' %} ({{ "A vista" }}) {% endif %}</td>
+											<td>{{ pagamento.metodo }} {% if pagamento.tipo_pagamento == 'Parcelado' %}({{ pagamento.parcelas }}x){% endif %}  {% if not pagamento.tipo_pagamento == 'Parcelado' %} ({{ "A vista" }}) {% endif %}</td>
 										</tr>
 									{% endfor %}
 									</tbody>
@@ -859,6 +831,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ url_for('main.add_carros', cliente_id=cliente.id) }}" method="POST" id="addCarroForm">
+                {# 🔹 NOVO: Campo oculto para persistir a aba ativa #}
+                <input type="hidden" name="active_tab" value="veiculos-pane">
                 <div class="modal-body">
                     <div class="col mb-3">
                         <div class="input-group mb-4">
@@ -981,105 +955,143 @@
         $(newDiv).find('.telefone-input').mask('(00) 00000-0000');
     }
 
-    // 🔹 restorative FUNÇÕES DE ENDEREÇO (VERSÃO ANTIGA)
-    function adicionarCampoEndereco(cep = '', endereco = '', numero = '', complemento = '', bairro = '', cidade = '', isFirst = false) {
+    // 🔹 Função para adicionar campo de endereço, restaurando o layout antigo
+    function adicionarCampoEndereco(cep = '', endereco = '', numero = '', complemento = '', bairro = '', cidade = '', estado = '', isPrincipal = false) {
         const container = document.getElementById('enderecos-container');
+        const index = container.children.length; // Novo índice para o rádio button
         const newDiv = document.createElement('div');
-        newDiv.classList.add('mb-3', 'border', 'p-3', 'rounded', 'bg-light', 'position-relative');
+        newDiv.classList.add('endereco-group', 'mb-3', 'border', 'p-3', 'rounded', 'bg-light', 'position-relative');
         
-        let removeButton = isFirst ? '' : '<button type="button" class="btn-close position-absolute top-0 end-0 m-2" aria-label="Close" onclick="this.closest(\'.mb-3\').remove();"></button>';
+        // Botão de remover só aparece se não for o primeiro endereço
+        let removeButton = index === 0 ? '' : '<button type="button" class="btn-close position-absolute top-0 end-0 m-2 remove-endereco-btn" aria-label="Close"></button>';
         
         newDiv.innerHTML = `
             ${removeButton}
-            <h6 class="mb-3">${isFirst ? 'Endereço Principal' : 'Endereço Adicional'}</h6>
-            <div class="row"> 
+            <div class="form-check form-switch mb-2">
+                <input class="form-check-input is-principal-radio" type="radio" name="endereco_principal" id="endereco_principal_${index}" value="${index}" ${isPrincipal ? 'checked' : ''}>
+                <label class="form-check-label" for="endereco_principal_${index}">Endereço Principal</label>
+            </div>
+            <div class="row g-2"> 
                 <div class="col-md-6 mb-3">
-				<div class="input-group mb-4">
-                    <span class="input-group-text"><i class="bi bi-signpost-split-fill"></i></span>
-						<div class="form-floating flex-grow-1"><input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP" value="${cep}">
-							<label class="form-label">CEP</label>
-						</div>
-				</div>
-				</div>
-                <div class="col-md-6 mb-3">
-				<div class="input-group mb-4">
-                    <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-signpost-split-fill"></i></span>
                         <div class="form-floating flex-grow-1">
-							<input type="text" name="endereco[]" class="form-control" placeholder="Endereço" value="${endereco}">
-							<label class="form-label">Endereço</label>
-						</div>
-				</div>
-				</div>
+                            <input type="text" name="cep[]" class="form-control cep-input" placeholder="CEP" value="${cep}">
+                            <label class="form-label">CEP</label>
+                        </div>
+                    </div>
+                </div>
                 <div class="col-md-6 mb-3">
-				<div class="input-group mb-4">
-                    <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
+                        <div class="form-floating flex-grow-1">
+                            <input type="text" name="endereco[]" class="form-control" placeholder="Endereço" value="${endereco}">
+                            <label class="form-label">Endereço</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-hash"></i></span>
                         <div class="form-floating flex-grow-1">
                             <input type="text" name="numero[]" class="form-control" placeholder="Número" value="${numero}">
                             <label class="form-label">Número</label>
                         </div>
-				</div>
-				</div>
+                    </div>
+                </div>
                 <div class="col-md-6 mb-3">
-				<div class="input-group mb-4">
-                    <span class="input-group-text"><i class="bi bi-house"></i></span>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-house"></i></span>
                         <div class="form-floating flex-grow-1">
                             <input type="text" name="complemento[]" class="form-control" placeholder="Complemento" value="${complemento}">
                             <label class="form-label">Complemento</label>
                         </div>
-				</div>
-				</div>
+                    </div>
+                </div>
                 <div class="col-md-6 mb-3">
-				<div class="input-group mb-4">
-                    <span class="input-group-text"><i class="bi bi-signpost-split"></i></span>
-						<div class="form-floating flex-grow-1"><input type="text" name="bairro[]" class="form-control" placeholder="Bairro" value="${bairro}">
-							<label class="form-label">Bairro</label>
-						</div>
-				</div>
-				</div>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-signpost-split"></i></span>
+                        <div class="form-floating flex-grow-1">
+                            <input type="text" name="bairro[]" class="form-control" placeholder="Bairro" value="${bairro}">
+                            <label class="form-label">Bairro</label>
+                        </div>
+                    </div>
+                </div>
                 <div class="col-md-6 mb-3">
-				<div class="input-group mb-4">
-                    <span class="input-group-text"><i class="bi bi-pin-map-fill"></i></span>
-						<div class="form-floating flex-grow-1"><input type="text" name="cidade[]" class="form-control" placeholder="Cidade" value="${cidade}">
-							<label class="form-label">Cidade</label>
-						</div>
-				</div>
-				</div>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-pin-map-fill"></i></span>
+                        <div class="form-floating flex-grow-1">
+                            <input type="text" name="cidade[]" class="form-control" placeholder="Cidade" value="${cidade}">
+                            <label class="form-label">Cidade</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-pin-map-fill"></i></span>
+                        <div class="form-floating flex-grow-1">
+                            <select name="estado[]" class="form-select">
+                                <option value="">Selecione o Estado...</option>
+                                <option value="AC" ${estado == 'AC' ? 'selected' : ''}>Acre</option>
+                                <option value="AL" ${estado == 'AL' ? 'selected' : ''}>Alagoas</option>
+                                <option value="AP" ${estado == 'AP' ? 'selected' : ''}>Amapá</option>
+                                <option value="AM" ${estado == 'AM' ? 'selected' : ''}>Amazonas</option>
+                                <option value="BA" ${estado == 'BA' ? 'selected' : ''}>Bahia</option>
+                                <option value="CE" ${estado == 'CE' ? 'selected' : ''}>Ceará</option>
+                                <option value="DF" ${estado == 'DF' ? 'selected' : ''}>Distrito Federal</option>
+                                <option value="ES" ${estado == 'ES' ? 'selected' : ''}>Espírito Santo</option>
+                                <option value="GO" ${estado == 'GO' ? 'selected' : ''}>Goiás</option>
+                                <option value="MA" ${estado == 'MA' ? 'selected' : ''}>Maranhão</option>
+                                <option value="MT" ${estado == 'MT' ? 'selected' : ''}>Mato Grosso</option>
+                                <option value="MS" ${estado == 'MS' ? 'selected' : ''}>Mato Grosso do Sul</option>
+                                <option value="MG" ${estado == 'MG' ? 'selected' : ''}>Minas Gerais</option>
+                                <option value="PA" ${estado == 'PA' ? 'selected' : ''}>Pará</option>
+                                <option value="PB" ${estado == 'PB' ? 'selected' : ''}>Paraíba</option>
+                                <option value="PR" ${estado == 'PR' ? 'selected' : ''}>Paraná</option>
+                                <option value="PE" ${estado == 'PE' ? 'selected' : ''}>Pernambuco</option>
+                                <option value="PI" ${estado == 'PI' ? 'selected' : ''}>Piauí</option>
+                                <option value="RJ" ${estado == 'RJ' ? 'selected' : ''}>Rio de Janeiro</option>
+                                <option value="RN" ${estado == 'RN' ? 'selected' : ''}>Rio Grande do Norte</option>
+                                <option value="RS" ${estado == 'RS' ? 'selected' : ''}>Rio Grande do Sul</option>
+                                <option value="RO" ${estado == 'RO' ? 'selected' : ''}>Rondônia</option>
+                                <option value="RR" ${estado == 'RR' ? 'selected' : ''}>Roraima</option>
+                                <option value="SC" ${estado == 'SC' ? 'selected' : ''}>Santa Catarina</option>
+                                <option value="SP" ${estado == 'SP' ? 'selected' : ''}>São Paulo</option>
+                                <option value="SE" ${estado == 'SE' ? 'selected' : ''}>Sergipe</option>
+                                <option value="TO" ${estado == 'TO' ? 'selected' : ''}>Tocantins</option>
+                            </select>
+                            <label class="form-label">Estado</label>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
         container.appendChild(newDiv);
         const newCepInput = newDiv.querySelector('.cep-input');
         $(newCepInput).mask('00000-000');
         newCepInput.addEventListener('blur', () => preencherEnderecoPorCep(newCepInput));
+        updateEnderecoRemoveButtons(); // Atualiza a visibilidade dos botões de remover
     }
 
-    function preencherEnderecoPorCep(cepInput) {
-        let cep = cepInput.value.replace(/\D/g, '');
-        if (cep.length === 8) {
-            fetch(`https://viacep.com.br/ws/${cep}/json/`)
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.erro) {
-                        const formContainer = cepInput.closest('.modal-body'); // Procura o select de estado dentro do modal
-                        const group = cepInput.closest('.row');
-                        group.querySelector('input[name="endereco[]"]').value = data.logradouro || '';
-                        group.querySelector('input[name="bairro[]"]').value = data.bairro || '';
-                        group.querySelector('input[name="cidade[]"]').value = data.localidade || '';
-                        
-                        const estadoSelect = formContainer.querySelector('select[name="estado"]');
-                        if(estadoSelect) {
-                            estadoSelect.value = data.uf || '';
-                        }
-                    } else {
-                        showCustomAlert('CEP não encontrado.', 'warning');
-                    }
-                }).catch(error => {
-                    console.error('Erro na API ViaCEP:', error);
-                    showCustomAlert('Erro ao buscar CEP. Tente novamente.', 'danger');
-                });
+    // 🔹 Atualiza a visibilidade dos botões de remover endereço
+    function updateEnderecoRemoveButtons() {
+        const removeButtons = document.querySelectorAll('.endereco-group .remove-endereco-btn');
+        if (removeButtons.length === 1) {
+            removeButtons[0].style.display = 'none';
+        } else {
+            removeButtons.forEach(button => button.style.display = 'block');
         }
     }
 
-    // 🔹 FIM DAS FUNÇÕES DE ENDEREÇO RESTAURADAS
+    // 🔹 Atualiza os nomes dos rádio buttons para garantir que apenas um seja selecionável
+    function updatePrincipalRadioNames() {
+        const radioButtons = document.querySelectorAll('.is-principal-radio');
+        radioButtons.forEach((radio, index) => {
+            radio.id = `endereco_principal_${index}`;
+            radio.value = index; // O valor é o índice do array, útil para o backend
+            radio.nextElementSibling.setAttribute('for', `endereco_principal_${index}`);
+        });
+    }
 
     function toggleOpcaoPagamento(selectElement) {
         const form = selectElement.closest("form") || selectElement.closest(".modal-body");
@@ -1103,9 +1115,28 @@
         }
     }
 
+    // 🔹 Função para mascarar CPF/CNPJ para impressão
+    function maskCpfCnpjForPrint(value) {
+        if (!value) return '';
+        const cleanedValue = value.replace(/\D/g, ''); // Remove todos os não-dígitos
+
+        if (cleanedValue.length === 11) { // CPF
+            return cleanedValue.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '***.$2.***-**'); // Mantém o segundo grupo de 3 dígitos
+        } else if (cleanedValue.length === 14) { // CNPJ
+            return cleanedValue.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '**.***.***/****-**');
+        }
+        return value; // Retorna o original se não for um CPF/CNPJ válido
+    }
+
     function imprimirSelecionados() {
         const printContent = document.createElement('div');
         let hasSelection = false;
+        
+        // Mascara o CPF/CNPJ antes de gerar o conteúdo para impressão
+        const printCpfCnpjSpan = document.getElementById('print-cpf-cnpj');
+        const originalCpfCnpjText = printCpfCnpjSpan.innerText;
+        printCpfCnpjSpan.innerText = maskCpfCnpjForPrint(originalCpfCnpjText);
+
         document.querySelectorAll('#print-form .form-check-input').forEach(checkbox => {
             if (checkbox.checked) {
                 hasSelection = true;
@@ -1117,6 +1148,8 @@
 
         if (!hasSelection) {
             showCustomAlert('Selecione pelo menos uma seção para imprimir.');
+            // Restaura o CPF/CNPJ original se a impressão for cancelada
+            printCpfCnpjSpan.innerText = originalCpfCnpjText;
             return;
         }
 
@@ -1135,8 +1168,33 @@
             </body></html>`);
         printWindow.document.close();
         printWindow.print();
+        
+        // Restaura o CPF/CNPJ original após a impressão
+        printCpfCnpjSpan.innerText = originalCpfCnpjText;
     }
-    
+
+    function preencherEnderecoPorCep(cepInput) {
+        let cep = cepInput.value.replace(/\D/g, '');
+        if (cep.length === 8) {
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.erro) {
+                        const enderecoGroup = cepInput.closest('.endereco-group'); // Encontra o grupo de endereço atual
+                        enderecoGroup.querySelector('input[name="endereco[]"]').value = data.logradouro || '';
+                        enderecoGroup.querySelector('input[name="bairro[]"]').value = data.bairro || '';
+                        enderecoGroup.querySelector('input[name="cidade[]"]').value = data.localidade || '';
+                        enderecoGroup.querySelector('select[name="estado[]"]').value = data.uf || ''; // Preenche o select de estado
+                    } else {
+                        showCustomAlert('CEP não encontrado.', 'warning');
+                    }
+                }).catch(error => {
+                    console.error('Erro na API ViaCEP:', error);
+                    showCustomAlert('Erro ao buscar CEP. Tente novamente.', 'danger');
+                });
+        }
+    }
+
     // --- FUNÇÕES DE VALIDAÇÃO ---
     function validarCPF(cpf) { 
             cpf = cpf.replace(/[^\d]+/g, ''); // Removes non-numeric characters
@@ -1158,7 +1216,7 @@
             let add = 0;
             for (let i = 0; i < 9; i++)
                 add += parseInt(cpf.charAt(i)) * (10 - i);
-            let rev = 11 - (add % 11);
+            let rev = 11 - (add % 11); // First declaration of rev
             if (rev == 10 || rev == 11)
                 rev = 0;
             if (rev != parseInt(cpf.charAt(9)))
@@ -1167,7 +1225,7 @@
             add = 0;
             for (let i = 0; i < 10; i++)
                 add += parseInt(cpf.charAt(i)) * (11 - i);
-            rev = 11 - (add % 11);
+            rev = 11 - (add % 11); // 🔹 CORREÇÃO: Removido 'let' para reatribuição
             if (rev == 10 || rev == 11)
                 rev = 0;
             if (rev != parseInt(cpf.charAt(10)))
@@ -1212,7 +1270,7 @@
                 }
             }
             
-            let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+            let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11; // Declaration of resultado
             if (resultado != parseInt(digitos.charAt(0))) {
                 return false;
             }
@@ -1229,7 +1287,7 @@
                 }
             }
             
-            resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+            resultado = soma % 11 < 2 ? 0 : 11 - soma % 11; // Reassignment, not re-declaration. This one is fine.
             if (resultado != parseInt(digitos.charAt(1))) {
                 return false;
             }
@@ -1258,14 +1316,33 @@
         $('.placa-input').mask('SSS-0A00', { translation: { 'S': { pattern: /[A-Za-z]/ }, 'A': { pattern: /[0-9A-Ja-j]/ } }, onKeyPress: function(val, e, field, options){ $(field).mask(val.length > 4 && /[A-Za-z]/.test(val.charAt(4)) ? 'SSS-0A00' : 'SSS-0000', options); } });
         $('.ano-input').mask('0000');
         $('.telefone-input').mask('(00) 00000-0000');
-        $('.money-input').mask('000.000.000.000.000,00', {reverse: true, placeholder: "0,00"});
+        $('.money-input').mask('000.000.000.000.000,00', {reverse: true, placeholder: "0,00"}); // 🔹 Aplicando máscara de dinheiro
+    }
+
+    // 🔹 Função para obter o ID da aba ativa
+    function getActiveTabId() {
+        const activeTabButton = document.querySelector('#clientTab .nav-link.active');
+        return activeTabButton ? activeTabButton.id.replace('-tab', '-pane') : 'dados-pessoais-pane'; // Retorna o ID do painel
+    }
+
+    // 🔹 Função para ativar a aba ao carregar a página
+    function setActiveTabOnLoad() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabToActivate = urlParams.get('tab');
+
+        if (tabToActivate) {
+            const tabButton = document.getElementById(tabToActivate.replace('-pane', '-tab'));
+            if (tabButton) {
+                const bsTab = new bootstrap.Tab(tabButton);
+                bsTab.show();
+            }
+        }
     }
 
     $(document).ready(function() {
         applyMasks();
         $('#cpf_cnpj').on('blur', validateCpfCnpjInput);
         
-        // 🔹 restorative LÓGICA DO MODAL DE ENDEREÇO (VERSÃO ANTIGA)
         const addressModal = document.getElementById('addressModal');
         addressModal.addEventListener('show.bs.modal', function () {
             // Limpa o container para não duplicar campos ao reabrir o modal
@@ -1273,28 +1350,52 @@
             container.innerHTML = ''; 
 
             // Pega os dados de endereço do Jinja e cria os campos dinamicamente
-            const ceps = "{{ cliente.cep or '' }}".split(';');
-            const enderecos = "{{ cliente.endereco or '' }}".split(';');
-            const numeros = "{{ cliente.numero or '' }}".split(';');
-            const complementos = "{{ cliente.complemento or '' }}".split(';');
-            const bairros = "{{ cliente.bairro or '' }}".split(';');
-            const cidades = "{{ cliente.cidade or '' }}".split(';');
+            const ceps = "{{ cliente.cep or '' }}".split(';').map(s => s.trim());
+            const enderecos = "{{ cliente.endereco or '' }}".split(';').map(s => s.trim());
+            const numeros = "{{ cliente.numero or '' }}".split(';').map(s => s.trim());
+            const complementos = "{{ cliente.complemento or '' }}".split(';').map(s => s.trim());
+            const bairros = "{{ cliente.bairro or '' }}".split(';').map(s => s.trim());
+            const cidades = "{{ cliente.cidade or '' }}".split(';').map(s => s.trim());
+            const estados = "{{ cliente.estado or '' }}".split(';').map(s => s.trim());
 
-            if (ceps[0] !== '' && enderecos[0] !== '') {
-                for (let i = 0; i < ceps.length; i++) {
+            // Encontra o maior comprimento para garantir que todos os arrays são iterados
+            const maxLength = Math.max(ceps.length, enderecos.length, numeros.length, complementos.length, bairros.length, cidades.length, estados.length);
+
+            if (maxLength > 0 && (ceps[0] !== '' || enderecos[0] !== '')) {
+                for (let i = 0; i < maxLength; i++) {
                     adicionarCampoEndereco(
-                        (ceps[i] || '').trim(),
-                        (enderecos[i] || '').trim(),
-                        (numeros[i] || '').trim(),
-                        (complementos[i] || '').trim(),
-                        (bairros[i] || '').trim(),
-                        (cidades[i] || '').trim(),
+                        ceps[i] || '',
+                        enderecos[i] || '',
+                        numeros[i] || '',
+                        complementos[i] || '',
+                        bairros[i] || '',
+                        cidades[i] || '',
+                        estados[i] || '',
                         i === 0 // Marca o primeiro como principal
                     );
                 }
             } else {
                 // Se não houver nenhum endereço, adiciona um campo em branco
-                adicionarCampoEndereco('', '', '', '', '', '', true);
+                adicionarCampoEndereco('', '', '', '', '', '', '', true); // Adiciona um campo principal vazio
+            }
+            updatePrincipalRadioNames(); // Garante que os nomes dos rádios estejam corretos após o carregamento
+        });
+
+        // Event listener para o botão "Adicionar campo de endereço"
+        document.getElementById('addEnderecoBtn').addEventListener('click', function() {
+            adicionarCampoEndereco('', '', '', '', '', '', '', false); // Adiciona um novo campo vazio, não principal
+            updatePrincipalRadioNames(); // Atualiza os nomes dos rádios
+        });
+
+        // Event listener para remover endereço
+        document.getElementById('enderecos-container').addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-endereco-btn') || e.target.closest('.remove-endereco-btn')) {
+                const enderecoGroup = e.target.closest('.endereco-group');
+                if (document.querySelectorAll('.endereco-group').length > 1) {
+                    enderecoGroup.remove();
+                    updateEnderecoRemoveButtons();
+                    updatePrincipalRadioNames(); // Atualiza os nomes após a remoção
+                }
             }
         });
 
@@ -1311,6 +1412,20 @@
             }
         });
 
+        // 🔹 NOVO: Adiciona listener para todos os formulários para preencher o campo active_tab
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+                let activeTabInput = form.querySelector('input[name="active_tab"]');
+                if (!activeTabInput) { // Se o input não existir (alguns formulários já têm), cria um
+                    activeTabInput = document.createElement('input');
+                    activeTabInput.type = 'hidden';
+                    activeTabInput.name = 'active_tab';
+                    form.appendChild(activeTabInput);
+                }
+                activeTabInput.value = getActiveTabId();
+            });
+        });
+
         // Limpeza de máscaras antes de enviar
         $('#editClientForm, #addCarroForm, #updateCarrosForm, #addTelefoneForm').submit(function(event) {
             if (this.id === 'editClientForm' && !validateCpfCnpjInput()) {
@@ -1320,13 +1435,16 @@
             }
             $(this).find('.cep-input, .telefone-input').each(function() { $(this).val($(this).val().replace(/\D/g, '')); });
             $(this).find('.placa-input').each(function() { $(this).val($(this).val().replace('-', '').toUpperCase()); });
-            $(this).find('.money-input').each(function() {
+            $(this).find('.money-input').each(function() { // 🔹 Limpeza para campos de dinheiro
                 let val = $(this).val();
                 val = val.replace(/\./g, ''); // Remove pontos de milhar
                 val = val.replace(',', '.'); // Troca vírgula por ponto decimal
                 $(this).val(val);
             });
         });
+
+        // 🔹 NOVO: Ativa a aba correta ao carregar a página
+        setActiveTabOnLoad();
     });
 </script>
 </body>
