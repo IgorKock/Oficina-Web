@@ -766,20 +766,20 @@
                                         {% set current_cep = cliente.cep.split(';')[i].strip() if cliente.cep and cliente.cep.split(';')|length > i else 'N/A' %}
                                         {% set current_estado = cliente.estado.split(';')[i].strip() if cliente.estado and cliente.estado.split(';')|length > i else 'N/A' %}
 
-                                        <p class="mb-2"><strong>Endereço {{ loop.index }}:</strong> 
+                                        <p class="mb"><strong>Endereço {{ loop.index }}:</strong> 
                                             {{ current_endereco }}{% if current_numero != 'N/A' %}, {{ current_numero }}{% endif %}
                                             {% if current_complemento != 'N/A' %} ({{ current_complemento }}){% endif %}, 
                                             {{ current_bairro }}, {{ current_cidade }} - {{ current_estado }} {{ current_cep }}
                                         </p>
                                     {% endfor %}
                                 {% else %}
-                                    <p class="mb-2"><strong>Endereço:</strong> N/A</p>
-                                    <p class="mb-2"><strong>Número:</strong> N/A</p>
-                                    <p class="mb-2"><strong>Complemento:</strong> N/A</p>
-                                    <p class="mb-2"><strong>Bairro:</strong> N/A</p>
-                                    <p class="mb-2"><strong>Cidade:</strong> N/A</p>
-                                    <p class="mb-2"><strong>Estado:</strong> N/A</p>
-                                    <p class="mb-2"><strong>CEP:</strong> N/A</p>
+                                    <p class="mb"><strong>Endereço:</strong> N/A</p>
+                                    <p class="mb"><strong>Número:</strong> N/A</p>
+                                    <p class="mb"><strong>Complemento:</strong> N/A</p>
+                                    <p class="mb"><strong>Bairro:</strong> N/A</p>
+                                    <p class="mb"><strong>Cidade:</strong> N/A</p>
+                                    <p class="mb"><strong>Estado:</strong> N/A</p>
+                                    <p class="mb"><strong>CEP:</strong> N/A</p>
                                 {% endif %}
                                 {# 🔹 FIM: Exibição de Múltiplos Endereços para Impressão #}
 							</div>
