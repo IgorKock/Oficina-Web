@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
     <style>
-        /* ESTILOS DA ESTRUTURA (ADAPTADOS DE cliente.txt) */
+        /* ESTILOS DA ESTRUTURA */
         :root {
             --sidebar-width: 260px;
             --header-height: 60px;
@@ -24,12 +24,12 @@
             background-color: #f0f2f5;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cg fill='%23d3dce3' fill-opacity='0.4'%3E%3Cpath fill-rule='evenodd' d='M0 0h4v4H0V0zm4 4h4v4H4V4z'/%3E%3C/g%3E%3C/svg%3E");
             font-family: 'Poppins', sans-serif;
-            padding-top: var(--header-height); /* Espaço para o cabeçalho fixo */
+            padding-top: var(--header-height);
             margin: 0;
             overflow-x: hidden;
-            display: flex; /* Para que o body possa centralizar o conteúdo de login */
-            flex-direction: column; /* Organiza os elementos em coluna */
-            min-height: 100vh; /* Garante que o body ocupe toda a altura da viewport */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         .header {
@@ -48,10 +48,10 @@
             padding-top: var(--header-height);
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
             transition: margin-left 0.3s ease-in-out;
-            margin-left: calc(-1 * var(--sidebar-width)); /* Esconde a sidebar por padrão no login */
+            margin-left: calc(-1 * var(--sidebar-width));
         }
         .sidebar.active {
-            margin-left: 0; /* Mostra a sidebar */
+            margin-left: 0;
         }
         .sidebar .nav-link {
             color: #555;
@@ -70,44 +70,36 @@
             border-right: 3px solid #0d6efd;
         }
 
+        /* --- CSS CORRIGIDO PARA CENTRALIZAÇÃO --- */
         .main-content {
-            flex-grow: 1; /* Permite que o conteúdo principal ocupe o espaço restante */
-            display: flex;
-            justify-content: center; /* Centraliza horizontalmente */
-            align-items: center; /* Centraliza verticalmente */
-            padding: 30px;
-            /* Removida a margem esquerda para garantir centralização completa */
-            /* margin-left: 0; */ 
-            transition: margin-left 0.3s ease-in-out;
-            min-height: calc(100vh - var(--header-height)); /* Garante que ocupe a altura restante */
-            width: 100%; /* Garante que ocupe a largura total disponível */
+            flex-grow: 1; /* Faz esta seção ocupar todo o espaço vertical restante */
+            display: flex; /* Ativa o Flexbox */
+            justify-content: center; /* Centraliza o conteúdo horizontalmente */
+            align-items: center; /* Centraliza o conteúdo verticalmente */
+            padding: 20px; /* Adiciona um respiro nas laterais */
+            width: 100%;
         }
         
         @media (max-width: 991.98px) {
             .sidebar {
-                margin-left: calc(-1 * var(--sidebar-width)); /* Esconde a sidebar */
+                margin-left: calc(-1 * var(--sidebar-width));
             }
             .sidebar.active {
-                margin-left: 0; /* Mostra a sidebar */
+                margin-left: 0;
             }
-            /* No mobile, o main-content já ocupa 100% da largura, então não precisa de ajuste de margem */
-            /* .main-content {
-                margin-left: 0; 
-            } */
         }
         
-        /* --- ESTILOS DO FORMULÁRIO DE LOGIN (ADAPTADOS DE teste2.txt e cliente.txt) --- */
+        /* --- ESTILOS DO FORMULÁRIO DE LOGIN --- */
         .login-card {
             background-color: #ffffff;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             padding: 40px;
             width: 100%;
-            max-width: 450px; /* Aumentado um pouco para melhor visual */
+            max-width: 450px;
             border-top: 5px solid;
             border-image: linear-gradient(to right, #007bff, #00d4ff) 1;
             transition: all 0.3s ease-in-out;
-            /* Removidas margens verticais para permitir a centralização pelo flexbox do main-content */
         }
         
         .login-card:hover {
@@ -162,7 +154,6 @@
             transform: scale(1.02);
         }
 
-        /* Mensagens Flash */
         .alert {
             margin-top: 1rem;
             border-radius: 0.5rem;
@@ -179,19 +170,14 @@
 
 <header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top header">
     <div class="container-fluid">
-        <!-- Botão para abrir/fechar o menu lateral (visível apenas em telas menores) -->
         <button class="navbar-toggler" type="button" id="menu-toggle">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <!-- Logo e Nome da Oficina -->
         <a class="navbar-brand fw-bold text-primary" href="#">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa" style="max-width: 40px; height: auto; margin-right: 10px;">
             Oficina Web
         </a>
-        <div class="d-flex align-items-center">
-            <!-- No login, não há current_user, então removemos a saudação -->
-            <!-- O botão de sair não faz sentido na página de login -->
-        </div>
+        <div class="d-flex align-items-center"></div>
     </div>
 </header>
 
@@ -216,52 +202,47 @@
     </ul>
 </aside>
 
+<!-- A ESTRUTURA AQUI FOI SIMPLIFICADA PARA MELHOR CENTRALIZAÇÃO -->
 <main class="main-content">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="login-card">
-                    <div class="login-header text-center mb-4">
-                        <h2><i class="bi bi-box-arrow-in-right"></i> Login</h2>
-                        <p class="text-muted">Digite seu E-mail e Senha</p>
+    <div class="login-card">
+        <div class="login-header text-center mb-4">
+            <h2><i class="bi bi-box-arrow-in-right"></i> Login</h2>
+            <p class="text-muted">Digite seu E-mail e Senha</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
-
-                    <form method="post" action="{{ url_for('main.login') }}">
-                        <div class="input-group mb-4">
-                            <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
-                            <div class="form-floating flex-grow-1">
-                                <input type="email" class="form-control" id="email" name="email" placeholder="Endereço de E-mail" required>
-                                <label for="email">Endereço de E-mail</label>
-                            </div>
-                        </div>
-                        <div class="input-group mb-4">
-                            <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
-                            <div class="form-floating flex-grow-1">
-                                <input type="password" class="form-control" id="senha" name="senha" placeholder="Senha" required>
-                                <label for="senha">Senha</label>
-                            </div>
-                        </div>
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg fw-bold">
-                                <i class="bi bi-box-arrow-in-right me-2"></i> ENTRAR
-                            </button>
-                        </div>
-                        <p class="text-center mt-3">Não tem uma conta? <a href="{{ url_for('main.add_utilizador') }}">Cadastre-se aqui</a></p>
-                    </form>
+        <form method="post" action="{{ url_for('main.login') }}">
+            <div class="input-group mb-4">
+                <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+                <div class="form-floating flex-grow-1">
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Endereço de E-mail" required>
+                    <label for="email">Endereço de E-mail</label>
                 </div>
             </div>
-        </div>
+            <div class="input-group mb-4">
+                <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                <div class="form-floating flex-grow-1">
+                    <input type="password" class="form-control" id="senha" name="senha" placeholder="Senha" required>
+                    <label for="senha">Senha</label>
+                </div>
+            </div>
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> ENTRAR
+                </button>
+            </div>
+            <p class="text-center mt-3">Não tem uma conta? <a href="{{ url_for('main.add_utilizador') }}">Cadastre-se aqui</a></p>
+        </form>
     </div>
 </main>
 
@@ -279,10 +260,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 
 <script>
-    // --- LÓGICA DO MENU LATERAL (DE cliente.txt) ---
     document.addEventListener("DOMContentLoaded", function() {
         const menuToggle = document.getElementById('menu-toggle');
-        const sidebar = document.getElementById('sidebar'); // Usar ID para ser mais específico
+        const sidebar = document.getElementById('sidebar');
 
         if (menuToggle) {
             menuToggle.addEventListener('click', function() {
@@ -291,7 +271,6 @@
         }
     });
 
-    // --- FUNÇÕES DE ALERTA (DE cliente.txt) ---
     function showCustomAlert(message) {
         document.getElementById('customAlertMessage').innerText = message;
         document.getElementById('customAlertModal').style.display = 'flex';
@@ -303,11 +282,6 @@
     window.onclick = function(event) {
         if (event.target == document.getElementById('customAlertModal')) closeCustomAlert();
     }
-
-    // Nenhuma máscara ou lógica de formulário específica de cliente.txt é necessária aqui.
-    $(document).ready(function() {
-        // Nenhuma máscara ou lógica de validação é necessária para a página de login.
-    });
 </script>
 </body>
 </html>
