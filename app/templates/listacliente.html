@@ -596,13 +596,18 @@
             });
         }
 
+        // --- BLOCO DE CÓDIGO CORRIGIDO ---
         $('#addClientForm').submit(function(event) {
+            // Executa a validação do CPF/CNPJ.
+            // Se o documento for inválido, a função 'validateCpfCnpjInput' já exibe a mensagem
+            // de erro diretamente no formulário e retorna 'false'.
             if (!validateCpfCnpjInput()) {
-                event.preventDefault();
-                showCustomAlert('Por favor, corrija o documento (CPF/CNPJ) antes de continuar.');
+                // Apenas impede o envio do formulário. A mensagem de erro já está visível para o usuário.
+                event.preventDefault(); 
                 return;
             }
 
+            // Se a validação passou, remove a máscara dos campos de telefone antes de enviar
             $('.telefone-input').each(function() {
                 var telefone = $(this);
                 if (telefone.val()) {
@@ -610,6 +615,7 @@
                 }
             });
         });
+        // --- FIM DO BLOCO CORRIGIDO ---
     });
 </script>
 </body>
