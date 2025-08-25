@@ -14,7 +14,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
     <style>
-        /* ESTILOS DA ESTRUTURA (ADAPTADOS DE cliente.txt) */
         :root {
             --sidebar-width: 260px;
             --header-height: 60px;
@@ -24,7 +23,7 @@
             background-color: #f0f2f5;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cg fill='%23d3dce3' fill-opacity='0.4'%3E%3Cpath fill-rule='evenodd' d='M0 0h4v4H0V0zm4 4h4v4H4V4z'/%3E%3C/g%3E%3C/svg%3E");
             font-family: 'Poppins', sans-serif;
-            padding-top: var(--header-height); /* Espaço para o cabeçalho fixo */
+            padding-top: var(--header-height);
             margin: 0;
             overflow-x: hidden;
         }
@@ -71,23 +70,22 @@
         
         @media (max-width: 991.98px) {
             .sidebar {
-                margin-left: calc(-1 * var(--sidebar-width)); /* Esconde a sidebar */
+                margin-left: calc(-1 * var(--sidebar-width));
             }
             .sidebar.active {
-                margin-left: 0; /* Mostra a sidebar */
+                margin-left: 0;
             }
             .main-content {
-                margin-left: 0; /* Conteúdo ocupa toda a largura */
+                margin-left: 0;
             }
         }
         
-        /* --- ESTILOS DE FORMULÁRIO/CARD (DE cliente.txt) --- */
         .card {
             background-color: #ffffff;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 20px; /* Ajustado para o conteúdo da lista */
-            margin-top: 20px; /* Ajustado para o layout com header/sidebar */
+            padding: 20px;
+            margin-top: 20px;
             margin-bottom: 50px;
             border-top: 5px solid;
             border-image: linear-gradient(to right, #007bff, #00d4ff) 1;
@@ -97,16 +95,6 @@
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
-        }
-
-        .card-header { /* Estilo para o cabeçalho do card, se usado */
-            background-color: #e9ecef;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
-            font-weight: bold;
-            padding: 15px 20px;
-            margin: -20px -20px 20px -20px; /* Ajusta margens para preencher o topo do card */
         }
 
         .btn-primary {
@@ -121,13 +109,6 @@
             transform: scale(1.02);
         }
 
-        /* --- CUSTOM ALERT MODAL --- */
-        .custom-alert-modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
-        .custom-alert-modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); text-align: center; position: relative; }
-        .custom-alert-close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 15px; }
-        .custom-alert-close-btn:hover, .custom-alert-close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
-
-        /* Estilos para badges de papéis */
         .badge {
             font-size: 0.85em;
             padding: 0.4em 0.6em;
@@ -223,8 +204,16 @@
                                         <td>
                                             {% if current_user.is_admin() %}
                                                 <a href="{{ url_for('main.edit_utilizador', id=utilizador.id) }}" class="btn btn-warning btn-sm me-2"><i class="bi bi-pencil-fill"></i> Editar</a>
-                                                <!-- Botão de Apagar -->
-                                                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ utilizador.id }}">
+                                                
+                                                <!-- Botão que abre o modal dinâmico -->
+                                                <button type="button" 
+                                                        class="btn btn-danger btn-sm"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#deleteUserModal"
+                                                        data-id="{{ utilizador.id }}"
+                                                        data-nome="{{ utilizador.nome }}"
+                                                        data-email="{{ utilizador.email }}"
+                                                        {% if utilizador.id == current_user.id %}disabled{% endif %}>
                                                     <i class="bi bi-trash-fill"></i> Apagar
                                                 </button>
                                             {% else %}
@@ -232,30 +221,6 @@
                                             {% endif %}
                                         </td>
                                     </tr>
-
-                                    <!-- Modal de Confirmação de Exclusão para cada utilizador -->
-                                    <div class="modal fade" id="deleteUserModal{{ utilizador.id }}" tabindex="-1" aria-labelledby="deleteUserModalLabel{{ utilizador.id }}" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="deleteUserModalLabel{{ utilizador.id }}">Confirmar Exclusão</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    Tem certeza que deseja apagar o utilizador <strong>{{ utilizador.nome }} ({{ utilizador.email }})</strong>? Esta ação é irreversível.
-                                                    {% if utilizador.id == current_user.id %}
-                                                        <p class="text-danger mt-2"><strong>Aviso: Você não pode apagar a sua própria conta enquanto estiver logado.</strong></p>
-                                                    {% endif %}
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                    <form action="{{ url_for('main.delete_utilizador', id=utilizador.id) }}" method="POST" class="d-inline">
-                                                        <button type="submit" class="btn btn-danger" {% if utilizador.id == current_user.id %}disabled{% endif %}>Apagar</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -270,21 +235,35 @@
     </div>
 </main>
 
-<!-- Custom Alert Modal HTML (de cliente.txt) -->
-<div id="customAlertModal" class="custom-alert-modal">
-    <div class="custom-alert-modal-content">
-        <span class="custom-alert-close-btn">×</span>
-        <p id="customAlertMessage"></p>
-        <button class="btn btn-primary" onclick="closeCustomAlert()">OK</button>
+<!-- Modal ÚNICO de exclusão -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="deleteUserForm" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirmar Exclusão</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          Tem certeza que deseja apagar o utilizador 
+          <strong id="deleteUserName"></strong> 
+          (<span id="deleteUserEmail"></span>)?
+          <p id="deleteSelfWarning" class="text-danger mt-2 d-none">
+            <strong>Aviso: Você não pode apagar a sua própria conta enquanto estiver logado.</strong>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger" id="deleteConfirmBtn">Apagar</button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-
 <script>
-    // --- LÓGICA DO MENU LATERAL (DE cliente.txt) ---
+    // Lógica do menu lateral
     document.addEventListener("DOMContentLoaded", function() {
         const menuToggle = document.getElementById('menu-toggle');
         const sidebar = document.querySelector('.sidebar');
@@ -295,26 +274,32 @@
         }
     });
 
-    // --- FUNÇÕES DE ALERTA (DE cliente.txt) ---
-    function showCustomAlert(message) {
-        document.getElementById('customAlertMessage').innerText = message;
-        document.getElementById('customAlertModal').style.display = 'flex';
-    }
-    function closeCustomAlert() {
-        document.getElementById('customAlertModal').style.display = 'none';
-    }
-    document.querySelector('.custom-alert-close-btn').onclick = closeCustomAlert;
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('customAlertModal')) closeCustomAlert();
-    }
+    // Modal dinâmico de exclusão
+    const deleteUserModal = document.getElementById('deleteUserModal');
+    deleteUserModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const userId = button.getAttribute('data-id');
+        const userNome = button.getAttribute('data-nome');
+        const userEmail = button.getAttribute('data-email');
+        const isSelf = button.hasAttribute('disabled');
 
-    // Nenhuma máscara ou lógica de formulário específica de cliente.txt é necessária aqui.
-    // Apenas a lógica de alerta e menu lateral.
+        // Preenche o texto no modal
+        document.getElementById('deleteUserName').textContent = userNome;
+        document.getElementById('deleteUserEmail').textContent = userEmail;
 
-    $(document).ready(function() {
-        // Nenhuma máscara de input específica para esta página.
-        // Nenhuma lógica de validação de CPF/CNPJ ou ViaCEP é necessária aqui.
-        // Nenhuma lógica de pagamento é necessária aqui.
+        // Ajusta formulário
+        document.getElementById('deleteUserForm').action = `/delete_utilizador/${userId}`;
+
+        // Se for o próprio usuário logado → bloqueia exclusão
+        const warning = document.getElementById('deleteSelfWarning');
+        const confirmBtn = document.getElementById('deleteConfirmBtn');
+        if (isSelf) {
+            warning.classList.remove('d-none');
+            confirmBtn.disabled = true;
+        } else {
+            warning.classList.add('d-none');
+            confirmBtn.disabled = false;
+        }
     });
 </script>
 </body>
