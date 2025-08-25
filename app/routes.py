@@ -471,16 +471,16 @@ def add_utilizador():
 
         if not nome or not email or not senha or not confirmar_senha or not papel_id:
             flash('Por favor, preencha todos os campos obrigatórios.', 'danger')
-            return render_template('utilizadores/add_utilizadores.html', papeis=papeis)
+            return render_template('utilizadores/add_utilizadores.html', papeis=papeis, nome=nome, email=email)
 
         if senha != confirmar_senha:
              flash('As senhas não coincidem.', 'danger')
-             return render_template('utilizadores/add_utilizadores.html', papeis=papeis)
+             return render_template('utilizadores/add_utilizadores.html', papeis=papeis, nome=nome, email=email)
 
         email_existente = Utilizador.query.filter_by(email=email).first()
         if email_existente:
             flash('Este email já está registado.', 'danger')
-            return render_template('utilizadores/add_utilizadores.html', papeis=papeis)
+            return render_template('utilizadores/add_utilizadores.html', papeis=papeis, nome=nome, email=email)
 
         novo_utilizador = Utilizador(nome=nome, email=email, telefone=telefone, palavras_chave=palavras_chave, observacoes=observacoes)
         novo_utilizador.set_senha(senha)

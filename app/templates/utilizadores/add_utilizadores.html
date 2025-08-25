@@ -241,14 +241,14 @@
                                     <div class="input-group mb-4">
                                         <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
                                         <div class="form-floating flex-grow-1">
-                                            <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome Completo" required>
+                                            <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome Completo" required value="{{ nome if nome else '' }}">
                                             <label for="nome">Nome Completo</label>
                                         </div>
                                     </div>
                                     <div class="input-group mb-4">
                                         <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
                                         <div class="form-floating flex-grow-1">
-                                            <input type="email" class="form-control" id="email" name="email" placeholder="Endereço de E-mail" required>
+                                            <input type="email" class="form-control" id="email" name="email" placeholder="Endereço de E-mail" required value="{{ email if email else '' }}">
                                             <label for="email">Endereço de E-mail</label>
                                         </div>
                                     </div>
