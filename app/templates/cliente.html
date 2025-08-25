@@ -1424,14 +1424,18 @@
                 activeTabInput.value = getActiveTabId();
             });
         });
-
-        // Limpeza de máscaras antes de enviar
-        $('#editClientForm, #addCarroForm, #updateCarrosForm, #addTelefoneForm').submit(function(event) {
+        
+        // --- BLOCO DE CÓDIGO CORRIGIDO ---
+        // Limpeza de máscaras e validação antes de enviar
+        $('#editClientForm, #addCarroForm, #addTelefoneForm').submit(function(event) {
+            // Validação específica para o formulário de edição de cliente
             if (this.id === 'editClientForm' && !validateCpfCnpjInput()) {
+                // Apenas impede o envio do formulário. A mensagem de erro já é exibida pela função de validação.
                 event.preventDefault();
-                showCustomAlert('Por favor, corrija o documento (CPF/CNPJ).');
-                return;
+                return; 
             }
+            
+            // Remove a máscara dos campos antes do envio para todos os formulários relevantes
             $(this).find('.cep-input, .telefone-input').each(function() { $(this).val($(this).val().replace(/\D/g, '')); });
             $(this).find('.placa-input').each(function() { $(this).val($(this).val().replace('-', '').toUpperCase()); });
             $(this).find('.money-input').each(function() { // 🔹 Limpeza para campos de dinheiro
@@ -1441,6 +1445,7 @@
                 $(this).val(val);
             });
         });
+        // --- FIM DO BLOCO CORRIGIDO ---
 
         // 🔹 Ativa a aba correta ao carregar a página
         setActiveTabOnLoad();
