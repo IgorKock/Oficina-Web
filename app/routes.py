@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session 
-from .models import db, Cliente, Telefone, Carro, Peca, Historico, Pagamento, Utilizador, Papel, utilizador_papeis 
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
+from .models import db, Cliente, Telefone, Carro, Peca, Historico, Pagamento, Utilizador, Papel, utilizador_papeis, OrdemServico
 from datetime import datetime, timedelta
 import pytz
 from werkzeug.security import generate_password_hash
@@ -573,6 +573,66 @@ def delete_utilizador(id):
         flash(f'Erro ao apagar utilizador: {e}', 'danger')
     
     return redirect(url_for('main.lista_utilizadores'))
+
+# 1. Rota para carregar a página HTML
+@main.route('/ordens_servico')
+@login_required
+def ordens_servico():
+    return render_template('ordem_servico.html')
+
+# 2. API para OBTER todas as Ordens de Serviço (GET)
+@main.route('/api/ordens_servico', methods=['GET'])
+@login_required
+def get_ordens_servico():
+    ordens = OrdemServico.query.order_by(OrdemServico.data_criacao.desc()).all()
+    # Usa o método to_dict() que criamos no modelo para converter cada objeto
+    return jsonify([ordem.to_dict() for ordem in ordens])
+
+# 3. API para ADICIONAR uma nova Ordem de Serviço (POST)
+@main.route('/api/ordens_servico', methods=['POST'])
+@login_required
+def add_ordem_servico():
+    data = request.get_json()
+    if not data or not data.get('clientName') or not data.get('vehicle'):
+        return jsonify({'error': 'Dados insuficientes'}), 400
+
+    # CORREÇÃO: Use a classe do Modelo (OrdemServico) e não a função da rota (ordens_servico)
+    nova_ordem = OrdemServico(
+        cliente_nome=data['clientName'],
+        veiculo=data['vehicle'],
+        descricao=data.get('description', ''),
+        status=data.get('status', 'Em Andamento'),
+        valor=float(data.get('value', 0.0))
+    )
+    db.session.add(nova_ordem)
+    db.session.commit()
+    
+    return jsonify(nova_ordem.to_dict()), 201
+
+# 4. API para ATUALIZAR uma Ordem de Serviço existente (PUT)
+@main.route('/api/ordens_servico/<int:id>', methods=['PUT'])
+@login_required
+def update_ordem_servico(id):
+    ordem = OrdemServico.query.get_or_404(id)
+    data = request.get_json()
+
+    ordem.cliente_nome = data.get('clientName', ordem.cliente_nome)
+    ordem.veiculo = data.get('vehicle', ordem.veiculo)
+    ordem.descricao = data.get('description', ordem.descricao)
+    ordem.status = data.get('status', ordem.status)
+    ordem.valor = float(data.get('value', ordem.valor))
+    
+    db.session.commit()
+    return jsonify(ordem.to_dict())
+
+# 5. API para DELETAR uma Ordem de Serviço (DELETE)
+@main.route('/api/ordens_servico/<int:id>', methods=['DELETE'])
+@login_required
+def delete_ordem_servico(id):
+    ordem = OrdemServico.query.get_or_404(id)
+    db.session.delete(ordem)
+    db.session.commit()
+    return jsonify({'success': 'Ordem de serviço deletada'}), 200
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():

@@ -276,3 +276,56 @@ def ajustar_data_pagamento_para_utc(mapper, connection, target):
     if not hasattr(target, 'created_at') or target.created_at is None:
         target.created_at = agora.astimezone(pytz.utc)
     target.updated_at = agora.astimezone(pytz.utc)
+
+class OrdemServico(db.Model):
+    __tablename__ = 'ordens_servico'
+    id = db.Column(db.Integer, primary_key=True)
+    cliente_nome = db.Column(db.String(150), nullable=False)
+    veiculo = db.Column(db.String(150), nullable=False)
+    descricao = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(50), nullable=False, default='Em Andamento')
+    valor = db.Column(db.Float, nullable=False, default=0.0)
+    data_criacao = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+
+    def __repr__(self):
+        return f'<OrdemServico {self.id} - {self.cliente_nome}>'
+
+# Dentro da classe OrdemServico em models.py
+
+    def to_dict(self):
+        """Converte o objeto OrdemServico para um dicionário serializável em JSON."""
+        # --- INÍCIO DA CORREÇÃO DE FUSO HORÁRIO ---
+        fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+        data_local_criacao = None
+
+        if self.data_criacao:
+            # Pega a data UTC do banco
+            data_utc = self.data_criacao
+            # Se a data for "naive" (sem info de fuso), informa que ela é UTC
+            if data_utc.tzinfo is None:
+                data_utc = pytz.utc.localize(data_utc)
+            # Converte a data de UTC para o fuso de Brasília
+            data_local_criacao = data_utc.astimezone(fuso_brasilia)
+        # --- FIM DA CORREÇÃO --- #
+
+        return {
+            'id': self.id,
+            'clientName': self.cliente_nome,
+            'vehicle': self.veiculo,
+            'description': self.descricao,
+            'status': self.status,
+            'value': self.valor,
+            # Usa a data já convertida para o fuso local
+            'createdAt': data_local_criacao.isoformat() if data_local_criacao else None
+        }
+
+# Evento para o modelo OrdemServico (para consistência com outros modelos)
+@listens_for(OrdemServico, 'before_insert')
+@listens_for(OrdemServico, 'before_update')
+def update_ordem_servico_timestamps(mapper, connection, target):
+    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+    agora = datetime.now(fuso_brasilia)
+    if not hasattr(target, 'data_criacao') or target.data_criacao is None:
+        target.data_criacao = agora.astimezone(pytz.utc)
+    target.updated_at = agora.astimezone(pytz.utc)
