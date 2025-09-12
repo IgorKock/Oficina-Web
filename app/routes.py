@@ -578,49 +578,92 @@ def delete_utilizador(id):
 @main.route('/ordens_servico')
 @login_required
 def ordens_servico():
+    # NOVO: Importe os modelos que serão usados
+    from .models import OrdemServico, Servico, PecaUtilizada
     return render_template('ordem_servico.html')
 
 # 2. API para OBTER todas as Ordens de Serviço (GET)
 @main.route('/api/ordens_servico', methods=['GET'])
 @login_required
 def get_ordens_servico():
+    from .models import OrdemServico
     ordens = OrdemServico.query.order_by(OrdemServico.data_criacao.desc()).all()
-    # Usa o método to_dict() que criamos no modelo para converter cada objeto
     return jsonify([ordem.to_dict() for ordem in ordens])
 
-# 3. API para ADICIONAR uma nova Ordem de Serviço (POST)
+# 3. API para ADICIONAR uma nova Ordem de Serviço (POST) - TOTALMENTE REFEITA
 @main.route('/api/ordens_servico', methods=['POST'])
 @login_required
 def add_ordem_servico():
+    from .models import OrdemServico, Servico, PecaUtilizada
     data = request.get_json()
     if not data or not data.get('clientName') or not data.get('vehicle'):
         return jsonify({'error': 'Dados insuficientes'}), 400
 
-    # CORREÇÃO: Use a classe do Modelo (OrdemServico) e não a função da rota (ordens_servico)
+    # Cria a Ordem de Serviço principal
     nova_ordem = OrdemServico(
         cliente_nome=data['clientName'],
         veiculo=data['vehicle'],
         descricao=data.get('description', ''),
         status=data.get('status', 'Em Andamento'),
-        valor=float(data.get('value', 0.0))
+        desconto=float(data.get('desconto', 0.0))
     )
     db.session.add(nova_ordem)
+
+    # Adiciona os serviços relacionados
+    for servico_data in data.get('servicos', []):
+        if servico_data.get('nome'): # Apenas adiciona se tiver nome
+            novo_servico = Servico(
+                nome=servico_data['nome'],
+                valor=float(servico_data.get('valor', 0.0)),
+                responsavel=servico_data.get('responsavel', ''),
+                ordem_servico=nova_ordem # Associa ao objeto principal
+            )
+            db.session.add(novo_servico)
+
+    # Adiciona as peças relacionadas
+    for peca_data in data.get('pecas', []):
+        if peca_data.get('nome'): # Apenas adiciona se tiver nome
+            nova_peca = PecaUtilizada(
+                nome=peca_data['nome'],
+                quantidade=int(peca_data.get('qtd', 1)),
+                valor_unitario=float(peca_data.get('valor', 0.0)),
+                ordem_servico=nova_ordem # Associa ao objeto principal
+            )
+            db.session.add(nova_peca)
+
     db.session.commit()
-    
     return jsonify(nova_ordem.to_dict()), 201
 
-# 4. API para ATUALIZAR uma Ordem de Serviço existente (PUT)
+# 4. API para ATUALIZAR uma Ordem de Serviço existente (PUT) - TOTALMENTE REFEITA
 @main.route('/api/ordens_servico/<int:id>', methods=['PUT'])
 @login_required
 def update_ordem_servico(id):
+    from .models import OrdemServico, Servico, PecaUtilizada
     ordem = OrdemServico.query.get_or_404(id)
     data = request.get_json()
 
+    # Atualiza os dados principais da OS
     ordem.cliente_nome = data.get('clientName', ordem.cliente_nome)
     ordem.veiculo = data.get('vehicle', ordem.veiculo)
     ordem.descricao = data.get('description', ordem.descricao)
     ordem.status = data.get('status', ordem.status)
-    ordem.valor = float(data.get('value', ordem.valor))
+    ordem.desconto = float(data.get('desconto', ordem.desconto))
+
+    # Remove os serviços e peças antigos para substituí-los pelos novos
+    Servico.query.filter_by(ordem_servico_id=id).delete()
+    PecaUtilizada.query.filter_by(ordem_servico_id=id).delete()
+
+    # Adiciona os novos serviços
+    for servico_data in data.get('servicos', []):
+         if servico_data.get('nome'):
+            novo_servico = Servico(nome=servico_data['nome'], valor=float(servico_data.get('valor', 0.0)), responsavel=servico_data.get('responsavel', ''), ordem_servico_id=id)
+            db.session.add(novo_servico)
+
+    # Adiciona as novas peças
+    for peca_data in data.get('pecas', []):
+        if peca_data.get('nome'):
+            nova_peca = PecaUtilizada(nome=peca_data['nome'], quantidade=int(peca_data.get('qtd', 1)), valor_unitario=float(peca_data.get('valor', 0.0)), ordem_servico_id=id)
+            db.session.add(nova_peca)
     
     db.session.commit()
     return jsonify(ordem.to_dict())
@@ -629,6 +672,7 @@ def update_ordem_servico(id):
 @main.route('/api/ordens_servico/<int:id>', methods=['DELETE'])
 @login_required
 def delete_ordem_servico(id):
+    from .models import OrdemServico
     ordem = OrdemServico.query.get_or_404(id)
     db.session.delete(ordem)
     db.session.commit()

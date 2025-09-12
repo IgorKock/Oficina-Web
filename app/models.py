@@ -282,32 +282,34 @@ class OrdemServico(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cliente_nome = db.Column(db.String(150), nullable=False)
     veiculo = db.Column(db.String(150), nullable=False)
-    descricao = db.Column(db.Text, nullable=False)
+    descricao = db.Column(db.Text, nullable=True) # Alterado para permitir nulo
     status = db.Column(db.String(50), nullable=False, default='Em Andamento')
-    valor = db.Column(db.Float, nullable=False, default=0.0)
+    desconto = db.Column(db.Float, nullable=False, default=0.0) # NOVO: Campo para desconto
     data_criacao = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
-    def __repr__(self):
-        return f'<OrdemServico {self.id} - {self.cliente_nome}>'
+    # REMOVIDO: A coluna 'valor' foi removida.
+    # valor = db.Column(db.Float, nullable=False, default=0.0)
 
-# Dentro da classe OrdemServico em models.py
+    # NOVO: Relação com os serviços
+    servicos = db.relationship('Servico', backref='ordem_servico', lazy=True, cascade="all, delete-orphan")
+    # NOVO: Relação com as peças utilizadas
+    pecas_utilizadas = db.relationship('PecaUtilizada', backref='ordem_servico', lazy=True, cascade="all, delete-orphan")
+
+    @property
+    def total(self):
+        """Calcula o valor total da OS dinamicamente."""
+        total_servicos = sum(servico.valor for servico in self.servicos)
+        total_pecas = sum(peca.subtotal for peca in self.pecas_utilizadas)
+        return (total_servicos + total_pecas) - self.desconto
 
     def to_dict(self):
-        """Converte o objeto OrdemServico para um dicionário serializável em JSON."""
-        # --- INÍCIO DA CORREÇÃO DE FUSO HORÁRIO ---
+        """Converte o objeto para um dicionário serializável em JSON."""
         fuso_brasilia = pytz.timezone('America/Sao_Paulo')
         data_local_criacao = None
-
         if self.data_criacao:
-            # Pega a data UTC do banco
-            data_utc = self.data_criacao
-            # Se a data for "naive" (sem info de fuso), informa que ela é UTC
-            if data_utc.tzinfo is None:
-                data_utc = pytz.utc.localize(data_utc)
-            # Converte a data de UTC para o fuso de Brasília
+            data_utc = pytz.utc.localize(self.data_criacao) if self.data_criacao.tzinfo is None else self.data_criacao
             data_local_criacao = data_utc.astimezone(fuso_brasilia)
-        # --- FIM DA CORREÇÃO --- #
 
         return {
             'id': self.id,
@@ -315,10 +317,54 @@ class OrdemServico(db.Model):
             'vehicle': self.veiculo,
             'description': self.descricao,
             'status': self.status,
-            'value': self.valor,
-            # Usa a data já convertida para o fuso local
+            'desconto': self.desconto,
+            'servicos': [s.to_dict() for s in self.servicos],
+            'pecas_utilizadas': [p.to_dict() for p in self.pecas_utilizadas],
+            'total': self.total, # Usa a property para o total calculado
             'createdAt': data_local_criacao.isoformat() if data_local_criacao else None
         }
+
+    def __repr__(self):
+        return f'<OrdemServico {self.id} - {self.cliente_nome}>'
+
+# NOVO MODELO: Servico
+class Servico(db.Model):
+    __tablename__ = 'servicos'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(200), nullable=False)
+    valor = db.Column(db.Float, nullable=False, default=0.0)
+    responsavel = db.Column(db.String(100), nullable=True)
+    ordem_servico_id = db.Column(db.Integer, db.ForeignKey('ordens_servico.id'), nullable=False)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'nome': self.nome,
+            'valor': self.valor,
+            'responsavel': self.responsavel
+        }
+
+# NOVO MODELO: PecaUtilizada
+class PecaUtilizada(db.Model):
+    __tablename__ = 'pecas_utilizadas'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(200), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False, default=1)
+    valor_unitario = db.Column(db.Float, nullable=False, default=0.0)
+    ordem_servico_id = db.Column(db.Integer, db.ForeignKey('ordens_servico.id'), nullable=False)
+
+    @property
+    def subtotal(self):
+        return self.quantidade * self.valor_unitario
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'nome': self.nome,
+            'qtd': self.quantidade,
+            'valor': self.valor_unitario
+        }
+
 
 # Evento para o modelo OrdemServico (para consistência com outros modelos)
 @listens_for(OrdemServico, 'before_insert')
