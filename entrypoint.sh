@@ -41,7 +41,7 @@ else
   echo "Diretório de migrações '$MIGRATIONS_DIR' já existe."
 fi
 
-# 2. Gera novas migrações (se houver mudanças no models.txt)
+# 2. Gera novas migrações (se houver mudanças no models.py)
 echo "Gerando novas migrações (se houver)..."
 flask db migrate -m "Initial migration or schema sync"
 
