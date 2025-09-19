@@ -6,8 +6,16 @@ from werkzeug.security import generate_password_hash
 from flask_login import login_user, logout_user, current_user, login_required
 from sqlalchemy import delete
 import uuid
+import json # Adicione esta importação
+from werkzeug.utils import secure_filename
+import os
+import uuid
+import json # Adicione esta importação
 
 main = Blueprint('main', __name__)
+
+UPLOAD_FOLDER = 'uploads' 
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def ajustar_para_brasilia(data_utc):
     """
@@ -574,6 +582,18 @@ def delete_utilizador(id):
     
     return redirect(url_for('main.lista_utilizadores'))
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Rota para servir os arquivos que foram upados
+@main.route('/uploads/<filename>')
+def get_uploaded_file(filename):
+    # from flask import current_app, send_from_directory
+    from flask import send_from_directory
+    # return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
+    return send_from_directory(os.path.join(os.getcwd(), UPLOAD_FOLDER), filename)
+
 # 1. Rota para carregar a página HTML
 @main.route('/ordens_servico')
 @login_required
@@ -594,8 +614,8 @@ def get_ordens_servico():
 @main.route('/api/ordens_servico', methods=['POST'])
 @login_required
 def add_ordem_servico():
-    from .models import OrdemServico, Servico, PecaUtilizada
-    data = request.get_json()
+    from .models import OrdemServico, Servico, PecaUtilizada, Foto
+    data = request.form
     if not data or not data.get('clientName') or not data.get('vehicle'):
         return jsonify({'error': 'Dados insuficientes'}), 400
 
@@ -609,8 +629,11 @@ def add_ordem_servico():
     )
     db.session.add(nova_ordem)
 
+    servicos_data = json.loads(data.get('servicos', '[]'))
+    pecas_data = json.loads(data.get('pecas', '[]'))
+
     # Adiciona os serviços relacionados
-    for servico_data in data.get('servicos', []):
+    for servico_data in data.get('servicos_data', []):
         if servico_data.get('nome'): # Apenas adiciona se tiver nome
             novo_servico = Servico(
                 nome=servico_data['nome'],
@@ -621,7 +644,7 @@ def add_ordem_servico():
             db.session.add(novo_servico)
 
     # Adiciona as peças relacionadas
-    for peca_data in data.get('pecas', []):
+    for peca_data in data.get('pecas_data', []):
         if peca_data.get('nome'): # Apenas adiciona se tiver nome
             nova_peca = PecaUtilizada(
                 nome=peca_data['nome'],
@@ -631,6 +654,21 @@ def add_ordem_servico():
             )
             db.session.add(nova_peca)
 
+    files = request.files.getlist('photos[]')
+    for file in files:
+        if file and allowed_file(file.filename):
+            # Gera um nome de arquivo seguro e único
+            original_filename = secure_filename(file.filename)
+            extension = original_filename.rsplit('.', 1)[1].lower()
+            unique_filename = f"{uuid.uuid4()}.{extension}"
+            
+            # Salva o arquivo na pasta 'uploads'
+            file.save(os.path.join(UPLOAD_FOLDER, unique_filename))
+            
+            # Cria o registro da foto no banco de dados
+            nova_foto = Foto(filename=unique_filename, ordem_servico=nova_ordem)
+            db.session.add(nova_foto)
+    
     db.session.commit()
     return jsonify(nova_ordem.to_dict()), 201
 

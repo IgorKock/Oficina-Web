@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy.sql import func
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from flask import url_for
 
 def para_utc(data_local, fuso_local='America/Sao_Paulo'):
     """
@@ -287,6 +288,7 @@ class OrdemServico(db.Model):
     desconto = db.Column(db.Float, nullable=False, default=0.0) # NOVO: Campo para desconto
     data_criacao = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    fotos = db.relationship('Foto', backref='ordem_servico', lazy=True, cascade="all, delete-orphan")
 
     # REMOVIDO: A coluna 'valor' foi removida.
     # valor = db.Column(db.Float, nullable=False, default=0.0)
@@ -320,7 +322,8 @@ class OrdemServico(db.Model):
             'desconto': self.desconto,
             'servicos': [s.to_dict() for s in self.servicos],
             'pecas_utilizadas': [p.to_dict() for p in self.pecas_utilizadas],
-            'total': self.total, # Usa a property para o total calculado
+            'fotos': [f.to_dict() for f in self.fotos], # NOVO: Adiciona as fotos
+            'total': self.total,
             'createdAt': data_local_criacao.isoformat() if data_local_criacao else None
         }
 
@@ -365,6 +368,19 @@ class PecaUtilizada(db.Model):
             'valor': self.valor_unitario
         }
 
+class Foto(db.Model):
+    __tablename__ = 'fotos'
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), nullable=False, unique=True)
+    ordem_servico_id = db.Column(db.Integer, db.ForeignKey('ordens_servico.id'), nullable=False)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'filename': self.filename,
+            # Gera a URL completa para a imagem
+            'url': url_for('main.get_uploaded_file', filename=self.filename, _external=True)
+        }
 
 # Evento para o modelo OrdemServico (para consistência com outros modelos)
 @listens_for(OrdemServico, 'before_insert')
