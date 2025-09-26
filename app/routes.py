@@ -589,17 +589,13 @@ def allowed_file(filename):
 # Rota para servir os arquivos que foram upados
 @main.route('/uploads/<filename>')
 def get_uploaded_file(filename):
-    # from flask import current_app, send_from_directory
     from flask import send_from_directory
-    # return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
     return send_from_directory(os.path.join(os.getcwd(), UPLOAD_FOLDER), filename)
 
 # 1. Rota para carregar a página HTML
 @main.route('/ordens_servico')
 @login_required
 def ordens_servico():
-    # NOVO: Importe os modelos que serão usados
-    from .models import OrdemServico, Servico, PecaUtilizada
     return render_template('ordem_servico.html')
 
 # 2. API para OBTER todas as Ordens de Serviço (GET)
@@ -610,7 +606,7 @@ def get_ordens_servico():
     ordens = OrdemServico.query.order_by(OrdemServico.data_criacao.desc()).all()
     return jsonify([ordem.to_dict() for ordem in ordens])
 
-# 3. API para ADICIONAR uma nova Ordem de Serviço (POST) - TOTALMENTE REFEITA
+# 3. API para ADICIONAR uma nova Ordem de Serviço (POST) - CORRIGIDA
 @main.route('/api/ordens_servico', methods=['POST'])
 @login_required
 def add_ordem_servico():
@@ -619,7 +615,6 @@ def add_ordem_servico():
     if not data or not data.get('clientName') or not data.get('vehicle'):
         return jsonify({'error': 'Dados insuficientes'}), 400
 
-    # Cria a Ordem de Serviço principal
     nova_ordem = OrdemServico(
         cliente_nome=data['clientName'],
         veiculo=data['vehicle'],
@@ -629,56 +624,70 @@ def add_ordem_servico():
     )
     db.session.add(nova_ordem)
 
+    # CORREÇÃO: Use as variáveis que contêm os dados decodificados
     servicos_data = json.loads(data.get('servicos', '[]'))
     pecas_data = json.loads(data.get('pecas', '[]'))
 
-    # Adiciona os serviços relacionados
-    for servico_data in data.get('servicos_data', []):
-        if servico_data.get('nome'): # Apenas adiciona se tiver nome
+    for servico_data in servicos_data:
+        if servico_data.get('nome'):
             novo_servico = Servico(
                 nome=servico_data['nome'],
                 valor=float(servico_data.get('valor', 0.0)),
                 responsavel=servico_data.get('responsavel', ''),
-                ordem_servico=nova_ordem # Associa ao objeto principal
+                ordem_servico=nova_ordem
             )
             db.session.add(novo_servico)
 
-    # Adiciona as peças relacionadas
-    for peca_data in data.get('pecas_data', []):
-        if peca_data.get('nome'): # Apenas adiciona se tiver nome
+    for peca_data in pecas_data:
+        if peca_data.get('nome'):
             nova_peca = PecaUtilizada(
                 nome=peca_data['nome'],
                 quantidade=int(peca_data.get('qtd', 1)),
                 valor_unitario=float(peca_data.get('valor', 0.0)),
-                ordem_servico=nova_ordem # Associa ao objeto principal
+                ordem_servico=nova_ordem
             )
             db.session.add(nova_peca)
 
     files = request.files.getlist('photos[]')
     for file in files:
         if file and allowed_file(file.filename):
-            # Gera um nome de arquivo seguro e único
             original_filename = secure_filename(file.filename)
             extension = original_filename.rsplit('.', 1)[1].lower()
             unique_filename = f"{uuid.uuid4()}.{extension}"
-            
-            # Salva o arquivo na pasta 'uploads'
             file.save(os.path.join(UPLOAD_FOLDER, unique_filename))
-            
-            # Cria o registro da foto no banco de dados
             nova_foto = Foto(filename=unique_filename, ordem_servico=nova_ordem)
             db.session.add(nova_foto)
     
     db.session.commit()
     return jsonify(nova_ordem.to_dict()), 201
 
-# 4. API para ATUALIZAR uma Ordem de Serviço existente (PUT) - TOTALMENTE REFEITA
+# 4. API para ATUALIZAR uma Ordem de Serviço existente (PUT) - CORRIGIDA
 @main.route('/api/ordens_servico/<int:id>', methods=['PUT'])
 @login_required
 def update_ordem_servico(id):
-    from .models import OrdemServico, Servico, PecaUtilizada
+    from .models import OrdemServico, Servico, PecaUtilizada, Foto
     ordem = OrdemServico.query.get_or_404(id)
-    data = request.get_json()
+    data = request.form
+
+    # --- INÍCIO: LÓGICA PARA DELETAR FOTOS EXISTENTES ---
+    photos_to_delete_str = data.get('photos_to_delete', '[]')
+    photos_to_delete_ids = json.loads(photos_to_delete_str)
+
+    if photos_to_delete_ids:
+        # Primeiro, busca os objetos das fotos para pegar os nomes dos arquivos
+        fotos_a_deletar = Foto.query.filter(Foto.id.in_(photos_to_delete_ids), Foto.ordem_servico_id == id).all()
+        
+        for foto in fotos_a_deletar:
+            # Apaga o arquivo físico da pasta 'uploads'
+            try:
+                os.remove(os.path.join(UPLOAD_FOLDER, foto.filename))
+            except OSError as e:
+                print(f"Erro ao deletar arquivo {foto.filename}: {e}") # Loga o erro mas continua
+            
+            # Remove do banco de dados
+            db.session.delete(foto)
+
+    # --- FIM: LÓGICA PARA DELETAR FOTOS EXISTENTES ---
 
     # Atualiza os dados principais da OS
     ordem.cliente_nome = data.get('clientName', ordem.cliente_nome)
@@ -687,22 +696,34 @@ def update_ordem_servico(id):
     ordem.status = data.get('status', ordem.status)
     ordem.desconto = float(data.get('desconto', ordem.desconto))
 
-    # Remove os serviços e peças antigos para substituí-los pelos novos
+    # Recria os serviços e peças
     Servico.query.filter_by(ordem_servico_id=id).delete()
     PecaUtilizada.query.filter_by(ordem_servico_id=id).delete()
+    
+    servicos_data = json.loads(data.get('servicos', '[]'))
+    pecas_data = json.loads(data.get('pecas', '[]'))
 
-    # Adiciona os novos serviços
-    for servico_data in data.get('servicos', []):
-         if servico_data.get('nome'):
+    for servico_data in servicos_data:
+        if servico_data.get('nome'):
             novo_servico = Servico(nome=servico_data['nome'], valor=float(servico_data.get('valor', 0.0)), responsavel=servico_data.get('responsavel', ''), ordem_servico_id=id)
             db.session.add(novo_servico)
 
-    # Adiciona as novas peças
-    for peca_data in data.get('pecas', []):
+    for peca_data in pecas_data:
         if peca_data.get('nome'):
             nova_peca = PecaUtilizada(nome=peca_data['nome'], quantidade=int(peca_data.get('qtd', 1)), valor_unitario=float(peca_data.get('valor', 0.0)), ordem_servico_id=id)
             db.session.add(nova_peca)
     
+    # Adiciona novas fotos
+    files = request.files.getlist('photos[]')
+    for file in files:
+        if file and allowed_file(file.filename):
+            original_filename = secure_filename(file.filename)
+            extension = original_filename.rsplit('.', 1)[1].lower()
+            unique_filename = f"{uuid.uuid4()}.{extension}"
+            file.save(os.path.join(UPLOAD_FOLDER, unique_filename))
+            nova_foto = Foto(filename=unique_filename, ordem_servico_id=id)
+            db.session.add(nova_foto)
+
     db.session.commit()
     return jsonify(ordem.to_dict())
 
@@ -712,6 +733,7 @@ def update_ordem_servico(id):
 def delete_ordem_servico(id):
     from .models import OrdemServico
     ordem = OrdemServico.query.get_or_404(id)
+    # Adicionar lógica para apagar arquivos de fotos da pasta 'uploads' se desejar
     db.session.delete(ordem)
     db.session.commit()
     return jsonify({'success': 'Ordem de serviço deletada'}), 200
