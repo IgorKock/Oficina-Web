@@ -107,7 +107,7 @@
     </div>
 </main>
 
-<div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+<div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
@@ -157,7 +157,7 @@
                                     <hr>
                                     <div class="d-flex justify-content-between mb-2"><span>Total Geral:</span><span id="totalGeral" class="fs-4 fw-bold text-primary">R$ 0,00</span></div>
                                     <hr>
-                                    <div class="mb-3"><label for="desconto" class="form-label">Desconto (R$)</label><input type="number" class="form-control" id="desconto" value="0" min="0" step="0.01"></div>
+                                    <div class="mb-3"><label for="desconto" class="form-label">Desconto (R$)</label><input type="text" class="form-control" id="desconto" placeholder="0,00"></div>
                                 </div>
                             </div>
                         </div>
@@ -169,7 +169,11 @@
     </div>
 </div>
 
+<!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     // --- LÓGICA DO MENU LATERAL ---
@@ -181,34 +185,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // --- FUNÇÕES DE ALERTA E CONFIRMAÇÃO ---
     const alertContainer = document.getElementById('alert-container');
-    function showCustomAlert(message, type = 'success') {
-        const alertElement = document.createElement('div');
-        alertElement.className = `alert alert-${type} shadow-lg toast-alert`;
-        alertElement.innerHTML = `<span>${message}</span><button type="button" class="btn-close" aria-label="Close"></button>`;
-        alertContainer.appendChild(alertElement);
-        setTimeout(() => alertElement.classList.add('show'), 10);
-        const removeAlert = () => {
-            alertElement.classList.remove('show');
-            setTimeout(() => alertElement.remove(), 300);
-        };
-        alertElement.querySelector('.btn-close').addEventListener('click', removeAlert);
-        setTimeout(removeAlert, 4000);
-    }
-    function showCustomConfirm(message) {
-        return new Promise(resolve => {
-            const confirmElement = document.createElement('div');
-            confirmElement.className = 'alert alert-warning shadow-lg toast-alert';
-            confirmElement.innerHTML = `<div class="flex-grow-1 me-3">${message}</div><div><button class="btn btn-success btn-sm me-2" id="confirm-yes">Sim</button><button class="btn btn-danger btn-sm" id="confirm-no">Não</button></div>`;
-            alertContainer.appendChild(confirmElement);
-            setTimeout(() => confirmElement.classList.add('show'), 10);
-            const removeConfirm = (result) => {
-                confirmElement.classList.remove('show');
-                setTimeout(() => { confirmElement.remove(); resolve(result); }, 300);
-            };
-            confirmElement.querySelector('#confirm-yes').addEventListener('click', () => removeConfirm(true));
-            confirmElement.querySelector('#confirm-no').addEventListener('click', () => removeConfirm(false));
-        });
-    }
+    function showCustomAlert(message, type = 'success') { /* ...código mantido... */ }
+    function showCustomConfirm(message) { /* ...código mantido... */ }
 
     // --- LÓGICA DA APLICAÇÃO ---
     const orderForm = document.getElementById('orderForm');
@@ -240,45 +218,58 @@ document.addEventListener("DOMContentLoaded", function() {
     const formatDate = (date) => !date ? 'Data indisponível' : new Date(date).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
     const formatarValor = (valor) => `R$ ${(typeof valor === 'number' ? valor : 0).toFixed(2).replace('.', ',')}`;
 
+    function getNumericValue(element) {
+        const cleanVal = $(element).cleanVal();
+        return (parseFloat(cleanVal) / 100) || 0;
+    }
+
     function calcularTotais() {
-        let subtotalServicos = Array.from(document.querySelectorAll('.servico-valor')).reduce((acc, input) => acc + (parseFloat(input.value) || 0), 0);
+        let subtotalServicos = Array.from(document.querySelectorAll('.servico-valor')).reduce((acc, input) => acc + getNumericValue(input), 0);
         let subtotalPecas = Array.from(pecasContainer.querySelectorAll('.os-item-row')).reduce((acc, row) => {
-            const qtd = parseFloat(row.querySelector('.peca-quantidade').value) || 0;
-            const valor = parseFloat(row.querySelector('.peca-valor').value) || 0;
+            const qtd = parseFloat(row.querySelector('.peca-quantidade').value) || 1;
+            const valor = getNumericValue(row.querySelector('.peca-valor'));
             return acc + (qtd * valor);
         }, 0);
-        const desconto = parseFloat(descontoInput.value) || 0;
+        const desconto = getNumericValue(descontoInput);
         subtotalServicosSpan.textContent = formatarValor(subtotalServicos);
         subtotalPecasSpan.textContent = formatarValor(subtotalPecas);
         totalGeralSpan.textContent = formatarValor(subtotalServicos + subtotalPecas - desconto);
+    }
+
+    function applyMask(element, selector) {
+        $(element).find(selector).mask('#.##0,00', { reverse: true });
     }
 
     function addServicoItem(servico = { nome: '', valor: 0, responsavel: '' }) {
         if (servicosContainer.querySelector('.alert')) { servicosContainer.innerHTML = ''; }
         const newItem = document.createElement('div');
         newItem.classList.add('row', 'os-item-row', 'align-items-center');
+        const valorInicial = servico.valor > 0 ? formatarValor(servico.valor).replace('R$ ', '') : '';
         newItem.innerHTML = `
             <div class="col-md-5"><label class="form-label d-none d-md-block">Nome do Serviço</label><input type="text" class="form-control servico-nome" value="${servico.nome}" placeholder="Nome do Serviço" required></div>
-            <div class="col-md-3"><label class="form-label d-none d-md-block">Valor (R$)</label><input type="number" class="form-control servico-valor" min="0" step="0.01" value="${servico.valor}"></div>
+            <div class="col-md-3"><label class="form-label d-none d-md-block">Valor (R$)</label><input type="text" class="form-control servico-valor" value="${valorInicial}" placeholder="0,00"></div>
             <div class="col-md-3"><label class="form-label d-none d-md-block">Responsável</label><input type="text" class="form-control servico-responsavel" value="${servico.responsavel || ''}" placeholder="Mecânico"></div>
             <div class="col-md-1 d-flex justify-content-center align-items-end mt-3 mt-md-0"><button class="btn btn-outline-danger remove-item-btn" type="button"><i class="bi bi-trash"></i></button></div>`;
         servicosContainer.appendChild(newItem);
+        applyMask(newItem, '.servico-valor');
         newItem.querySelectorAll('input').forEach(i => i.addEventListener('input', calcularTotais));
         newItem.querySelector('.remove-item-btn').addEventListener('click', () => {
             newItem.remove(); if (servicosContainer.children.length === 0) servicosContainer.innerHTML = '<div class="alert alert-info text-center">Nenhum serviço adicionado.</div>'; calcularTotais();
         });
     }
 
-    function addPecaItem(peca = { nome: '', qtd: 1, valor: 0 }) {
+    function addPecaItem(peca = { nome: '', qtd: '', valor: 0 }) {
         if (pecasContainer.querySelector('.alert')) { pecasContainer.innerHTML = ''; }
         const newItem = document.createElement('div');
         newItem.classList.add('row', 'os-item-row', 'align-items-center');
+        const valorInicial = peca.valor > 0 ? formatarValor(peca.valor).replace('R$ ', '') : '';
         newItem.innerHTML = `
             <div class="col-md-5"><label class="form-label d-none d-md-block">Nome da Peça</label><input type="text" class="form-control peca-nome" value="${peca.nome}" placeholder="Nome da Peça" required></div>
-            <div class="col-md-2"><label class="form-label d-none d-md-block">Quantidade</label><input type="number" class="form-control peca-quantidade" min="1" value="${peca.qtd}"></div>
-            <div class="col-md-3"><label class="form-label d-none d-md-block">Valor Unidade. (R$)</label><input type="number" class="form-control peca-valor" min="0" step="0.01" value="${peca.valor}"></div>
+            <div class="col-md-2"><label class="form-label d-none d-md-block">Quantidade</label><input type="number" class="form-control peca-quantidade" min="1" value="${peca.qtd}" placeholder="1"></div>
+            <div class="col-md-3"><label class="form-label d-none d-md-block">Valor Unidade. (R$)</label><input type="text" class="form-control peca-valor" value="${valorInicial}" placeholder="0,00"></div>
             <div class="col-md-1 d-flex justify-content-center align-items-end mt-3 mt-md-0"><button class="btn btn-outline-danger remove-item-btn" type="button"><i class="bi bi-trash"></i></button></div>`;
         pecasContainer.appendChild(newItem);
+        applyMask(newItem, '.peca-valor');
         newItem.querySelectorAll('input').forEach(i => i.addEventListener('input', calcularTotais));
         newItem.querySelector('.remove-item-btn').addEventListener('click', () => {
             newItem.remove(); if (pecasContainer.children.length === 0) pecasContainer.innerHTML = '<div class="alert alert-info text-center">Nenhuma peça adicionada.</div>'; calcularTotais();
@@ -324,9 +315,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const photoLi = removeBtn.parentElement;
             if (photoLi.dataset.existingPhoto) {
                 const photoId = parseInt(removeBtn.dataset.photoid);
-                if (!photosToDelete.includes(photoId)) { 
-                    photosToDelete.push(photoId); 
-                }
+                if (!photosToDelete.includes(photoId)) { photosToDelete.push(photoId); }
                 photoLi.style.display = 'none';
             } else {
                 const filenameToRemove = removeBtn.dataset.filename;
@@ -370,7 +359,8 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('vehicle').value = order.vehicle;
         document.getElementById('description').value = order.description;
         document.getElementById('status').value = order.status;
-        document.getElementById('desconto').value = order.desconto;
+        const descontoVal = order.desconto > 0 ? formatarValor(order.desconto).replace('R$ ', '') : '';
+        $('#desconto').val(descontoVal).trigger('input');
         servicosContainer.innerHTML = '';
         if (order.servicos && order.servicos.length > 0) { 
             order.servicos.forEach(s => addServicoItem(s)); 
@@ -417,18 +407,20 @@ document.addEventListener("DOMContentLoaded", function() {
         formData.append('vehicle', document.getElementById('vehicle').value.trim());
         formData.append('description', document.getElementById('description').value.trim());
         formData.append('status', document.getElementById('status').value);
-        formData.append('desconto', parseFloat(descontoInput.value) || 0);
+        formData.append('desconto', getNumericValue(descontoInput));
         const servicos = [];
         servicosContainer.querySelectorAll('.os-item-row').forEach(row => {
             const nome = row.querySelector('.servico-nome').value.trim();
-            if (nome) servicos.push({ nome: nome, valor: parseFloat(row.querySelector('.servico-valor').value) || 0, responsavel: row.querySelector('.servico-responsavel').value.trim() });
+            if (nome) servicos.push({ 
+                nome: nome, valor: getNumericValue(row.querySelector('.servico-valor')), responsavel: row.querySelector('.servico-responsavel').value.trim() 
+            });
         });
         formData.append('servicos', JSON.stringify(servicos));
         const pecas = [];
         pecasContainer.querySelectorAll('.os-item-row').forEach(row => {
             const nome = row.querySelector('.peca-nome').value.trim();
             if (nome) pecas.push({ 
-                nome: nome, qtd: parseInt(row.querySelector('.peca-quantidade').value) || 1, valor: parseFloat(row.querySelector('.peca-valor').value) || 0 
+                nome: nome, qtd: parseInt(row.querySelector('.peca-quantidade').value) || 1, valor: getNumericValue(row.querySelector('.peca-valor')) 
             });
         });
         formData.append('pecas', JSON.stringify(pecas));
@@ -442,7 +434,10 @@ document.addEventListener("DOMContentLoaded", function() {
             const response = await fetch(url, {
                 method: method, body: formData 
             });
-            if (!response.ok) throw new Error('A resposta da rede não foi OK');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'A resposta da rede não foi OK');
+            }
             const updatedOrder = await response.json();
             if (id) {
                 const index = allOrders.findIndex(order => order.id === updatedOrder.id);
@@ -455,7 +450,7 @@ document.addEventListener("DOMContentLoaded", function() {
             filterOrders();
         } catch (error) {
             console.error('Erro ao salvar:', error);
-            showCustomAlert('Erro ao salvar a ordem de serviço.', 'danger');
+            showCustomAlert('Erro ao salvar a ordem de serviço: ' + error.message, 'danger');
         }
     });
     
@@ -474,6 +469,7 @@ document.addEventListener("DOMContentLoaded", function() {
         e.preventDefault(); filterOrders(); 
     });
     searchInput.addEventListener('keyup', filterOrders);
+    $('#desconto').mask('#.##0,00', { reverse: true }).on('input', calcularTotais);
 
     async function loadInitialOrders() {
         try {
@@ -486,6 +482,40 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    // Preenchendo as funções omitidas para garantir que o código seja completo
+    const getElement = (id) => document.getElementById(id);
+    const qs = (selector, parent = document) => parent.querySelector(selector);
+    const qsa = (selector, parent = document) => parent.querySelectorAll(selector);
+    showCustomAlert = (message, type = 'success') => { 
+        const alertElement = document.createElement('div'); 
+        alertElement.className = `alert alert-${type} shadow-lg toast-alert`; 
+        alertElement.innerHTML = `<span>${message}</span><button type="button" class="btn-close" aria-label="Close"></button>`; 
+        getElement('alert-container').appendChild(alertElement); 
+        setTimeout(() => alertElement.classList.add('show'), 10); 
+        const removeAlert = () => { 
+            alertElement.classList.remove('show'); 
+            setTimeout(() => alertElement.remove(), 300);
+        }; 
+        qs('.btn-close', alertElement).addEventListener('click', removeAlert); 
+        setTimeout(removeAlert, 4000); 
+    };
+    showCustomConfirm = (message) => new Promise(resolve => { 
+        const confirmElement = document.createElement('div'); 
+        confirmElement.className = 'alert alert-warning shadow-lg toast-alert'; 
+        confirmElement.innerHTML = `<div class="flex-grow-1 me-3">${message}</div>
+        <div><button class="btn btn-success btn-sm me-2" id="confirm-yes">Sim</button><button class="btn btn-danger btn-sm" id="confirm-no">Não</button></div>`; 
+        getElement('alert-container').appendChild(confirmElement); 
+        setTimeout(() => confirmElement.classList.add('show'), 10); 
+        const removeConfirm = (result) => { 
+            confirmElement.classList.remove('show'); 
+            setTimeout(() => { 
+                confirmElement.remove(); resolve(result); 
+            }, 300); 
+        }; 
+        qs('#confirm-yes', confirmElement).addEventListener('click', () => removeConfirm(true));
+        qs('#confirm-no', confirmElement).addEventListener('click', () => removeConfirm(false)); 
+    });
+    
     loadInitialOrders();
 });
 </script>
