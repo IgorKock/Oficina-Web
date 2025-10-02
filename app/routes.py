@@ -614,17 +614,24 @@ def add_ordem_servico():
     data = request.form
     if not data or not data.get('clientName') or not data.get('vehicle'):
         return jsonify({'error': 'Dados insuficientes'}), 400
-
+    
+    data_previsao_str = data.get('dataPrevisaoEntrega')
+    data_previsao_obj = None
+    if data_previsao_str:
+        data_previsao_obj = datetime.strptime(data_previsao_str, '%Y-%m-%d').date()
+    
+    # --- CORREÇÃO APLICADA AQUI ---
     nova_ordem = OrdemServico(
         cliente_nome=data['clientName'],
         veiculo=data['vehicle'],
         descricao=data.get('description', ''),
         status=data.get('status', 'Em Andamento'),
-        desconto=float(data.get('desconto', 0.0))
+        desconto=float(data.get('desconto', 0.0)),
+        dataPrevisaoEntrega=data_previsao_obj  # Corrigido de dataPrevisaoEntrega
     )
     db.session.add(nova_ordem)
 
-    # CORREÇÃO: Use as variáveis que contêm os dados decodificados
+    # O resto da função continua igual
     servicos_data = json.loads(data.get('servicos', '[]'))
     pecas_data = json.loads(data.get('pecas', '[]'))
 
@@ -660,46 +667,47 @@ def add_ordem_servico():
     
     db.session.commit()
     return jsonify(nova_ordem.to_dict()), 201
-
 # 4. API para ATUALIZAR uma Ordem de Serviço existente (PUT) - CORRIGIDA
 @main.route('/api/ordens_servico/<int:id>', methods=['PUT'])
 @login_required
 def update_ordem_servico(id):
     from .models import OrdemServico, Servico, PecaUtilizada, Foto
     ordem = OrdemServico.query.get_or_404(id)
+    
+    # CORREÇÃO: Mudar de request.get_json() para request.form
     data = request.form
 
     # --- INÍCIO: LÓGICA PARA DELETAR FOTOS EXISTENTES ---
     photos_to_delete_str = data.get('photos_to_delete', '[]')
     photos_to_delete_ids = json.loads(photos_to_delete_str)
-
     if photos_to_delete_ids:
-        # Primeiro, busca os objetos das fotos para pegar os nomes dos arquivos
         fotos_a_deletar = Foto.query.filter(Foto.id.in_(photos_to_delete_ids), Foto.ordem_servico_id == id).all()
-        
         for foto in fotos_a_deletar:
-            # Apaga o arquivo físico da pasta 'uploads'
             try:
                 os.remove(os.path.join(UPLOAD_FOLDER, foto.filename))
             except OSError as e:
-                print(f"Erro ao deletar arquivo {foto.filename}: {e}") # Loga o erro mas continua
-            
-            # Remove do banco de dados
+                print(f"Erro ao deletar arquivo {foto.filename}: {e}")
             db.session.delete(foto)
 
-    # --- FIM: LÓGICA PARA DELETAR FOTOS EXISTENTES ---
-
-    # Atualiza os dados principais da OS
+    # --- ATUALIZAÇÃO DOS CAMPOS PRINCIPAIS ---
     ordem.cliente_nome = data.get('clientName', ordem.cliente_nome)
     ordem.veiculo = data.get('vehicle', ordem.veiculo)
     ordem.descricao = data.get('description', ordem.descricao)
     ordem.status = data.get('status', ordem.status)
     ordem.desconto = float(data.get('desconto', ordem.desconto))
 
-    # Recria os serviços e peças
+    # CORREÇÃO: Lógica para atualizar a data de previsão
+    data_previsao_str = data.get('dataPrevisaoEntrega')
+    if data_previsao_str:
+        ordem.dataPrevisaoEntrega = datetime.strptime(data_previsao_str, '%Y-%m-%d').date()
+    else:
+        ordem.dataPrevisaoEntrega = None
+
+    # --- RECRIAÇÃO DE SERVIÇOS E PEÇAS ---
     Servico.query.filter_by(ordem_servico_id=id).delete()
     PecaUtilizada.query.filter_by(ordem_servico_id=id).delete()
     
+    # CORREÇÃO: Decodificar serviços e peças a partir do 'data' (request.form)
     servicos_data = json.loads(data.get('servicos', '[]'))
     pecas_data = json.loads(data.get('pecas', '[]'))
 
@@ -713,7 +721,7 @@ def update_ordem_servico(id):
             nova_peca = PecaUtilizada(nome=peca_data['nome'], quantidade=int(peca_data.get('qtd', 1)), valor_unitario=float(peca_data.get('valor', 0.0)), ordem_servico_id=id)
             db.session.add(nova_peca)
     
-    # Adiciona novas fotos
+    # --- ADIÇÃO DE NOVAS FOTOS ---
     files = request.files.getlist('photos[]')
     for file in files:
         if file and allowed_file(file.filename):

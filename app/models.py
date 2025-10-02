@@ -289,6 +289,7 @@ class OrdemServico(db.Model):
     data_criacao = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     fotos = db.relationship('Foto', backref='ordem_servico', lazy=True, cascade="all, delete-orphan")
+    dataPrevisaoEntrega = db.Column(db.Date, nullable=True)
 
     # REMOVIDO: A coluna 'valor' foi removida.
     # valor = db.Column(db.Float, nullable=False, default=0.0)
@@ -324,7 +325,8 @@ class OrdemServico(db.Model):
             'pecas_utilizadas': [p.to_dict() for p in self.pecas_utilizadas],
             'fotos': [f.to_dict() for f in self.fotos], # NOVO: Adiciona as fotos
             'total': self.total,
-            'createdAt': data_local_criacao.isoformat() if data_local_criacao else None
+            'createdAt': data_local_criacao.isoformat() if data_local_criacao else None,
+            'dataPrevisaoEntrega': self.dataPrevisaoEntrega.isoformat() if self.dataPrevisaoEntrega else None
         }
 
     def __repr__(self):
