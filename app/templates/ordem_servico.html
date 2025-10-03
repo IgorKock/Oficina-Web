@@ -35,19 +35,16 @@
         .btn-primary:hover { background-position: right center; transform: scale(1.02); }
         .order-card { border-left: 5px solid; border-image: linear-gradient(to bottom, #007bff, #00d4ff) 1; transition: all 0.2s ease-in-out; }
         .order-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        
-        /* --- ESTILOS DOS BADGES DE STATUS ATUALIZADOS --- */
-        .order-status-badge-Orçamento { background-color: #cfe2ff; color: #084298; } /* Azul (Info) */
-        .order-status-badge-EmAndamento { background-color: #fff3cd; color: #856404; } /* Amarelo (Warning) */
-        .order-status-badge-Concluído { background-color: #d4edda; color: #155724; } /* Verde (Success) */
-        .order-status-badge-Cancelado { background-color: #f8d7da; color: #721c24; } /* Vermelho (Danger) */
-
+        .order-status-badge-Orçamento { background-color: #cfe2ff; color: #084298; }
+        .order-status-badge-EmAndamento { background-color: #fff3cd; color: #856404; }
+        .order-status-badge-Concluído { background-color: #d4edda; color: #155724; }
+        .order-status-badge-Cancelado { background-color: #f8d7da; color: #721c24; }
         .alert-container { position: fixed; top: calc(var(--header-height) + 15px); left: 50%; transform: translateX(-50%); z-index: 1060; width: 90%; max-width: 600px; display: flex; flex-direction: column; gap: 10px; }
         .toast-alert { opacity: 0; transform: translateY(-20px); transition: opacity 0.3s ease, transform 0.3s ease; display: flex; align-items: center; justify-content: space-between; }
         .toast-alert.show { opacity: 1; transform: translateY(0); }
         .modal-body .card { font-family: 'Exo', sans-serif; border-radius: 0.75rem; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); border-top: none; border-image: none; }
         .modal-body .card-header { background-color: #e9ecef; border-bottom: 1px solid rgba(0, 0, 0, 0.125); border-top-left-radius: 0.75rem; border-top-right-radius: 0.75rem; font-weight: bold; padding: 1rem 1.25rem; }
-        .modal-body .form-control, .modal-body .btn { border-radius: 0.5rem; }
+        .modal-body .form-control, .modal-body .btn, .modal-body .form-select { border-radius: 0.5rem; }
         .os-item-row { border-bottom: 1px solid #dee2e6; padding-bottom: 0.75rem; margin-bottom: 0.75rem; }
         .photo-list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 1rem; }
         .photo-list li { position: relative; width: 100px; height: 100px; border: 1px solid #dee2e6; border-radius: 0.5rem; overflow: hidden; }
@@ -135,7 +132,6 @@
                                     <div class="row mb-3">
                                         <div class="col-md-6">
                                             <div class="form-floating">
-                                                <!-- SELECT DE STATUS ATUALIZADO -->
                                                 <select class="form-select" id="status" required>
                                                     <option value="Orçamento" selected>Orçamento</option>
                                                     <option value="Em Andamento">Em Andamento</option>
@@ -206,6 +202,9 @@ document.addEventListener("DOMContentLoaded", function() {
         menuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
     }
 
+    // --- CARREGAR DADOS INICIAIS (MECÂNICOS) ---
+    const MECANICOS = {{ mecanicos_json | safe }};
+
     // --- FUNÇÕES DE ALERTA E CONFIRMAÇÃO ---
     const alertContainer = document.getElementById('alert-container');
     function showCustomAlert(message, type = 'success') { /* ...código mantido... */ }
@@ -268,14 +267,15 @@ document.addEventListener("DOMContentLoaded", function() {
         const newItem = document.createElement('div');
         newItem.classList.add('row', 'os-item-row', 'align-items-center');
         const valorInicial = servico.valor > 0 ? formatarValor(servico.valor).replace('R$ ', '') : '';
+        const mecanicoOptions = MECANICOS.map(mecanico => `<option value="${mecanico.nome}" ${mecanico.nome === servico.responsavel ? 'selected' : ''}>${mecanico.nome}</option>`).join('');
         newItem.innerHTML = `
             <div class="col-md-5"><label class="form-label d-none d-md-block">Nome do Serviço</label><input type="text" class="form-control servico-nome" value="${servico.nome}" placeholder="Nome do Serviço" required></div>
             <div class="col-md-3"><label class="form-label d-none d-md-block">Valor (R$)</label><input type="text" class="form-control servico-valor" value="${valorInicial}" placeholder="0,00"></div>
-            <div class="col-md-3"><label class="form-label d-none d-md-block">Responsável</label><input type="text" class="form-control servico-responsavel" value="${servico.responsavel || ''}" placeholder="Mecânico"></div>
+            <div class="col-md-3"><label class="form-label d-none d-md-block">Responsável</label><select class="form-select servico-responsavel"><option value="">Selecione...</option>${mecanicoOptions}</select></div>
             <div class="col-md-1 d-flex justify-content-center align-items-end mt-3 mt-md-0"><button class="btn btn-outline-danger remove-item-btn" type="button"><i class="bi bi-trash"></i></button></div>`;
         servicosContainer.appendChild(newItem);
         applyMask(newItem, '.servico-valor');
-        newItem.querySelectorAll('input').forEach(i => i.addEventListener('input', calcularTotais));
+        newItem.querySelectorAll('input, select').forEach(i => i.addEventListener('input', calcularTotais));
         newItem.querySelector('.remove-item-btn').addEventListener('click', () => {
             newItem.remove(); if (servicosContainer.children.length === 0) servicosContainer.innerHTML = '<div class="alert alert-info text-center">Nenhum serviço adicionado.</div>'; calcularTotais();
         });
@@ -348,6 +348,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
+    // --- FUNÇÃO createOrderCard ATUALIZADA ---
     function createOrderCard(order) {
         const card = document.createElement('div');
         card.className = `card mb-3 order-card`;
@@ -355,7 +356,17 @@ document.addEventListener("DOMContentLoaded", function() {
         let previsaoHtml = '';
         if (order.dataPrevisaoEntrega) {
             const data = new Date(order.dataPrevisaoEntrega + 'T03:00:00Z');
-            previsaoHtml = `<p class="card-text text-muted mb-1"><strong>Previsão de Entrega:</strong> ${data.toLocaleDateString('pt-BR')}</p>`;
+            previsaoHtml = `<p class="card-text text-muted mb-1"><strong>Previsão de entrega:</strong> ${data.toLocaleDateString('pt-BR')}</p>`;
+        }
+
+        // Lógica para mostrar os mecânicos
+        let mecanicosHtml = '';
+        if (order.servicos && order.servicos.length > 0) {
+            // Pega nomes, filtra vazios, remove duplicados e junta com vírgula
+            const nomes = [...new Set(order.servicos.map(s => s.responsavel).filter(Boolean))];
+            if (nomes.length > 0) {
+                mecanicosHtml = `<p class="card-text text-muted mb-1"><strong>Mecânico Responsável:</strong> ${nomes.join(', ')}</p>`;
+            }
         }
 
         card.innerHTML = `<div class="card-body d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
@@ -363,6 +374,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 <h3 class="card-title h5 fw-bold text-dark mb-1">${order.clientName}</h3>
                 <p class="card-text text-muted mb-1"><strong>Veículo:</strong> ${order.vehicle}</p>
                 <p class="card-text text-muted mb-1"><strong>Descrição:</strong> ${order.description || 'N/A'}</p>
+                ${mecanicosHtml}
                 <p class="card-text text-muted mb-1"><strong>Status:</strong> <span class="badge rounded-pill order-status-badge-${order.status.replace(/\s/g, '')}">${order.status}</span></p>
                 ${previsaoHtml}
                 <p class="card-text text-muted"><strong>Valor Total:</strong> ${formatarValor(order.total)}</p>
@@ -488,10 +500,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const method = id ? 'PUT' : 'POST';
         try {
             const response = await fetch(url, { method: method, body: formData });
-            if (!response.ok) { 
-                const errorData = await response.json(); 
-                throw new Error(errorData.error || 'A resposta da rede não foi OK'); 
-            }
+            if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || 'A resposta da rede não foi OK'); }
             const updatedOrder = await response.json();
             if (id) {
                 const index = allOrders.findIndex(order => order.id === updatedOrder.id);
@@ -538,36 +547,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const getElement = (id) => document.getElementById(id);
     const qs = (selector, parent = document) => parent.querySelector(selector);
     const qsa = (selector, parent = document) => parent.querySelectorAll(selector);
-    showCustomAlert = (message, type = 'success') => { 
-        const alertElement = document.createElement('div'); 
-        alertElement.className = `alert alert-${type} shadow-lg toast-alert`; 
-        alertElement.innerHTML = `<span>${message}</span><button type="button" class="btn-close" aria-label="Close"></button>`; 
-        getElement('alert-container').appendChild(alertElement); 
-        setTimeout(() => alertElement.classList.add('show'), 10); 
-        const removeAlert = () => { 
-            alertElement.classList.remove('show');
-            setTimeout(() => alertElement.remove(), 300); 
-        }; 
-        qs('.btn-close', alertElement).addEventListener('click', removeAlert); 
-        setTimeout(removeAlert, 4000); 
-    };
-    showCustomConfirm = (message) => new Promise(resolve => { 
-        const confirmElement = document.createElement('div'); 
-        confirmElement.className = 'alert alert-warning shadow-lg toast-alert'; 
-        confirmElement.innerHTML = `<div class="flex-grow-1 me-3">${message}</div>
-        <div><button class="btn btn-success btn-sm me-2" id="confirm-yes">Sim</button><button class="btn btn-danger btn-sm" id="confirm-no">Não</button></div>`; 
-        getElement('alert-container').appendChild(confirmElement); 
-        setTimeout(() => confirmElement.classList.add('show'), 10); 
-        const removeConfirm = (result) => { 
-            confirmElement.classList.remove('show'); 
-            setTimeout(() => { 
-                confirmElement.remove(); 
-                resolve(result); 
-            }, 300); 
-        }; 
-        qs('#confirm-yes', confirmElement).addEventListener('click', () => removeConfirm(true)); 
-		qs('#confirm-no', confirmElement).addEventListener('click', () => removeConfirm(false)); 
-        });
+    showCustomAlert = (message, type = 'success') => { const alertElement = document.createElement('div'); alertElement.className = `alert alert-${type} shadow-lg toast-alert`; alertElement.innerHTML = `<span>${message}</span><button type="button" class="btn-close" aria-label="Close"></button>`; getElement('alert-container').appendChild(alertElement); setTimeout(() => alertElement.classList.add('show'), 10); const removeAlert = () => { alertElement.classList.remove('show'); setTimeout(() => alertElement.remove(), 300); }; qs('.btn-close', alertElement).addEventListener('click', removeAlert); setTimeout(removeAlert, 4000); };
+    showCustomConfirm = (message) => new Promise(resolve => { const confirmElement = document.createElement('div'); confirmElement.className = 'alert alert-warning shadow-lg toast-alert'; confirmElement.innerHTML = `<div class="flex-grow-1 me-3">${message}</div><div><button class="btn btn-success btn-sm me-2" id="confirm-yes">Sim</button><button class="btn btn-danger btn-sm" id="confirm-no">Não</button></div>`; getElement('alert-container').appendChild(confirmElement); setTimeout(() => confirmElement.classList.add('show'), 10); const removeConfirm = (result) => { confirmElement.classList.remove('show'); setTimeout(() => { confirmElement.remove(); resolve(result); }, 300); }; qs('#confirm-yes', confirmElement).addEventListener('click', () => removeConfirm(true)); qs('#confirm-no', confirmElement).addEventListener('click', () => removeConfirm(false)); });
     
     loadInitialOrders();
 });

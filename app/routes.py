@@ -596,7 +596,14 @@ def get_uploaded_file(filename):
 @main.route('/ordens_servico')
 @login_required
 def ordens_servico():
-    return render_template('ordem_servico.html')
+    # 1. Busca todos os utilizadores que têm o papel 'Mecânico'
+    mecanicos = Utilizador.query.join(Utilizador.papeis).filter(Papel.nome == 'Mecanico').all()
+    
+    # 2. Formata a lista para ser facilmente usada no JavaScript
+    mecanicos_list = [{'id': m.id, 'nome': m.nome} for m in mecanicos]
+    
+    # 3. Passa a lista para o template no formato JSON
+    return render_template('ordem_servico.html', mecanicos_json=json.dumps(mecanicos_list))
 
 # 2. API para OBTER todas as Ordens de Serviço (GET)
 @main.route('/api/ordens_servico', methods=['GET'])
