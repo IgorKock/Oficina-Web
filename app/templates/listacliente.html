@@ -82,9 +82,10 @@
         }
         
         /* --- ESTILOS ADICIONAIS PARA A LISTAGEM (ADAPTADOS DE listacliente.txt E teste4.txt) --- */
+        
+        /* CORREÇÃO APLICADA AQUI: REMOVIDO 'cursor: pointer;' */
         .table-hover tbody tr:hover {
             background-color: #f8f9fa;
-            cursor: pointer;
         }
 
         .table .align-middle {
@@ -245,7 +246,10 @@
                                 <div class="d-flex align-items-center">
                                     <div class="client-avatar me-3">{{ cliente.nome[0]|upper }}{{ cliente.apelido[0]|upper if cliente.apelido else '' }}</div>
                                     <div>
-                                        <div class="fw-bold">{{ cliente.nome }}</div>
+                                        <!-- CORREÇÃO APLICADA AQUI: LINK APENAS NO NOME -->
+                                        <a href="{{ url_for('main.cliente', id=cliente.id) }}" class="text-blue fw-bold" title="Ver Detalhes de {{ cliente.nome }}">
+                                            {{ cliente.nome }}
+                                        </a>
                                     </div>
                                 </div>
                             </td>
