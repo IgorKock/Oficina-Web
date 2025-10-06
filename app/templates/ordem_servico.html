@@ -50,6 +50,12 @@
         .photo-list li { position: relative; width: 100px; height: 100px; border: 1px solid #dee2e6; border-radius: 0.5rem; overflow: hidden; }
         .photo-list img { width: 100%; height: 100%; object-fit: cover; }
         .photo-list .remove-btn { position: absolute; top: 5px; right: 5px; background-color: rgba(255, 0, 0, 0.7); color: #fff; border: none; border-radius: 50%; width: 25px; height: 25px; font-size: 0.8rem; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        
+        /* NOVO ESTILO PARA PLACEHOLDER INVÁLIDO */
+        .form-control.is-invalid::placeholder {
+            color: #dc3545;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -115,7 +121,8 @@
                 <h5 class="modal-title" id="modalTitle">Nova Ordem de Serviço</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="orderForm">
+            <!-- ALTERAÇÃO AQUI: Adicionado 'novalidate' -->
+            <form id="orderForm" novalidate>
                 <input type="hidden" id="orderId">
                 <div class="modal-body">
                     <div class="row">
@@ -279,6 +286,8 @@ document.addEventListener("DOMContentLoaded", function() {
         newItem.querySelector('.remove-item-btn').addEventListener('click', () => {
             newItem.remove(); if (servicosContainer.children.length === 0) servicosContainer.innerHTML = '<div class="alert alert-info text-center">Nenhum serviço adicionado.</div>'; calcularTotais();
         });
+        // Adiciona listeners de validação para o novo campo
+        addValidationListeners(newItem.querySelector('[required]'));
     }
 
     function addPecaItem(peca = { nome: '', qtd: '', valor: 0 }) {
@@ -297,9 +306,13 @@ document.addEventListener("DOMContentLoaded", function() {
         newItem.querySelector('.remove-item-btn').addEventListener('click', () => {
             newItem.remove(); if (pecasContainer.children.length === 0) pecasContainer.innerHTML = '<div class="alert alert-info text-center">Nenhuma peça adicionada.</div>'; calcularTotais();
         });
+        // Adiciona listeners de validação para o novo campo
+        addValidationListeners(newItem.querySelector('[required]'));
     }
 
     function resetAndPrepareForm() {
+        orderForm.classList.remove('was-validated'); // Limpa o estado de validação
+        orderForm.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
         orderForm.reset();
         servicosContainer.innerHTML = '<div class="alert alert-info text-center">Nenhum serviço adicionado.</div>';
         pecasContainer.innerHTML = '<div class="alert alert-info text-center">Nenhuma peça adicionada.</div>';
@@ -318,150 +331,47 @@ document.addEventListener("DOMContentLoaded", function() {
         orderModal.show();
     }
 
-    function handlePhotoUpload(event) {
-        servicoPhotosPreview.querySelectorAll('li:not([data-existing-photo])').forEach(li => li.remove());
-        selectedFiles = Array.from(event.target.files);
-        for (const file of selectedFiles) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const photoItem = document.createElement('li');
-                photoItem.innerHTML = `<img src="${e.target.result}" alt="Preview"><button class="remove-btn" type="button" data-filename="${file.name}"><i class="bi bi-x"></i></button>`;
-                servicoPhotosPreview.appendChild(photoItem);
-            };
-            reader.readAsDataURL(file);
+    function handlePhotoUpload(event) { /* ...código mantido... */ }
+    servicoPhotosPreview.addEventListener('click', function(event) { /* ...código mantido... */ });
+    function createOrderCard(order) { /* ...código mantido... */ }
+    function renderOrders() { /* ...código mantido... */ }
+    async function handleEdit(id) { /* ...código mantido... */ }
+    async function handleDelete(id) { /* ...código mantido... */ }
+    function filterOrders() { /* ...código mantido... */ }
+    
+    // --- NOVAS FUNÇÕES E LÓGICA DE VALIDAÇÃO ---
+    function handleBlurValidation(event) {
+        if (!event.target.checkValidity()) {
+            event.target.classList.add('is-invalid');
+        } else {
+            event.target.classList.remove('is-invalid');
         }
     }
 
-    servicoPhotosPreview.addEventListener('click', function(event) {
-        const removeBtn = event.target.closest('.remove-btn');
-        if (removeBtn) {
-            const photoLi = removeBtn.parentElement;
-            if (photoLi.dataset.existingPhoto) {
-                const photoId = parseInt(removeBtn.dataset.photoid);
-                if (!photosToDelete.includes(photoId)) { photosToDelete.push(photoId); }
-                photoLi.style.display = 'none';
-            } else {
-                const filenameToRemove = removeBtn.dataset.filename;
-                selectedFiles = selectedFiles.filter(file => file.name !== filenameToRemove);
-                photoLi.remove();
-            }
-        }
-    });
-
-    // --- FUNÇÃO createOrderCard ATUALIZADA ---
-    function createOrderCard(order) {
-        const card = document.createElement('div');
-        card.className = `card mb-3 order-card`;
-        
-        let previsaoHtml = '';
-        if (order.dataPrevisaoEntrega) {
-            const data = new Date(order.dataPrevisaoEntrega + 'T03:00:00Z');
-            previsaoHtml = `<p class="card-text text-muted mb-1"><strong>Previsão de entrega:</strong> ${data.toLocaleDateString('pt-BR')}</p>`;
-        }
-
-        // Lógica para mostrar os mecânicos
-        let mecanicosHtml = '';
-        if (order.servicos && order.servicos.length > 0) {
-            // Pega nomes, filtra vazios, remove duplicados e junta com vírgula
-            const nomes = [...new Set(order.servicos.map(s => s.responsavel).filter(Boolean))];
-            if (nomes.length > 0) {
-                mecanicosHtml = `<p class="card-text text-muted mb-1"><strong>Mecânico Responsável:</strong> ${nomes.join(', ')}</p>`;
-            }
-        }
-
-        card.innerHTML = `<div class="card-body d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
-            <div class="flex-grow-1 mb-3 mb-sm-0">
-                <h3 class="card-title h5 fw-bold text-dark mb-1">${order.clientName}</h3>
-                <p class="card-text text-muted mb-1"><strong>Veículo:</strong> ${order.vehicle}</p>
-                <p class="card-text text-muted mb-1"><strong>Descrição:</strong> ${order.description || 'N/A'}</p>
-                ${mecanicosHtml}
-                <p class="card-text text-muted mb-1"><strong>Status:</strong> <span class="badge rounded-pill order-status-badge-${order.status.replace(/\s/g, '')}">${order.status}</span></p>
-                ${previsaoHtml}
-                <p class="card-text text-muted"><strong>Valor Total:</strong> ${formatarValor(order.total)}</p>
-                <small class="text-muted">Criado em: ${formatDate(order.createdAt)}</small>
-            </div>
-            <div class="d-flex flex-column flex-sm-row gap-2">
-                <button type="button" class="btn btn-warning btn-sm edit-btn" data-id="${order.id}"><i class="bi bi-pencil-fill me-1"></i> Editar</button>
-                <button type="button" class="btn btn-danger btn-sm delete-btn" data-id="${order.id}"><i class="bi bi-trash-fill me-1"></i> Excluir</button>
-            </div>
-        </div>`;
-        card.querySelector('.edit-btn').addEventListener('click', () => handleEdit(order.id));
-        card.querySelector('.delete-btn').addEventListener('click', () => handleDelete(order.id));
-        return card;
-    }
-
-    function renderOrders() {
-        ordersContainer.innerHTML = '';
-        loadingElement.classList.add('d-none');
-        if (displayedOrders.length === 0) { emptyStateElement.classList.remove('d-none'); } else {
-            emptyStateElement.classList.add('d-none');
-            displayedOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(order => { 
-                ordersContainer.appendChild(createOrderCard(order)); 
-            });
+    function handleInputValidation(event) {
+        if (event.target.classList.contains('is-invalid')) {
+            event.target.classList.remove('is-invalid');
         }
     }
 
-    async function handleEdit(id) {
-        const order = allOrders.find(o => o.id === parseInt(id));
-        if(!order) {
-            showCustomAlert('Ordem de serviço não encontrada.', 'danger');
-            return;
-        }
-        resetAndPrepareForm();
-        photosToDelete = [];
-        modalTitle.innerText = 'Editar Ordem de Serviço';
-        orderIdInput.value = order.id;
-        document.getElementById('clientName').value = order.clientName;
-        document.getElementById('vehicle').value = order.vehicle;
-        document.getElementById('description').value = order.description;
-        document.getElementById('status').value = order.status;
-        
-        if (order.dataPrevisaoEntrega) {
-            document.getElementById('dataPrevisaoEntrega').value = order.dataPrevisaoEntrega.substring(0, 10);
-        }
-
-        const descontoVal = order.desconto > 0 ? formatarValor(order.desconto).replace('R$ ', '') : '';
-        $('#desconto').val(descontoVal).trigger('input');
-        servicosContainer.innerHTML = '';
-        if (order.servicos && order.servicos.length > 0) { 
-            order.servicos.forEach(s => addServicoItem(s)); 
-        } 
-        else { 
-            servicosContainer.innerHTML = '<div class="alert alert-info text-center">Nenhum serviço adicionado.</div>'; 
-        }
-        pecasContainer.innerHTML = '';
-        if (order.pecas_utilizadas && order.pecas_utilizadas.length > 0) { 
-            order.pecas_utilizadas.forEach(p => addPecaItem(p)); 
-        } 
-        else { 
-            pecasContainer.innerHTML = '<div class="alert alert-info text-center">Nenhuma peça adicionada.</div>';
-        }
-        (order.fotos || []).forEach(foto => {
-            const photoItem = document.createElement('li');
-            photoItem.dataset.existingPhoto = true;
-            photoItem.innerHTML = `<img src="${foto.url}" alt="Foto existente"><button class="remove-btn" type="button" data-photoid="${foto.id}" title="Excluir foto existente"><i class="bi bi-x"></i></button>`;
-            servicoPhotosPreview.appendChild(photoItem);
-        });
-        calcularTotais();
-        orderModal.show();
+    function addValidationListeners(element) {
+        element.addEventListener('blur', handleBlurValidation);
+        element.addEventListener('input', handleInputValidation);
     }
+    
+    // Aplica os listeners aos campos estáticos iniciais
+    orderForm.querySelectorAll('[required]').forEach(addValidationListeners);
 
-    async function handleDelete(id) {
-        if (!await showCustomConfirm("Tem certeza que deseja excluir esta ordem de serviço?")) return;
-        try {
-            const response = await fetch(`/api/ordens_servico/${id}`, { method: 'DELETE' }); 
-            if (!response.ok) throw new Error('Falha ao deletar.');
-            allOrders = allOrders.filter(order => order.id !== id); filterOrders(); 
-            showCustomAlert("Ordem de serviço excluída!", 'success');
-        } 
-        catch (error) { 
-            console.error('Erro:', error); 
-            showCustomAlert('Erro ao excluir a ordem.', 'danger'); 
-        }
-    }
-
+    // --- EVENT LISTENER DE SUBMIT ATUALIZADO ---
     orderForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        orderForm.classList.add('was-validated'); // Ativa a validação visual do Bootstrap
+        
+        if (!orderForm.checkValidity()) {
+            showCustomAlert('Por favor, preencha todos os campos obrigatórios.', 'danger');
+            return;
+        }
+
         const id = orderIdInput.value;
         const formData = new FormData();
         formData.append('clientName', document.getElementById('clientName').value.trim());
@@ -500,7 +410,10 @@ document.addEventListener("DOMContentLoaded", function() {
         const method = id ? 'PUT' : 'POST';
         try {
             const response = await fetch(url, { method: method, body: formData });
-            if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || 'A resposta da rede não foi OK'); }
+            if (!response.ok) { 
+                const errorData = await response.json(); 
+                throw new Error(errorData.error || 'A resposta da rede não foi OK'); 
+            }
             const updatedOrder = await response.json();
             if (id) {
                 const index = allOrders.findIndex(order => order.id === updatedOrder.id);
@@ -517,12 +430,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
     
-    function filterOrders() {
-        const query = searchInput.value.toLowerCase().trim();
-        displayedOrders = (query === '') ? [...allOrders] : allOrders.filter(o => o.clientName.toLowerCase().includes(query) || o.vehicle.toLowerCase().includes(query) || (o.description && o.description.toLowerCase().includes(query)));
-        renderOrders();
-    }
-    
     // --- EVENT LISTENERS FINAIS ---
     addOrderBtn.addEventListener('click', openNewOrderModal);
     addServicoBtn.addEventListener('click', () => addServicoItem());
@@ -532,26 +439,180 @@ document.addEventListener("DOMContentLoaded", function() {
     searchInput.addEventListener('keyup', filterOrders);
     $('#desconto').mask('#.##0,00', { reverse: true }).on('input', calcularTotais);
 
-    async function loadInitialOrders() {
-        try {
-            const response = await fetch('/api/ordens_servico'); 
-            if (!response.ok) throw new Error('Erro na rede.');
-            allOrders = await response.json(); filterOrders();
-        } catch (error) { 
-            console.error(error); 
-            loadingElement.innerHTML = '<p class="text-danger">Erro ao carregar os dados.</p>'; 
-        }
-    }
+    async function loadInitialOrders() { /* ...código mantido... */ }
 
-    // Preenchendo as funções omitidas para garantir que o código seja completo
+    // Preenchendo as funções omitidas para ser completo
     const getElement = (id) => document.getElementById(id);
     const qs = (selector, parent = document) => parent.querySelector(selector);
     const qsa = (selector, parent = document) => parent.querySelectorAll(selector);
-    showCustomAlert = (message, type = 'success') => { const alertElement = document.createElement('div'); alertElement.className = `alert alert-${type} shadow-lg toast-alert`; alertElement.innerHTML = `<span>${message}</span><button type="button" class="btn-close" aria-label="Close"></button>`; getElement('alert-container').appendChild(alertElement); setTimeout(() => alertElement.classList.add('show'), 10); const removeAlert = () => { alertElement.classList.remove('show'); setTimeout(() => alertElement.remove(), 300); }; qs('.btn-close', alertElement).addEventListener('click', removeAlert); setTimeout(removeAlert, 4000); };
-    showCustomConfirm = (message) => new Promise(resolve => { const confirmElement = document.createElement('div'); confirmElement.className = 'alert alert-warning shadow-lg toast-alert'; confirmElement.innerHTML = `<div class="flex-grow-1 me-3">${message}</div><div><button class="btn btn-success btn-sm me-2" id="confirm-yes">Sim</button><button class="btn btn-danger btn-sm" id="confirm-no">Não</button></div>`; getElement('alert-container').appendChild(confirmElement); setTimeout(() => confirmElement.classList.add('show'), 10); const removeConfirm = (result) => { confirmElement.classList.remove('show'); setTimeout(() => { confirmElement.remove(); resolve(result); }, 300); }; qs('#confirm-yes', confirmElement).addEventListener('click', () => removeConfirm(true)); qs('#confirm-no', confirmElement).addEventListener('click', () => removeConfirm(false)); });
-    
+    showCustomAlert = (message, type = 'success') => { 
+        const alertElement = document.createElement('div'); 
+        alertElement.className = `alert alert-${type} shadow-lg toast-alert`; 
+        alertElement.innerHTML = `<span>${message}</span><button type="button" class="btn-close" aria-label="Close"></button>`; 
+        getElement('alert-container').appendChild(alertElement); 
+        setTimeout(() => alertElement.classList.add('show'), 10); 
+        const removeAlert = () => { 
+            alertElement.classList.remove('show'); 
+            setTimeout(() => alertElement.remove(), 300); 
+            }; 
+            qs('.btn-close', alertElement).addEventListener('click', removeAlert); 
+            setTimeout(removeAlert, 4000); 
+    };
+    showCustomConfirm = (message) => new Promise(resolve => { 
+        const confirmElement = document.createElement('div'); 
+        confirmElement.className = 'alert alert-warning shadow-lg toast-alert'; 
+        confirmElement.innerHTML = `<div class="flex-grow-1 me-3">${message}</div><div><button class="btn btn-success btn-sm me-2" id="confirm-yes">Sim</button><button class="btn btn-danger btn-sm" id="confirm-no">Não</button></div>`; 
+        getElement('alert-container').appendChild(confirmElement); 
+        setTimeout(() => confirmElement.classList.add('show'), 10); 
+        const removeConfirm = (result) => { 
+            confirmElement.classList.remove('show'); 
+            setTimeout(() => { 
+                confirmElement.remove(); 
+                resolve(result); 
+            }, 300); 
+        }; 
+        qs('#confirm-yes', confirmElement).addEventListener('click', () => removeConfirm(true)); 
+        qs('#confirm-no', confirmElement).addEventListener('click', () => removeConfirm(false)); 
+    });
+    handlePhotoUpload = (event) => { 
+        qsa('li:not([data-existing-photo])', servicoPhotosPreview).forEach(li => li.remove()); 
+        selectedFiles = Array.from(event.target.files); 
+        for (const file of selectedFiles) { 
+            const reader = new FileReader(); 
+            reader.onload = (e) => { 
+                const photoItem = document.createElement('li'); 
+                photoItem.innerHTML = `<img src="${e.target.result}" alt="Preview"><button class="remove-btn" type="button" data-filename="${file.name}"><i class="bi bi-x"></i></button>`; 
+                servicoPhotosPreview.appendChild(photoItem); 
+                }; 
+            reader.readAsDataURL(file); 
+        } 
+    };
+    servicoPhotosPreview.addEventListener('click', function(event) { 
+        const removeBtn = event.target.closest('.remove-btn'); 
+        if (removeBtn) { 
+            const photoLi = removeBtn.parentElement; 
+            if (photoLi.dataset.existingPhoto) { 
+                const photoId = parseInt(removeBtn.dataset.photoid); 
+                if (!photosToDelete.includes(photoId)) { 
+                    photosToDelete.push(photoId); 
+                } 
+                photoLi.style.display = 'none'; 
+            } 
+            else { 
+                const filenameToRemove = removeBtn.dataset.filename; 
+                selectedFiles = selectedFiles.filter(file => file.name !== filenameToRemove); 
+                photoLi.remove(); 
+            } 
+        } 
+    });
+    createOrderCard = (order) => { 
+        const card = document.createElement('div'); 
+        card.className = `card mb-3 order-card`; 
+        let previsaoHtml = ''; 
+        if (order.dataPrevisaoEntrega) { 
+            const data = new Date(order.dataPrevisaoEntrega + 'T03:00:00Z'); 
+            previsaoHtml = `<p class="card-text text-muted mb-1"><strong>Previsão:</strong> ${data.toLocaleDateString('pt-BR')}</p>`; 
+        } 
+        let mecanicosHtml = ''; 
+        if (order.servicos && order.servicos.length > 0) { 
+            const nomes = [...new Set(order.servicos.map(s => s.responsavel).filter(Boolean))]; 
+            if (nomes.length > 0) { 
+                mecanicosHtml = `<p class="card-text text-muted mb-1"><strong>Mecânico(s):</strong> ${nomes.join(', ')}</p>`; 
+            } 
+        } 
+        card.innerHTML = `<div class="card-body d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center"><div class="flex-grow-1 mb-3 mb-sm-0"><h3 class="card-title h5 fw-bold text-dark mb-1">${order.clientName}</h3><p class="card-text text-muted mb-1"><strong>Veículo:</strong> ${order.vehicle}</p><p class="card-text text-muted mb-1"><strong>Descrição:</strong> ${order.description || 'N/A'}</p>${mecanicosHtml}<p class="card-text text-muted mb-1"><strong>Status:</strong> <span class="badge rounded-pill order-status-badge-${order.status.replace(/\s/g, '')}">${order.status}</span></p>${previsaoHtml}<p class="card-text text-muted"><strong>Valor Total:</strong> ${formatarValor(order.total)}</p><small class="text-muted">Criado em: ${formatDate(order.createdAt)}</small></div><div class="d-flex flex-column flex-sm-row gap-2"><button type="button" class="btn btn-warning btn-sm edit-btn" data-id="${order.id}"><i class="bi bi-pencil-fill me-1"></i> Editar</button><button type="button" class="btn btn-danger btn-sm delete-btn" data-id="${order.id}"><i class="bi bi-trash-fill me-1"></i> Excluir</button></div></div>`; 
+        qs('.edit-btn', card).addEventListener('click', () => handleEdit(order.id)); 
+        qs('.delete-btn', card).addEventListener('click', () => handleDelete(order.id)); 
+        return card; 
+    };
+    renderOrders = () => { 
+        ordersContainer.innerHTML = ''; 
+        loadingElement.classList.add('d-none'); 
+        if (displayedOrders.length === 0) { 
+            emptyStateElement.classList.remove('d-none'); 
+        } 
+        else { 
+            emptyStateElement.classList.add('d-none'); 
+            displayedOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(order => { 
+                ordersContainer.appendChild(createOrderCard(order)); 
+            }); 
+        } 
+    };
+    handleEdit = async (id) => { 
+        const order = allOrders.find(o => o.id === parseInt(id)); 
+        if(!order) { 
+            showCustomAlert('Ordem de serviço não encontrada.', 'danger'); 
+            return; 
+        } 
+        resetAndPrepareForm(); 
+        photosToDelete = []; 
+        modalTitle.innerText = 'Editar Ordem de Serviço'; 
+        orderIdInput.value = order.id; 
+        getElement('clientName').value = order.clientName; 
+        getElement('vehicle').value = order.vehicle; 
+        getElement('description').value = 
+        order.description; 
+        getElement('status').value = order.status; 
+        if (order.dataPrevisaoEntrega) { 
+            getElement('dataPrevisaoEntrega').value = order.dataPrevisaoEntrega.substring(0, 10); 
+        } 
+        const descontoVal = order.desconto > 0 ? formatarValor(order.desconto).replace('R$ ', '') : ''; 
+        $('#desconto').val(descontoVal).trigger('input'); 
+        servicosContainer.innerHTML = ''; 
+        if (order.servicos && order.servicos.length > 0) { 
+            order.servicos.forEach(s => addServicoItem(s)); 
+        } 
+        else { 
+            servicosContainer.innerHTML = '<div class="alert alert-info text-center">Nenhum serviço adicionado.</div>'; 
+        } 
+        pecasContainer.innerHTML = ''; 
+        if (order.pecas_utilizadas && order.pecas_utilizadas.length > 0) { 
+            order.pecas_utilizadas.forEach(p => addPecaItem(p)); 
+        } 
+        else { 
+            pecasContainer.innerHTML = '<div class="alert alert-info text-center">Nenhuma peça adicionada.</div>'; 
+        } 
+        (order.fotos || []).forEach(foto => { 
+            const photoItem = document.createElement('li'); 
+            photoItem.dataset.existingPhoto = true; 
+            photoItem.innerHTML = `<img src="${foto.url}" alt="Foto existente"><button class="remove-btn" type="button" data-photoid="${foto.id}" title="Excluir foto existente"><i class="bi bi-x"></i></button>`; 
+            servicoPhotosPreview.appendChild(photoItem); 
+        }); 
+        calcularTotais(); orderModal.show(); 
+    };
+    handleDelete = async (id) => {
+        if (!await showCustomConfirm("Tem certeza que deseja excluir esta ordem de serviço?")) return; 
+        try { 
+            const response = await fetch(`/api/ordens_servico/${id}`, { method: 'DELETE' }); 
+            if (!response.ok) throw new Error('Falha ao deletar.'); 
+            allOrders = allOrders.filter(order => order.id !== id); 
+            filterOrders(); showCustomAlert("Ordem de serviço excluída!", 'success'); 
+        } 
+        catch (error) { 
+            console.error('Erro:', error); 
+            showCustomAlert('Erro ao excluir a ordem.', 'danger'); 
+        } 
+    };
+    filterOrders = () => { 
+        const query = searchInput.value.toLowerCase().trim(); 
+        displayedOrders = (query === '') ? [...allOrders] : allOrders.filter(o => o.clientName.toLowerCase().includes(query) || o.vehicle.toLowerCase().includes(query) || (o.description && o.description.toLowerCase().includes(query))); 
+        renderOrders(); 
+    };
+    loadInitialOrders = async () => { 
+        try { 
+            const response = await fetch('/api/ordens_servico'); 
+            if (!response.ok) throw new Error('Erro na rede.'); 
+            allOrders = await response.json(); 
+            filterOrders();
+        } 
+        catch (error) { 
+            console.error(error); 
+            loadingElement.innerHTML = '<p class="text-danger">Erro ao carregar os dados.</p>'; 
+        } 
+    };
     loadInitialOrders();
 });
 </script>
+
 </body>
 </html>
