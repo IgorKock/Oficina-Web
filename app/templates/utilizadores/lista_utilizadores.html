@@ -1,242 +1,97 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Utilizadores - OficinaWeb</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Google Fonts - Poppins -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+{% extends "base.html" %}
 
-    <style>
-        :root {
-            --sidebar-width: 260px;
-            --header-height: 60px;
-        }
-        
-        body {
-            background-color: #f0f2f5;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cg fill='%23d3dce3' fill-opacity='0.4'%3E%3Cpath fill-rule='evenodd' d='M0 0h4v4H0V0zm4 4h4v4H4V4z'/%3E%3C/g%3E%3C/svg%3E");
-            font-family: 'Poppins', sans-serif;
-            padding-top: var(--header-height);
-            margin: 0;
-            overflow-x: hidden;
-        }
+{% block title %}Lista de Utilizadores - OficinaWeb{% endblock %}
 
-        .header {
-            height: var(--header-height);
-            z-index: 1030;
-        }
+{% block styles %}
+<style>
+    .card {
+        background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 20px; margin-top: 20px; margin-bottom: 50px; border-top: 5px solid;
+        border-image: linear-gradient(to right, #007bff, #00d4ff) 1; transition: all 0.3s ease-in-out;
+    }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12); }
+    .btn-primary { background-image: linear-gradient(to right, #007bff 0%, #0056b3 100%); border: none; transition: all 0.4s ease; background-size: 200% auto; }
+    .btn-primary:hover { background-position: right center; transform: scale(1.02); }
+    .badge { font-size: 0.85em; padding: 0.4em 0.6em; border-radius: 0.25rem; }
+</style>
+{% endblock %}
 
-        .sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1020;
-            background-color: #fff;
-            padding-top: var(--header-height);
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            transition: margin-left 0.3s ease-in-out;
-        }
-        .sidebar .nav-link {
-            color: #555;
-            font-weight: 500;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .sidebar .nav-link .bi {
-            font-size: 1.2rem;
-        }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            color: #0d6efd;
-            background-color: #e9f2ff;
-            border-right: 3px solid #0d6efd;
-        }
+{% block content %}
+<div class="container-fluid">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-        .main-content {
-            padding: 30px;
-            margin-left: var(--sidebar-width);
-            transition: margin-left 0.3s ease-in-out;
-        }
-        
-        @media (max-width: 991.98px) {
-            .sidebar {
-                margin-left: calc(-1 * var(--sidebar-width));
-            }
-            .sidebar.active {
-                margin-left: 0;
-            }
-            .main-content {
-                margin-left: 0;
-            }
-        }
-        
-        .card {
-            background-color: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-top: 20px;
-            margin-bottom: 50px;
-            border-top: 5px solid;
-            border-image: linear-gradient(to right, #007bff, #00d4ff) 1;
-            transition: all 0.3s ease-in-out;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
-        }
-
-        .btn-primary {
-            background-image: linear-gradient(to right, #007bff 0%, #0056b3 100%);
-            border: none;
-            transition: all 0.4s ease;
-            background-size: 200% auto;
-        }
-
-        .btn-primary:hover {
-            background-position: right center;
-            transform: scale(1.02);
-        }
-
-        .badge {
-            font-size: 0.85em;
-            padding: 0.4em 0.6em;
-            border-radius: 0.25rem;
-        }
-    </style>
-</head>
-<body>
-
-<header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top header">
-    <div class="container-fluid">
-        <button class="navbar-toggler" type="button" id="menu-toggle">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <a class="navbar-brand fw-bold text-primary" href="#">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa" style="max-width: 40px; height: auto; margin-right: 10px;">
-            Oficina Web
-        </a>
-        <div class="d-flex align-items-center">
-            <span class="navbar-text me-3">Bem-vindo, {{ current_user.nome }}!</span>
-            <a href="{{ url_for('main.logout') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-arrow-right"></i> Sair</a>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h4 fw-bold text-dark mb-0"><i class="bi bi-people-fill text-primary me-2"></i> Lista de Utilizadores</h2>
+        {% if current_user.is_admin() %}
+            <a href="{{ url_for('main.add_utilizador') }}" class="btn btn-primary"><i class="bi bi-person-plus-fill me-2"></i>Adicionar Novo Utilizador</a>
+        {% endif %}
     </div>
-</header>
 
-<aside class="sidebar">
-    <div class="p-3"><h5 class="text-muted fw-bold">Menu Principal</h5></div>
-    <ul class="nav nav-pills flex-column">
-        <li class="nav-item">
-            <a href="{{ url_for('main.index') }}" class="nav-link"><i class="bi bi-speedometer2"></i>Página Inicial</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.client') }}" class="nav-link"><i class="bi bi-people-fill"></i>Clientes</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.inventario') }}" class="nav-link"><i class="bi bi-box-seam-fill"></i>Inventário</a>
-        </li>
-		<li class="nav-item">
-            <a href="{{ url_for('main.ordens_servico') }}" class="nav-link"><i class="bi bi-card-checklist"></i>Ordens de Serviço</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.lista_utilizadores') }}" class="nav-link active"><i class="bi bi-people"></i>Usuários</a>
-        </li>
-    </ul>
-</aside>
-
-<main class="main-content">
-    <div class="container-fluid">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="h4 fw-bold text-dark mb-0"><i class="bi bi-people-fill text-primary me-2"></i> Lista de Utilizadores</h2>
-            {% if current_user.is_admin() %}
-                <a href="{{ url_for('main.add_utilizador') }}" class="btn btn-primary"><i class="bi bi-person-plus-fill me-2"></i>Adicionar Novo Utilizador</a>
-            {% endif %}
-        </div>
-
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                {% if utilizadores %}
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle">
-                            <thead>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            {% if utilizadores %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Papéis</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for utilizador in utilizadores %}
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Nome</th>
-                                    <th>Email</th>
-                                    <th>Telefone</th>
-                                    <th>Papéis</th>
-                                    <th>Ações</th>
+                                    <td>{{ utilizador.id }}</td>
+                                    <td>{{ utilizador.nome }}</td>
+                                    <td>{{ utilizador.email }}</td>
+                                    <td>{{ utilizador.telefone or 'N/A' }}</td>
+                                    <td>
+                                        {% for papel in utilizador.papeis %}
+                                            <span class="badge bg-info text-dark me-1">{{ papel.nome }}</span>
+                                        {% else %}
+                                            Nenhum
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% if current_user.is_admin() %}
+                                            <a href="{{ url_for('main.edit_utilizador', id=utilizador.id) }}" class="btn btn-warning btn-sm me-2"><i class="bi bi-pencil-fill"></i> Editar</a>
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                    data-bs-toggle="modal" data-bs-target="#deleteUserModal"
+                                                    data-id="{{ utilizador.id }}" data-nome="{{ utilizador.nome }}"
+                                                    data-email="{{ utilizador.email }}"
+                                                    {% if utilizador.id == current_user.id %}disabled{% endif %}>
+                                                <i class="bi bi-trash-fill"></i> Apagar
+                                            </button>
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {% for utilizador in utilizadores %}
-                                    <tr>
-                                        <td>{{ utilizador.id }}</td>
-                                        <td>{{ utilizador.nome }}</td>
-                                        <td>{{ utilizador.email }}</td>
-                                        <td>{{ utilizador.telefone or 'N/A' }}</td>
-                                        <td>
-                                            {% for papel in utilizador.papeis %}
-                                                <span class="badge bg-info text-dark me-1">{{ papel.nome }}</span>
-                                            {% else %}
-                                                Nenhum
-                                            {% endfor %}
-                                        </td>
-                                        <td>
-                                            {% if current_user.is_admin() %}
-                                                <a href="{{ url_for('main.edit_utilizador', id=utilizador.id) }}" class="btn btn-warning btn-sm me-2"><i class="bi bi-pencil-fill"></i> Editar</a>
-                                                
-                                                <!-- Botão que abre o modal dinâmico -->
-                                                <button type="button" 
-                                                        class="btn btn-danger btn-sm"
-                                                        data-bs-toggle="modal" 
-                                                        data-bs-target="#deleteUserModal"
-                                                        data-id="{{ utilizador.id }}"
-                                                        data-nome="{{ utilizador.nome }}"
-                                                        data-email="{{ utilizador.email }}"
-                                                        {% if utilizador.id == current_user.id %}disabled{% endif %}>
-                                                    <i class="bi bi-trash-fill"></i> Apagar
-                                                </button>
-                                            {% else %}
-                                                N/A
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="text-center p-4 border rounded bg-light">
-                        <p class="mb-0 text-muted">Nenhum utilizador encontrado.</p>
-                    </div>
-                {% endif %}
-            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center p-4 border rounded bg-light">
+                    <p class="mb-0 text-muted">Nenhum utilizador encontrado.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
-</main>
+</div>
 
 <!-- Modal ÚNICO de exclusão -->
 <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
@@ -251,9 +106,6 @@
           Tem certeza que deseja apagar o utilizador 
           <strong id="deleteUserName"></strong> 
           (<span id="deleteUserEmail"></span>)?
-          <p id="deleteSelfWarning" class="text-danger mt-2 d-none">
-            <strong>Aviso: Você não pode apagar a sua própria conta enquanto estiver logado.</strong>
-          </p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -263,47 +115,28 @@
     </div>
   </div>
 </div>
+{% endblock %}
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}
 <script>
-    // Lógica do menu lateral
-    document.addEventListener("DOMContentLoaded", function() {
-        const menuToggle = document.getElementById('menu-toggle');
-        const sidebar = document.querySelector('.sidebar');
-        if (menuToggle) {
-            menuToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('active');
-            });
-        }
-    });
-
-    // Modal dinâmico de exclusão
     const deleteUserModal = document.getElementById('deleteUserModal');
     deleteUserModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         const userId = button.getAttribute('data-id');
         const userNome = button.getAttribute('data-nome');
         const userEmail = button.getAttribute('data-email');
-        const isSelf = button.hasAttribute('disabled');
-
-        // Preenche o texto no modal
+        
         document.getElementById('deleteUserName').textContent = userNome;
         document.getElementById('deleteUserEmail').textContent = userEmail;
-
-        // Ajusta formulário
         document.getElementById('deleteUserForm').action = `/utilizadores/delete/${userId}`;
-
-        // Se for o próprio usuário logado → bloqueia exclusão
-        const warning = document.getElementById('deleteSelfWarning');
+        
         const confirmBtn = document.getElementById('deleteConfirmBtn');
-        if (isSelf) {
-            warning.classList.remove('d-none');
+        if (button.hasAttribute('disabled')) {
             confirmBtn.disabled = true;
+            document.getElementById('deleteUserName').insertAdjacentHTML('afterend', '<p class="text-danger small mt-2">Você não pode apagar sua própria conta.</p>');
         } else {
-            warning.classList.add('d-none');
             confirmBtn.disabled = false;
         }
     });
 </script>
-</body>
-</html>
+{% endblock %}

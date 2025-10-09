@@ -1,194 +1,60 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalhes do Cliente - OficinaWeb</title>
+{% extends "base.html" %}
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% block title %}Detalhes de {{ cliente.nome }} - OficinaWeb{% endblock %}
+
+{% block styles %}
+<style>
+    .card-header-tabs .nav-link { color: #495057; font-weight: 500; }
+    .card-header-tabs .nav-link.active { color: #0d6efd; background-color: #fff; border-color: #dee2e6 #dee2e6 #fff; font-weight: 600; }
+    .tab-content { padding-top: 1rem; }
+    .custom-alert-modal { display: none; position: fixed; z-index: 1055; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
+    .custom-alert-modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); text-align: center; position: relative; }
+    .custom-alert-close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 15px; }
+    .custom-alert-close-btn:hover, .custom-alert-close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    @media print {
+        body * { visibility: hidden; }
+        #print-area, #print-area * { visibility: visible; }
+        #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+        .no-print { display: none !important; }
+    }
+    #print-sections-container { display: none; }
+</style>
+{% endblock %}
 
-    <style>
-        /* ESTILOS DA ESTRUTURA (BASEADO EM listacliente.txt) */
-        :root {
-            --sidebar-width: 260px;
-            --header-height: 60px;
-        }
-        
-        body {
-            background-color: #f0f2f5;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cg fill='%23d3dce3' fill-opacity='0.4'%3E%3Cpath fill-rule='evenodd' d='M0 0h4v4H0V0zm4 4h4v4H4V4z'/%3E%3C/g%3E%3C/svg%3E");
-            font-family: 'Poppins', sans-serif;
-            padding-top: var(--header-height);
-            margin: 0;
-            overflow-x: hidden;
-        }
+{% block content %}
+<div class="container-fluid">
 
-        .header {
-            height: var(--header-height);
-            z-index: 1030;
-        }
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-        .sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1020;
-            background-color: #fff;
-            padding-top: var(--header-height);
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            transition: margin-left 0.3s ease-in-out;
-        }
-        .sidebar .nav-link {
-            color: #555;
-            font-weight: 500;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .sidebar .nav-link .bi {
-            font-size: 1.2rem;
-        }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            color: #0d6efd;
-            background-color: #e9f2ff;
-            border-right: 3px solid #0d6efd;
-        }
-
-        .main-content {
-            padding: 30px;
-            margin-left: var(--sidebar-width);
-            transition: margin-left 0.3s ease-in-out;
-        }
-        
-        @media (max-width: 991.98px) {
-            .sidebar {
-                margin-left: calc(-1 * var(--sidebar-width));
-            }
-            .sidebar.active {
-                margin-left: 0;
-            }
-            .main-content {
-                margin-left: 0;
-            }
-        }
-        
-        /* --- ESTILOS DAS ABAS (ADAPTADOS DE cliente.txt) --- */
-        .card-header-tabs .nav-link {
-            color: #495057;
-            font-weight: 500;
-        }
-        .card-header-tabs .nav-link.active {
-            color: #0d6efd;
-            background-color: #fff;
-            border-color: #dee2e6 #dee2e6 #fff;
-            font-weight: 600;
-        }
-        .tab-content {
-            padding-top: 1rem;
-        }
-
-        /* --- CUSTOM ALERT MODAL --- */
-        .custom-alert-modal { display: none; position: fixed; z-index: 1055; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
-        .custom-alert-modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); text-align: center; position: relative; }
-        .custom-alert-close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 15px; }
-        .custom-alert-close-btn:hover, .custom-alert-close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
-
-        /* --- ESTILOS DE IMPRESSÃO --- */
-        #print-sections-container .print-section {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-
-<header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top header">
-    <div class="container-fluid">
-        <button class="navbar-toggler" type="button" id="menu-toggle">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <a class="navbar-brand fw-bold text-primary" href="#">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa" style="max-width: 40px; height: auto; margin-right: 10px;">
-            Oficina Web
-        </a>
-        <div class="d-flex align-items-center">
-            <span class="navbar-text me-3">Bem-vindo, {{ current_user.nome }}!</span>
-            <a href="{{ url_for('main.logout') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-arrow-right"></i> Sair</a>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <h2 class="h4 fw-bold text-dark mb-0"><i class="bi bi-person-lines-fill text-primary me-2"></i> Detalhes do Cliente: {{ cliente.nome }}</h2>
+        <a href="{{ url_for('main.client') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-2"></i>Voltar para a Lista</a>
     </div>
-</header>
 
-<aside class="sidebar">
-    <div class="p-3"><h5 class="text-muted fw-bold">Menu Principal</h5></div>
-    <ul class="nav nav-pills flex-column">
-        <li class="nav-item">
-            <a href="{{ url_for('main.index') }}" class="nav-link"><i class="bi bi-speedometer2"></i>Página Inicial</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.client') }}" class="nav-link active"><i class="bi bi-people-fill"></i>Clientes</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.inventario') }}" class="nav-link"><i class="bi bi-box-seam-fill"></i>Inventário</a>
-        </li>
-		<li class="nav-item">
-            <a href="{{ url_for('main.ordens_servico') }}" class="nav-link"><i class="bi bi-card-checklist"></i>Ordens de Serviço</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.lista_utilizadores') }}" class="nav-link"><i class="bi bi-people"></i>Usuários</a>
-        </li>
-    </ul>
-</aside>
-
-<main class="main-content">
-    <div class="container-fluid">
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="h4 fw-bold text-dark mb-0"><i class="bi bi-person-lines-fill text-primary me-2"></i> Detalhes do Cliente: {{ cliente.nome }}</h2>
-            <a href="{{ url_for('main.client') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-2"></i>Voltar para a Lista</a>
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white no-print">
+            <ul class="nav nav-tabs card-header-tabs" id="clientTab" role="tablist">
+                <li class="nav-item" role="presentation"><button class="nav-link active" id="dados-pessoais-tab" data-bs-toggle="tab" data-bs-target="#dados-pessoais-pane" type="button">Dados Pessoais</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="veiculos-tab" data-bs-toggle="tab" data-bs-target="#veiculos-pane" type="button">Veículos</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="telefones-tab" data-bs-toggle="tab" data-bs-target="#telefones-pane" type="button">Telefones</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="pagamentos-tab" data-bs-toggle="tab" data-bs-target="#pagamentos-pane" type="button">Pagamentos</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="print-tab" data-bs-toggle="tab" data-bs-target="#print-pane" type="button">Imprimir</button></li>
+            </ul>
         </div>
-
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white">
-                <ul class="nav nav-tabs card-header-tabs" id="clientTab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="dados-pessoais-tab" data-bs-toggle="tab" data-bs-target="#dados-pessoais-pane" type="button" role="tab" aria-controls="dados-pessoais-pane" aria-selected="true">Dados Pessoais</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="veiculos-tab" data-bs-toggle="tab" data-bs-target="#veiculos-pane" type="button" role="tab" aria-controls="veiculos-pane" aria-selected="false">Veículos</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="telefones-tab" data-bs-toggle="tab" data-bs-target="#telefones-pane" type="button" role="tab" aria-controls="telefones-pane" aria-selected="false">Telefones</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="pagamentos-tab" data-bs-toggle="tab" data-bs-target="#pagamentos-pane" type="button" role="tab" aria-controls="pagamentos-pane" aria-selected="false">Pagamentos</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="print-tab" data-bs-toggle="tab" data-bs-target="#print-pane" type="button" role="tab" aria-controls="print-pane" aria-selected="false">Imprimir</button>
-                    </li>
-                </ul>
-            </div>
-            <div class="card-body">
-                <div class="tab-content" id="clientTabContent">
-                    
-                    <!-- Aba: Dados Pessoais -->
+        <div class="card-body">
+            <div class="tab-content" id="clientTabContent">
+                
+                <!-- Aba: Dados Pessoais -->
                     <div class="tab-pane fade show active" id="dados-pessoais-pane" role="tabpanel" aria-labelledby="dados-pessoais-tab">
                         <form action="{{ url_for('main.update_dados_cliente', cliente_id=cliente.id) }}" method="POST" id="editClientForm">
                             {# 🔹 Campo oculto para persistir a aba ativa #}
@@ -909,7 +775,9 @@
         <button class="btn btn-primary" onclick="closeCustomAlert()">OK</button>
     </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
@@ -1454,5 +1322,4 @@
         setActiveTabOnLoad();
     });
 </script>
-</body>
-</html>
+{% endblock %}

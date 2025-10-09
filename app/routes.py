@@ -6,11 +6,9 @@ from werkzeug.security import generate_password_hash
 from flask_login import login_user, logout_user, current_user, login_required
 from sqlalchemy import delete
 import uuid
-import json # Adicione esta importação
+import json
 from werkzeug.utils import secure_filename
 import os
-import uuid
-import json # Adicione esta importação
 
 main = Blueprint('main', __name__)
 
@@ -18,9 +16,6 @@ UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def ajustar_para_brasilia(data_utc):
-    """
-    Ajusta um objeto datetime para o fuso horário de Brasília.
-    """
     fuso_brasilia = pytz.timezone('America/Sao_Paulo')
     if data_utc.tzinfo is None:
         data_utc = pytz.utc.localize(data_utc)
@@ -29,7 +24,7 @@ def ajustar_para_brasilia(data_utc):
 @main.before_request
 def check_single_session():
     if current_user.is_authenticated and request.endpoint and \
-       not request.endpoint.startswith('main.static') and \
+       not request.endpoint.startswith('static') and \
        request.endpoint != 'main.login' and request.endpoint != 'main.logout':
         
         if 'session_token' not in session or current_user.session_token != session['session_token']:
@@ -46,7 +41,7 @@ def check_single_session():
 @main.route('/')
 @login_required
 def index():
-    return render_template('index.html')
+    return render_template('index.html', active_page='index')
 
 @main.route('/inventario', methods=['GET'])
 @login_required
@@ -55,9 +50,9 @@ def inventario():
     pecas = db.session.query(Peca).all()
 
     if query:
-        pecas = [peca for peca in pecas if query in peca.nome.lower() or query in peca.descricao.lower()]
+        pecas = [peca for peca in pecas if query in peca.nome.lower() or (peca.descricao and query in peca.descricao.lower())]
 
-    return render_template('inventario.html', pecas=pecas, query=query)
+    return render_template('inventario.html', pecas=pecas, search_query=query, active_page='inventario')
 
 @main.route('/listaclientes')
 @login_required
@@ -67,23 +62,27 @@ def client():
         clientes = Cliente.query.filter(Cliente.nome.ilike(f'%{query}%')).all()
     else:
         clientes = Cliente.query.all()
-    return render_template('listacliente.html', clientes=clientes, search_query=query)
+    return render_template('listacliente.html', clientes=clientes, search_query=query, active_page='clientes')
 
 @main.route('/cliente/<int:id>')
 @login_required
 def cliente(id):
     cliente = Cliente.query.get_or_404(id)
     telefones = Telefone.query.filter_by(cliente_id=id).all()
+    carros = Carro.query.filter_by(cliente_id=id).all()
+    # Eager load related data to avoid N+1 problem
     historicos = Historico.query.filter_by(cliente_id=id).order_by(Historico.data.desc()).all()
     pagamentos = Pagamento.query.filter_by(cliente_id=id).order_by(Pagamento.data.desc()).all()
-    carros = Carro.query.filter_by(cliente_id=id).all()
     
+    # Create a set of historico_ids that have payments for faster lookup
+    historicos_com_pagamento_ids = {p.historico_id for p in pagamentos}
+
     for historico in historicos:
         if historico.data: 
             historico.data_local = ajustar_para_brasilia(historico.data)
         else:
             historico.data_local = None
-        historico.tem_pagamento = any(pagamento.historico_id == historico.id for pagamento in pagamentos)
+        historico.tem_pagamento = historico.id in historicos_com_pagamento_ids
         
     for pagamento in pagamentos:
         if pagamento.data:
@@ -91,7 +90,7 @@ def cliente(id):
         else:
             pagamento.data_local = None
 
-    return render_template('cliente.html', cliente=cliente, telefones=telefones, historicos=historicos, pagamentos=pagamentos, carros=carros)
+    return render_template('cliente.html', cliente=cliente, telefones=telefones, historicos=historicos, pagamentos=pagamentos, carros=carros, active_page='clientes')
     
 @main.route('/add', methods=['POST'])
 @login_required
@@ -107,13 +106,13 @@ def add_cliente():
         flash('Erro: Este cliente já está cadastrado!', 'danger')
         return redirect(url_for('main.client'))
 
-    novo_cliente = Cliente(nome=nome, cpf=cpf, cnpj=cnpj, apelido=apelido)
+    novo_cliente = Cliente(nome=nome, cpf=cpf or None, cnpj=cnpj or None, apelido=apelido or None)
     db.session.add(novo_cliente)
     db.session.commit()
 
     for numero in numeros:
         if numero.strip():
-            novo_telefone = Telefone(numero=numero, cliente_id=novo_cliente.id)
+            novo_telefone = Telefone(numero=numero.strip(), cliente_id=novo_cliente.id)
             db.session.add(novo_telefone)
     db.session.commit()
     flash('Cliente adicionado com sucesso!', 'success')
@@ -129,6 +128,7 @@ def delete_cliente(id):
     cliente = Cliente.query.get_or_404(id)
 
     try:
+        # Cascade delete should handle this, but explicit delete is safer
         Pagamento.query.filter_by(cliente_id=id).delete()
         Historico.query.filter_by(cliente_id=id).delete()
         Carro.query.filter_by(cliente_id=id).delete()
@@ -147,268 +147,234 @@ def delete_cliente(id):
 @login_required
 def add_telefone(cliente_id):
     numeros = request.form.getlist('numeros[]')
-    active_tab = request.form.get('active_tab', 'telefones-pane') # 🔹 Obtém a aba ativa
+    active_tab = request.form.get('active_tab', 'telefones-pane')
 
     for numero in numeros:
         if numero.strip():
-            novo_telefone = Telefone(numero=numero, cliente_id=cliente_id)
+            novo_telefone = Telefone(numero=numero.strip(), cliente_id=cliente_id)
             db.session.add(novo_telefone)
 
     db.session.commit()
     flash('Telefone(s) adicionado(s) com sucesso!', 'success')
-    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
-
-@main.route('/update_telefone/<int:telefone_id>', methods=['POST'])
-@login_required
-def update_telefone(telefone_id):
-    novo_numero = request.form.get('numero', '').strip()
-    active_tab = request.form.get('active_tab', 'telefones-pane') # 🔹 Obtém a aba ativa
-    
-    telefone = Telefone.query.get_or_404(telefone_id)
-    telefone.numero = novo_numero
-    db.session.commit()
-    flash('Telefone atualizado com sucesso!', 'success')
-    return redirect(url_for('main.cliente', id=telefone.cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
+    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
 
 @main.route('/delete_telefone/<int:telefone_id>', methods=['POST'])
 @login_required
 def delete_telefone(telefone_id):
     telefone = Telefone.query.get_or_404(telefone_id)
     cliente_id = telefone.cliente_id
-    active_tab = request.form.get('active_tab', 'telefones-pane') # 🔹 Obtém a aba ativa
+    active_tab = request.form.get('active_tab', 'telefones-pane')
     db.session.delete(telefone)
     db.session.commit()
     flash('Telefone removido com sucesso!', 'danger')
-    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
+    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
 
 @main.route('/update_dados_cliente/<int:cliente_id>', methods=['POST'])
 @login_required
 def update_dados_cliente(cliente_id):
     cliente = Cliente.query.get_or_404(cliente_id)
-    active_tab = request.form.get('active_tab', 'dados-pessoais-pane') # 🔹 Obtém a aba ativa
+    active_tab = request.form.get('active_tab', 'dados-pessoais-pane')
 
-    enderecos = request.form.getlist('endereco[]') if 'endereco[]' in request.form else []
-    numeros = request.form.getlist('numero[]') if 'numero[]' in request.form else [] 
-    complementos = request.form.getlist('complemento[]') if 'complemento[]' in request.form else [] 
-    bairros = request.form.getlist('bairro[]') if 'bairro[]' in request.form else []
-    cidades = request.form.getlist('cidade[]') if 'cidade[]' in request.form else []
-    ceps = request.form.getlist('cep[]') if 'cep[]' in request.form else []
-    estados = request.form.getlist('estado[]') if 'estado[]' in request.form else []
+    # Endereços
+    enderecos = request.form.getlist('endereco[]')
+    numeros = request.form.getlist('numero[]')
+    complementos = request.form.getlist('complemento[]')
+    bairros = request.form.getlist('bairro[]')
+    cidades = request.form.getlist('cidade[]')
+    ceps = request.form.getlist('cep[]')
+    estados = request.form.getlist('estado[]')
 
-    cliente.endereco = "; ".join(filter(None, enderecos)) if any(filter(None, enderecos)) else None
-    cliente.numero = "; ".join(filter(None, numeros)) if any(filter(None, numeros)) else None 
-    cliente.complemento = "; ".join(filter(None, complementos)) if any(filter(None, complementos)) else None 
-    cliente.bairro = "; ".join(filter(None, bairros)) if any(filter(None, bairros)) else None
-    cliente.cidade = "; ".join(filter(None, cidades)) if any(filter(None, cidades)) else None
-    cliente.cep = "; ".join(filter(None, ceps)) if any(filter(None, ceps)) else None
-    cliente.estado = "; ".join(filter(None, estados)) if any(filter(None, estados)) else None
+    cliente.endereco = ";".join(filter(None, enderecos)) or None
+    cliente.numero = ";".join(filter(None, numeros)) or None
+    cliente.complemento = ";".join(filter(None, complementos)) or None
+    cliente.bairro = ";".join(filter(None, bairros)) or None
+    cliente.cidade = ";".join(filter(None, cidades)) or None
+    cliente.cep = ";".join(filter(None, ceps)) or None
+    cliente.estado = ";".join(filter(None, estados)) or None
 
-    cliente.apelido = request.form.get('apelido', '').strip()
-    cliente.cpf = request.form.get('cpf', '').strip()
-    cliente.cnpj = request.form.get('cnpj', '').strip()
+    # Dados Gerais
+    cliente.apelido = request.form.get('apelido', '').strip() or None
+    cliente.cpf = request.form.get('cpf', '').strip() or None
+    cliente.cnpj = request.form.get('cnpj', '').strip() or None
 
     db.session.commit()
     flash('Dados do cliente atualizados com sucesso!', 'success')
-    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
-    
+    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
+
 @main.route('/add_historico/<int:carro_id>', methods=['POST'])
 @login_required
 def add_historico(carro_id):
     descricao = request.form['descricao']
     data_str = request.form['data']
-    active_tab = request.form.get('active_tab', 'veiculos-pane') # 🔹 Obtém a aba ativa
+    active_tab = request.form.get('active_tab', 'veiculos-pane')
     
-    data_do_form = datetime.strptime(data_str, '%Y-%m-%d')
-    hora_atual = datetime.now().time()
-    data_historico_local = data_do_form.replace(
-        hour=hora_atual.hour,
-        minute=hora_atual.minute,
-        second=hora_atual.second,
-        microsecond=hora_atual.microsecond
-    )
-    
-    carro = Carro.query.get_or_404(carro_id)
+    try:
+        data_do_form = datetime.strptime(data_str, '%Y-%m-%d')
+        data_historico_local = datetime.combine(data_do_form.date(), datetime.now().time())
+        
+        carro = Carro.query.get_or_404(carro_id)
 
-    novo_historico = Historico(cliente_id=carro.cliente_id, carro_id=carro.id, descricao=descricao, data=data_historico_local)
+        novo_historico = Historico(cliente_id=carro.cliente_id, carro_id=carro.id, descricao=descricao, data=data_historico_local)
+        
+        db.session.add(novo_historico)
+        db.session.commit()
+        flash('Histórico adicionado com sucesso!', 'success')
+    except Exception as e:
+        flash(f'Erro ao adicionar histórico: {e}', 'danger')
+        db.session.rollback()
     
-    db.session.add(novo_historico)
-    db.session.commit()
-    flash('Histórico adicionado com sucesso!', 'success')
-    return redirect(url_for('main.cliente', id=carro.cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
+    return redirect(url_for('main.cliente', id=Carro.query.get(carro_id).cliente_id, tab=active_tab))
 
 @main.route('/edit_historico/<int:id>', methods=['POST'])
 @login_required
 def edit_historico(id):
     historico = Historico.query.get_or_404(id)
-    descricao = request.form['descricao']
-    data_str = request.form['data']
-    active_tab = request.form.get('active_tab', 'veiculos-pane') # 🔹 Obtém a aba ativa
-
-    data_do_form = datetime.strptime(data_str, '%Y-%m-%d')
-    hora_atual = datetime.now().time()
-    data_atualizada_local = data_do_form.replace(
-        hour=hora_atual.hour,
-        minute=hora_atual.minute,
-        second=hora_atual.second,
-        microsecond=hora_atual.microsecond
-    )
-
-    historico.descricao = descricao
-    historico.data = data_atualizada_local
+    active_tab = request.form.get('active_tab', 'veiculos-pane')
     
-    db.session.commit()
-    flash('Histórico atualizado com sucesso!', 'success')
-    return redirect(url_for('main.cliente', id=historico.cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
+    try:
+        historico.descricao = request.form['descricao']
+        data_str = request.form['data']
+        data_do_form = datetime.strptime(data_str, '%Y-%m-%d')
+        # Mantém a hora original se existir, senão usa a hora atual
+        hora_existente = historico.data.time() if historico.data else datetime.now().time()
+        historico.data = datetime.combine(data_do_form.date(), hora_existente)
+        
+        db.session.commit()
+        flash('Histórico atualizado com sucesso!', 'success')
+    except Exception as e:
+        flash(f'Erro ao editar histórico: {e}', 'danger')
+        db.session.rollback()
+        
+    return redirect(url_for('main.cliente', id=historico.cliente_id, tab=active_tab))
 
 @main.route('/delete_historico/<int:id>', methods=['POST'])
 @login_required
 def delete_historico(id):
     historico = Historico.query.get_or_404(id)
     cliente_id = historico.cliente_id
-    active_tab = request.form.get('active_tab', 'veiculos-pane') # 🔹 Obtém a aba ativa
+    active_tab = request.form.get('active_tab', 'veiculos-pane')
     db.session.delete(historico)
     db.session.commit()
     flash('Histórico removido com sucesso!', 'danger')
-    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
-
+    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
 
 @main.route('/add_carros_cliente/<int:cliente_id>', methods=['POST'])
 @login_required
 def add_carros(cliente_id):
-    active_tab = request.form.get('active_tab', 'veiculos-pane') # 🔹 Obtém a aba ativa
-    carros_data = request.form.to_dict(flat=False)
+    active_tab = request.form.get('active_tab', 'veiculos-pane')
+    
+    try:
+        novo_carro = Carro(
+            cliente_id=cliente_id,
+            marca=request.form.get('marca[]'),
+            modelo=request.form.get('modelo[]'),
+            motor=request.form.get('motor[]') or None,
+            ano=int(request.form['ano[]']) if request.form.get('ano[]') else None,
+            placa=request.form.get('placa[]'),
+            quilometragem=int(request.form['quilometragem[]']) if request.form.get('quilometragem[]') else None
+        )
+        db.session.add(novo_carro)
+        db.session.commit()
+        flash('Carro adicionado com sucesso!', 'success')
+    except Exception as e:
+        flash(f'Erro ao adicionar carro: {e}', 'danger')
+        db.session.rollback()
 
-    if 'marca[]' not in carros_data or not carros_data['marca[]']:
-        flash('Erro: Nenhuma marca de carro fornecida. Por favor, adicione pelo menos um carro.', 'danger')
-        return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
-
-    for i in range(len(carros_data['marca[]'])):
-        try:
-            ano_val = int(carros_data['ano[]'][i]) if carros_data['ano[]'][i] else None
-            quilometragem_val = int(carros_data['quilometragem[]'][i]) if carros_data['quilometragem[]'][i] else None
-
-            novo_carro = Carro(
-                cliente_id=cliente_id,
-                marca=carros_data['marca[]'][i],
-                modelo=carros_data['modelo[]'][i],
-                motor=carros_data['motor[]'][i],
-                ano=ano_val,
-                placa=carros_data['placa[]'][i],
-                quilometragem=quilometragem_val
-            )
-            db.session.add(novo_carro)
-        except (ValueError, KeyError) as e:
-            flash(f'Erro ao adicionar carro: Verifique os dados inseridos. Erro: {e}', 'danger')
-            db.session.rollback()
-            return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
-
-    db.session.commit()
-    flash('Carro(s) adicionado(s) com sucesso!', 'success')
-    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
-
+    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
 
 @main.route('/update_carros_cliente/<int:cliente_id>', methods=['POST'])
 @login_required
 def update_carros(cliente_id):
-    carros = Carro.query.filter_by(cliente_id=cliente_id).all()
-    active_tab = request.form.get('active_tab', 'veiculos-pane') # 🔹 Obtém a aba ativa
+    active_tab = request.form.get('active_tab', 'veiculos-pane')
+    carro_id = request.form.get('carro_id')
     
-    for carro in carros:
-        carro.marca = request.form.get(f'marca_{carro.id}', carro.marca)
-        carro.modelo = request.form.get(f'modelo_{carro.id}', carro.modelo)
-        carro.motor = request.form.get(f'motor_{carro.id}', carro.motor)
-        
-        ano_str = request.form.get(f'ano_{carro.id}')
-        if ano_str:
-            carro.ano = int(ano_str)
-        
-        carro.placa = request.form.get(f'placa_{carro.id}', carro.placa)
-        
-        quilometragem_str = request.form.get(f'quilometragem_{carro.id}')
-        if quilometragem_str:
-            carro.quilometragem = int(quilometragem_str)
-        
-        db.session.add(carro)
+    try:
+        carro = Carro.query.get_or_404(carro_id)
+        if carro.cliente_id != cliente_id:
+            flash('Operação não permitida.', 'danger')
+            return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
 
-    db.session.commit()
-    flash('Dados do carro atualizados com sucesso!', 'success')
-    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
+        carro.marca = request.form.get(f'marca_{carro_id}')
+        carro.modelo = request.form.get(f'modelo_{carro_id}')
+        carro.motor = request.form.get(f'motor_{carro_id}') or None
+        carro.ano = int(request.form[f'ano_{carro_id}']) if request.form.get(f'ano_{carro_id}') else None
+        carro.placa = request.form.get(f'placa_{carro_id}')
+        carro.quilometragem = int(request.form[f'quilometragem_{carro_id}']) if request.form.get(f'quilometragem_{carro_id}') else None
+        
+        db.session.commit()
+        flash('Dados do carro atualizados com sucesso!', 'success')
+    except Exception as e:
+        flash(f'Erro ao atualizar carro: {e}', 'danger')
+        db.session.rollback()
+
+    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
     
-# ROTAS RELACIONADAS AO PAGAMENTO
-@main.route('/add_pagamento/<int:carro_id>/<int:historico_id>', methods=['POST'])
+@main.route('/add_pagamento/<int:cliente_id>/<int:carro_id>/<int:historico_id>', methods=['POST'])
 @login_required
-def add_pagamento(carro_id, historico_id):
-    valor_str = request.form['valor'].replace(',', '.')
-    valor = float(valor_str)  
-    
-    metodo = request.form['metodo']
-    tipo_pagamento = request.form.get('tipo_pagamento')
-    parcelas_str = request.form.get('parcelas')
-    active_tab = request.form.get('active_tab', 'pagamentos-pane') # 🔹 Obtém a aba ativa
+def add_pagamento(cliente_id, carro_id, historico_id):
+    active_tab = request.form.get('active_tab', 'pagamentos-pane')
+    try:
+        valor_str = request.form['valor'].replace('.', '').replace(',', '.')
+        valor = float(valor_str)
+        
+        metodo = request.form['metodo']
+        tipo_pagamento = request.form.get('tipo_pagamento')
+        parcelas_str = request.form.get('parcelas')
+        data_pagamento_str = request.form.get('data_pagamento')
 
-    parcelas = None
-    if tipo_pagamento == 'Parcelado' and parcelas_str and parcelas_str.strip():
-        try:
-            parcelas = int(parcelas_str)
-        except ValueError:
-            flash('Número de parcelas inválido.', 'danger')
-            return redirect(url_for('main.cliente', id=Carro.query.get_or_404(carro_id).cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
+        data_pagamento = datetime.combine(
+            datetime.strptime(data_pagamento_str, '%Y-%m-%d').date(),
+            datetime.now().time()
+        )
 
-    carro = Carro.query.get_or_404(carro_id)
-    historico = Historico.query.get_or_404(historico_id)
+        parcelas = int(parcelas_str) if tipo_pagamento == 'Parcelado' and parcelas_str and parcelas_str.strip() else None
 
-    novo_pagamento = Pagamento(
-        cliente_id=carro.cliente_id,
-        carro_id=carro.id,
-        historico_id=historico.id,
-        valor=valor,
-        metodo=metodo,
-        tipo_pagamento=tipo_pagamento,
-        parcelas=parcelas,
-        data=datetime.now(pytz.utc) 
-    )
+        novo_pagamento = Pagamento(
+            cliente_id=cliente_id, carro_id=carro_id, historico_id=historico_id,
+            valor=valor, metodo=metodo, tipo_pagamento=tipo_pagamento,
+            parcelas=parcelas, data=data_pagamento
+        )
+        db.session.add(novo_pagamento)
+        db.session.commit()
+        flash('Pagamento registrado com sucesso!', 'success')
+    except Exception as e:
+        flash(f'Erro ao registrar pagamento: {e}', 'danger')
+        db.session.rollback()
 
-    db.session.add(novo_pagamento)
-    db.session.commit()
-    flash('Pagamento registrado com sucesso!', 'success')
-    return redirect(url_for('main.cliente', id=carro.cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
+    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
 
 @main.route('/edit_pagamento/<int:id>', methods=['POST'])
 @login_required
 def edit_pagamento(id):
     pagamento = Pagamento.query.get_or_404(id)
-    active_tab = request.form.get('active_tab', 'pagamentos-pane') # 🔹 Obtém a aba ativa
+    active_tab = request.form.get('active_tab', 'pagamentos-pane')
     
-    valor_str = request.form['valor'].replace(',', '.')
-    pagamento.valor = float(valor_str)
-    
-    pagamento.metodo = request.form['metodo']
-    pagamento.tipo_pagamento = request.form.get('tipo_pagamento')
-    parcelas_str = request.form.get('parcelas')
+    try:
+        valor_str = request.form['valor'].replace('.', '').replace(',', '.')
+        pagamento.valor = float(valor_str)
+        pagamento.metodo = request.form['metodo']
+        pagamento.tipo_pagamento = request.form.get('tipo_pagamento')
+        parcelas_str = request.form.get('parcelas')
+        pagamento.parcelas = int(parcelas_str) if pagamento.tipo_pagamento == 'Parcelado' and parcelas_str and parcelas_str.strip() else None
 
-    pagamento.parcelas = None
-    if pagamento.tipo_pagamento == 'Parcelado' and parcelas_str and parcelas_str.strip():
-        try:
-            pagamento.parcelas = int(parcelas_str)
-        except ValueError:
-            flash('Número de parcelas inválido.', 'danger')
-            return redirect(url_for('main.cliente', id=pagamento.cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
+        db.session.commit()
+        flash('Pagamento atualizado com sucesso!', 'success')
+    except Exception as e:
+        flash(f'Erro ao atualizar pagamento: {e}', 'danger')
+        db.session.rollback()
 
-
-    db.session.commit()
-    flash('Pagamento atualizado com sucesso!', 'success')
-    return redirect(url_for('main.cliente', id=pagamento.cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
+    return redirect(url_for('main.cliente', id=pagamento.cliente_id, tab=active_tab))
 
 @main.route('/delete_pagamento/<int:id>', methods=['POST'])
 @login_required
 def delete_pagamento(id):
     pagamento = Pagamento.query.get_or_404(id)
     cliente_id = pagamento.cliente_id
-    active_tab = request.form.get('active_tab', 'pagamentos-pane') # 🔹 Obtém a aba ativa
+    active_tab = request.form.get('active_tab', 'pagamentos-pane')
     db.session.delete(pagamento)
     db.session.commit()
     flash('Pagamento removido com sucesso!', 'danger')
-    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab)) # 🔹 Passa a aba ativa
+    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
 
 @main.route('/add_peca', methods=['POST'])
 @login_required
@@ -416,13 +382,11 @@ def add_peca():
     nome = request.form['nome'].strip()
     descricao = request.form.get('descricao')
     quantidade = int(request.form['quantidade'])
-    preco = float(request.form['preco'])
+    preco = float(request.form['preco'].replace(',', '.'))
 
-    peca_existente = Peca.query.filter_by(nome=nome).first()
-    if peca_existente:
-        pecas = Peca.query.all()
+    if Peca.query.filter_by(nome=nome).first():
         flash('Erro: Esta peça já está cadastrada!', 'danger')
-        return render_template('inventario.html', pecas=pecas, error="Erro: Esta peça já está cadastrada!")
+        return redirect(url_for('main.inventario'))
 
     nova_peca = Peca(nome=nome, descricao=descricao, quantidade=quantidade, preco=preco)
     db.session.add(nova_peca)
@@ -437,7 +401,7 @@ def update_peca(id):
     peca.nome = request.form['nome']
     peca.descricao = request.form.get('descricao')
     peca.quantidade = int(request.form['quantidade'])
-    peca.preco = float(request.form['preco'])
+    peca.preco = float(request.form['preco'].replace(',', '.'))
 
     db.session.commit()
     flash('Peça atualizada com sucesso!', 'success')
@@ -446,22 +410,17 @@ def update_peca(id):
 @main.route('/delete_peca/<int:id>', methods=['POST'])
 @login_required
 def delete_peca(id):
-    try:
-        peca = Peca.query.get_or_404(id)
-        db.session.delete(peca)
-        db.session.commit()
-        flash('Peça removida com sucesso!', 'danger')
-        return redirect(url_for('main.inventario'))
-    except Exception as e:
-        print(f"Erro ao remover peça: {e}")
-        flash(f"Erro ao remover peça: {e}", 'danger')
-        return "Erro interno ao remover a peça", 500
+    peca = Peca.query.get_or_404(id)
+    db.session.delete(peca)
+    db.session.commit()
+    flash('Peça removida com sucesso!', 'danger')
+    return redirect(url_for('main.inventario'))
 
 @main.route('/utilizadores')
 @login_required
 def lista_utilizadores():
     utilizadores = Utilizador.query.all()
-    return render_template('utilizadores/lista_utilizadores.html', utilizadores=utilizadores)
+    return render_template('utilizadores/lista_utilizadores.html', utilizadores=utilizadores, active_page='usuarios')
 
 @main.route('/utilizadores/add', methods=['GET', 'POST'])
 def add_utilizador():
@@ -554,8 +513,8 @@ def edit_utilizador(id):
         db.session.commit()
         flash('Utilizador atualizado com sucesso!', 'success')
         return redirect(url_for('main.lista_utilizadores'))
-
-    return render_template('utilizadores/edit_utilizadores.html', utilizador=utilizador, papeis=papeis)
+        
+    return render_template('utilizadores/edit_utilizadores.html', utilizador=utilizador, papeis=papeis, active_page='usuarios')
 
 @main.route('/utilizadores/delete/<int:id>', methods=['POST'])
 @login_required
@@ -564,33 +523,23 @@ def delete_utilizador(id):
         flash('Você não tem permissão para apagar utilizadores.', 'danger')
         return redirect(url_for('main.lista_utilizadores'))
 
+    if id == current_user.id:
+        flash('Você não pode apagar sua própria conta.', 'danger')
+        return redirect(url_for('main.lista_utilizadores'))
+
     utilizador = Utilizador.query.get_or_404(id)
-
-    try:
-        if utilizador.id == current_user.id:
-            flash('Você não pode apagar a sua própria conta enquanto estiver logado.', 'danger')
-            return redirect(url_for('main.lista_utilizadores'))
-
-        db.session.execute(delete(utilizador_papeis).where(utilizador_papeis.c.id_utilizador == utilizador.id))
-        
-        db.session.delete(utilizador)
-        db.session.commit()
-        flash('Utilizador apagado com sucesso!', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Erro ao apagar utilizador: {e}', 'danger')
-    
+    db.session.delete(utilizador)
+    db.session.commit()
+    flash('Utilizador apagado com sucesso!', 'success')
     return redirect(url_for('main.lista_utilizadores'))
 
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Rota para servir os arquivos que foram upados
 @main.route('/uploads/<filename>')
 def get_uploaded_file(filename):
     from flask import send_from_directory
-    return send_from_directory(os.path.join(os.getcwd(), UPLOAD_FOLDER), filename)
+    return send_from_directory(os.path.abspath(UPLOAD_FOLDER), filename)
 
 # 1. Rota para carregar a página HTML
 @main.route('/ordens_servico')
@@ -603,7 +552,7 @@ def ordens_servico():
     mecanicos_list = [{'id': m.id, 'nome': m.nome} for m in mecanicos]
     
     # 3. Passa a lista para o template no formato JSON
-    return render_template('ordem_servico.html', mecanicos_json=json.dumps(mecanicos_list))
+    return render_template('ordem_servico.html', mecanicos_json=json.dumps(mecanicos_list), active_page='ordens_servico')
 
 # 2. API para OBTER todas as Ordens de Serviço (GET)
 @main.route('/api/ordens_servico', methods=['GET'])

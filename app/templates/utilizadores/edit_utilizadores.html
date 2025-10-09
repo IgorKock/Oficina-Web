@@ -1,353 +1,110 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Utilizador - OficinaWeb</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Google Fonts - Poppins -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+{% extends "base.html" %}
 
-    <style>
-        /* ESTILOS DA ESTRUTURA (ADAPTADOS DE cliente.txt) */
-        :root {
-            --sidebar-width: 260px;
-            --header-height: 60px;
-        }
-        
-        body {
-            background-color: #f0f2f5;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cg fill='%23d3dce3' fill-opacity='0.4'%3E%3Cpath fill-rule='evenodd' d='M0 0h4v4H0V0zm4 4h4v4H4V4z'/%3E%3C/g%3E%3C/svg%3E");
-            font-family: 'Poppins', sans-serif;
-            padding-top: var(--header-height); /* Espaço para o cabeçalho fixo */
-            margin: 0;
-            overflow-x: hidden;
-        }
+{% block title %}Editar Utilizador - OficinaWeb{% endblock %}
 
-        .header {
-            height: var(--header-height);
-            z-index: 1030;
-        }
+{% block styles %}
+<style>
+    .card {
+        background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 20px; margin-top: 20px; margin-bottom: 50px; border-top: 5px solid;
+        border-image: linear-gradient(to right, #007bff, #00d4ff) 1;
+    }
+    .btn-primary { background-image: linear-gradient(to right, #007bff 0%, #0056b3 100%); border: none; background-size: 200% auto; }
+    .btn-primary:hover { background-position: right center; }
+    .input-group-text { background-color: #f8f9fa; border-right: 0; color: #6c757d; }
+    .form-control { border-left: 0; padding-left: 0; }
+</style>
+{% endblock %}
 
-        .sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1020;
-            background-color: #fff;
-            padding-top: var(--header-height);
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            transition: margin-left 0.3s ease-in-out;
-        }
-        .sidebar .nav-link {
-            color: #555;
-            font-weight: 500;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .sidebar .nav-link .bi {
-            font-size: 1.2rem;
-        }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            color: #0d6efd;
-            background-color: #e9f2ff;
-            border-right: 3px solid #0d6efd;
-        }
+{% block content %}
+<div class="container-fluid">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-        .main-content {
-            padding: 30px;
-            margin-left: var(--sidebar-width);
-            transition: margin-left 0.3s ease-in-out;
-        }
-        
-        @media (max-width: 991.98px) {
-            .sidebar {
-                margin-left: calc(-1 * var(--sidebar-width)); /* Esconde a sidebar */
-            }
-            .sidebar.active {
-                margin-left: 0; /* Mostra a sidebar */
-            }
-            .main-content {
-                margin-left: 0; /* Conteúdo ocupa toda a largura */
-            }
-        }
-        
-        /* --- ESTILOS DE FORMULÁRIO/CARD (DE cliente.txt) --- */
-        .card {
-            background-color: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 20px; /* Ajustado para o conteúdo da lista */
-            margin-top: 20px; /* Ajustado para o layout com header/sidebar */
-            margin-bottom: 50px;
-            border-top: 5px solid;
-            border-image: linear-gradient(to right, #007bff, #00d4ff) 1;
-            transition: all 0.3s ease-in-out;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
-        }
-
-        .card-header { /* Estilo para o cabeçalho do card, se usado */
-            background-color: #e9ecef;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
-            font-weight: bold;
-            padding: 15px 20px;
-            margin: -20px -20px 20px -20px; /* Ajusta margens para preencher o topo do card */
-        }
-
-        .btn-primary {
-            background-image: linear-gradient(to right, #007bff 0%, #0056b3 100%);
-            border: none;
-            transition: all 0.4s ease;
-            background-size: 200% auto;
-        }
-
-        .btn-primary:hover {
-            background-position: right center;
-            transform: scale(1.02);
-        }
-
-        /* Input group e form-floating */
-        .input-group-text {
-            background-color: #f8f9fa;
-            border-right: 0;
-            color: #6c757d;
-        }
-        
-        .form-control {
-            border-left: 0;
-            padding-left: 0;
-        }
-
-        .form-floating > .form-control:focus,
-        .form-floating > .form-control:not(:placeholder-shown) {
-            padding-top: 1.625rem;
-            padding-bottom: .625rem;
-        }
-        .form-floating > .form-select {
-            padding-top: 1.625rem;
-            padding-bottom: .625rem;
-        }
-        .form-floating > label {
-            padding-top: 0.75rem;
-            padding-bottom: 0.75rem;
-        }
-
-
-        /* --- CUSTOM ALERT MODAL --- */
-        .custom-alert-modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
-        .custom-alert-modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); text-align: center; position: relative; }
-        .custom-alert-close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 15px; }
-        .custom-alert-close-btn:hover, .custom-alert-close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
-
-    </style>
-</head>
-<body>
-
-<header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top header">
-    <div class="container-fluid">
-        <button class="navbar-toggler" type="button" id="menu-toggle">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <a class="navbar-brand fw-bold text-primary" href="#">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa" style="max-width: 40px; height: auto; margin-right: 10px;">
-            Oficina Web
-        </a>
-        <div class="d-flex align-items-center">
-            <span class="navbar-text me-3">Bem-vindo, {{ current_user.nome }}!</span>
-            <a href="{{ url_for('main.logout') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-arrow-right"></i> Sair</a>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h4 fw-bold text-dark mb-0"><i class="bi bi-person-gear-fill text-primary me-2"></i> Editar Utilizador: {{ utilizador.nome }}</h2>
+        <a href="{{ url_for('main.lista_utilizadores') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-2"></i>Voltar para a Lista</a>
     </div>
-</header>
 
-<aside class="sidebar">
-    <div class="p-3"><h5 class="text-muted fw-bold">Menu Principal</h5></div>
-    <ul class="nav nav-pills flex-column">
-        <li class="nav-item">
-            <a href="{{ url_for('main.index') }}" class="nav-link"><i class="bi bi-speedometer2"></i>Página Inicial</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.client') }}" class="nav-link"><i class="bi bi-people-fill"></i>Clientes</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.inventario') }}" class="nav-link"><i class="bi bi-box-seam-fill"></i>Inventário</a>
-        </li>
-		<li class="nav-item">
-            <a href="{{ url_for('main.ordens_servico') }}" class="nav-link"><i class="bi bi-card-checklist"></i>Ordens de Serviço</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.lista_utilizadores') }}" class="nav-link active"><i class="bi bi-people"></i>Usuários</a>
-        </li>
-    </ul>
-</aside>
-
-<main class="main-content">
-    <div class="container-fluid">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="h4 fw-bold text-dark mb-0"><i class="bi bi-person-gear-fill text-primary me-2"></i> Editar Utilizador: {{ utilizador.nome }}</h2>
-            <a href="{{ url_for('main.lista_utilizadores') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-2"></i>Voltar para a Lista</a>
-        </div>
-
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="container">
-                    <div class="row justify-content-center">
-                        <div class="col-lg-8">
-                            <div class="form-card">
-                                <form action="{{ url_for('main.edit_utilizador', id=utilizador.id) }}" method="POST">
-                                    <div class="input-group mb-4">
-                                        <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                                        <div class="form-floating flex-grow-1">
-                                            <input type="text" class="form-control" id="nome" name="nome" value="{{ utilizador.nome }}" placeholder="Nome Completo" required>
-                                            <label for="nome">Nome Completo</label>
-                                        </div>
-                                    </div>
-                                    <div class="input-group mb-4">
-                                        <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
-                                        <div class="form-floating flex-grow-1">
-                                            <input type="email" class="form-control" id="email" name="email" value="{{ utilizador.email }}" placeholder="Email" required>
-                                            <label for="email">Email</label>
-                                        </div>
-                                    </div>
-                                    <div class="input-group mb-4">
-                                        <span class="input-group-text"><i class="bi bi-phone-fill"></i></span>
-                                        <div class="form-floating flex-grow-1">
-                                            <input type="text" class="form-control telefone-input" id="telefone" name="telefone" value="{{ utilizador.telefone or '' }}" placeholder="Telefone / WhatsApp (Opcional)">
-                                            <label for="telefone">Telefone / WhatsApp (Opcional)</label>
-                                        </div>
-                                    </div>
-                                    <div class="input-group mb-4">
-                                        <span class="input-group-text"><i class="bi bi-tags-fill"></i></span>
-                                        <div class="form-floating flex-grow-1">
-                                            <input type="text" class="form-control" id="palavras_chave" name="palavras_chave" value="{{ utilizador.palavras_chave or '' }}" placeholder="Palavras-chave / Tags (Opcional)">
-                                            <label for="palavras_chave">Palavras-chave / Tags (Opcional)</label>
-                                        </div>
-                                    </div>
-                                    <div class="input-group mb-4">
-                                        <span class="input-group-text"><i class="bi bi-person-badge-fill"></i></span>
-                                        <div class="form-floating flex-grow-1">
-                                            <select class="form-select" id="papel_id" name="papel_id" required>
-                                                {% for papel in papeis %}
-                                                    <option value="{{ papel.id }}" {% if papel in utilizador.papeis %}selected{% endif %}>{{ papel.nome }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <label for="papel_id">Papel</label>
-                                        </div>
-                                    </div>
-                                    
-                                    <hr class="my-4">
-                                    <h5 class="mb-3 text-center">Alterar Senha (Opcional)</h5>
-                                    <p class="text-muted text-center mb-4">Deixe os campos de senha em branco se não quiser alterá-la.</p>
-
-                                    <div class="input-group mb-4">
-                                        <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
-                                        <div class="form-floating flex-grow-1">
-                                            <input type="password" class="form-control" id="senha" name="senha" placeholder="Nova Senha">
-                                            <label for="senha">Nova Senha</label>
-                                        </div>
-                                    </div>
-                                    <div class="input-group mb-4">
-                                        <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
-                                        <div class="form-floating flex-grow-1">
-                                            <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" placeholder="Confirmar Nova Senha">
-                                            <label for="confirmar_senha">Confirmar Nova Senha</label>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="d-grid gap-2 mt-4">
-                                        <button type="submit" class="btn btn-primary btn-lg fw-bold">
-                                            <i class="bi bi-check-circle-fill me-2"></i> ATUALIZAR UTILIZADOR
-                                        </button>
-                                    </div>
-                                    <div class="d-grid gap-2 mt-2">
-                                        <a href="{{ url_for('main.lista_utilizadores') }}" class="btn btn-outline-secondary btn-lg fw-bold">
-                                            <i class="bi bi-x-circle-fill me-2"></i> CANCELAR
-                                        </a>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-lg-5">
+            <form action="{{ url_for('main.edit_utilizador', id=utilizador.id) }}" method="POST">
+                <div class="input-group mb-4">
+                    <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                    <div class="form-floating flex-grow-1">
+                        <input type="text" class="form-control" id="nome" name="nome" value="{{ utilizador.nome }}" placeholder="Nome Completo" required>
+                        <label for="nome">Nome Completo</label>
                     </div>
                 </div>
-            </div>
+                <div class="input-group mb-4">
+                    <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+                    <div class="form-floating flex-grow-1">
+                        <input type="email" class="form-control" id="email" name="email" value="{{ utilizador.email }}" placeholder="Email" required>
+                        <label for="email">Email</label>
+                    </div>
+                </div>
+                <div class="input-group mb-4">
+                    <span class="input-group-text"><i class="bi bi-phone-fill"></i></span>
+                    <div class="form-floating flex-grow-1">
+                        <input type="text" class="form-control telefone-input" id="telefone" name="telefone" value="{{ utilizador.telefone or '' }}" placeholder="Telefone (Opcional)">
+                        <label for="telefone">Telefone (Opcional)</label>
+                    </div>
+                </div>
+                <div class="input-group mb-4">
+                    <span class="input-group-text"><i class="bi bi-person-badge-fill"></i></span>
+                    <div class="form-floating flex-grow-1">
+                        <select class="form-select" id="papel_id" name="papel_id" required>
+                            {% for papel in papeis %}
+                                <option value="{{ papel.id }}" {% if papel in utilizador.papeis %}selected{% endif %}>{{ papel.nome }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="papel_id">Papel</label>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                <h5 class="mb-3 text-center">Alterar Senha (Opcional)</h5>
+                <p class="text-muted text-center mb-4">Deixe os campos de senha em branco se não quiser alterá-la.</p>
+
+                <div class="input-group mb-4">
+                    <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                    <div class="form-floating flex-grow-1">
+                        <input type="password" class="form-control" id="senha" name="senha" placeholder="Nova Senha">
+                        <label for="senha">Nova Senha</label>
+                    </div>
+                </div>
+                <div class="input-group mb-4">
+                    <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                    <div class="form-floating flex-grow-1">
+                        <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" placeholder="Confirmar Nova Senha">
+                        <label for="confirmar_senha">Confirmar Nova Senha</label>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                        <i class="bi bi-check-circle-fill me-2"></i> ATUALIZAR UTILIZADOR
+                    </button>
+                    <a href="{{ url_for('main.lista_utilizadores') }}" class="btn btn-outline-secondary">CANCELAR</a>
+                </div>
+            </form>
         </div>
     </div>
-</main>
-
-<!-- Custom Alert Modal HTML (de cliente.txt) -->
-<div id="customAlertModal" class="custom-alert-modal">
-    <div class="custom-alert-modal-content">
-        <span class="custom-alert-close-btn">×</span>
-        <p id="customAlertMessage"></p>
-        <button class="btn btn-primary" onclick="closeCustomAlert()">OK</button>
-    </div>
 </div>
+{% endblock %}
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-
+{% block scripts %}
 <script>
-    // --- LÓGICA DO MENU LATERAL (DE cliente.txt) ---
-    document.addEventListener("DOMContentLoaded", function() {
-        const menuToggle = document.getElementById('menu-toggle');
-        const sidebar = document.querySelector('.sidebar');
-        if (menuToggle) {
-            menuToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('active');
-            });
-        }
-    });
-
-    // --- FUNÇÕES DE ALERTA (DE cliente.txt) ---
-    function showCustomAlert(message) {
-        document.getElementById('customAlertMessage').innerText = message;
-        document.getElementById('customAlertModal').style.display = 'flex';
-    }
-    function closeCustomAlert() {
-        document.getElementById('customAlertModal').style.display = 'none';
-    }
-    document.querySelector('.custom-alert-close-btn').onclick = closeCustomAlert;
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('customAlertModal')) closeCustomAlert();
-    }
-
-    // --- FUNÇÕES DE MÁSCARA (DE cliente.txt) ---
-    function applyMasks() {
-        $('.telefone-input').mask('(00) 00000-0000');
-        // Outras máscaras de cliente.txt não são aplicáveis aqui (CPF/CNPJ, CEP, Placa, Ano)
-    }
-
-    $(document).ready(function() {
-        applyMasks();
-        // Nenhuma lógica de validação de CPF/CNPJ ou ViaCEP é necessária aqui
-        // Nenhuma lógica de pagamento é necessária aqui
-    });
+$(document).ready(function() {
+    $('.telefone-input').mask('(00) 00000-0000');
+});
 </script>
-</body>
-</html>
+{% endblock %}

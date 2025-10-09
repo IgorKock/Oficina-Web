@@ -1,315 +1,141 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Clientes - OficinaWeb</title>
+{% extends "base.html" %}
+
+{% block title %}Lista de Clientes - OficinaWeb{% endblock %}
+
+{% block styles %}
+<style>
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    .table .align-middle {
+        vertical-align: middle;
+    }
+    .client-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #0d6efd;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+    .action-buttons a, .action-buttons button {
+        margin: 0 4px;
+    }
+    .custom-alert-modal { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
+    .custom-alert-modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); text-align: center; position: relative; }
+    .custom-alert-close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 15px; }
+    .custom-alert-close-btn:hover, .custom-alert-close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
     
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-
-    <style>
-        /* ESTILOS DA ESTRUTURA (BASEADO EM teste4.txt) */
-        :root {
-            --sidebar-width: 260px;
-            --header-height: 60px;
-        }
-        
-        body {
-            background-color: #f0f2f5;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cg fill='%23d3dce3' fill-opacity='0.4'%3E%3Cpath fill-rule='evenodd' d='M0 0h4v4H0V0zm4 4h4v4H4V4z'/%3E%3C/g%3E%3C/svg%3E");
-            font-family: 'Poppins', sans-serif;
-            padding-top: var(--header-height); /* Espaço para o cabeçalho fixo */
-            margin: 0;
-            overflow-x: hidden; /* Evita rolagem horizontal */
-        }
-
-        .header {
-            height: var(--header-height);
-            z-index: 1030;
-        }
-
-        .sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1020;
-            background-color: #fff;
-            padding-top: var(--header-height);
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            transition: margin-left 0.3s ease-in-out;
-        }
-        .sidebar .nav-link {
-            color: #555;
-            font-weight: 500;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .sidebar .nav-link .bi {
-            font-size: 1.2rem;
-        }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            color: #0d6efd;
-            background-color: #e9f2ff;
-            border-right: 3px solid #0d6efd;
-        }
-
-        .main-content {
-            padding: 30px;
-            margin-left: var(--sidebar-width);
-            transition: margin-left 0.3s ease-in-out;
-        }
-        
-        @media (max-width: 991.98px) {
-            .sidebar {
-                margin-left: calc(-1 * var(--sidebar-width)); /* Esconde a sidebar */
-            }
-            .sidebar.active {
-                margin-left: 0; /* Mostra a sidebar */
-            }
-            .main-content {
-                margin-left: 0; /* Conteúdo ocupa toda a largura */
-            }
-        }
-        
-        /* --- ESTILOS ADICIONAIS PARA A LISTAGEM (ADAPTADOS DE listacliente.txt E teste4.txt) --- */
-        
-        /* CORREÇÃO APLICADA AQUI: REMOVIDO 'cursor: pointer;' */
-        .table-hover tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .table .align-middle {
-            vertical-align: middle;
-        }
-        
-        .client-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #0d6efd;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-        }
-
-        .action-buttons a, .action-buttons button {
-            margin: 0 4px;
-        }
-
-        /* Custom Alert Modal Styles (Mantido de listacliente.txt) */
-        .custom-alert-modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1050; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-            justify-content: center;
-            align-items: center;
-        }
-
-        .custom-alert-modal-content {
-            background-color: #fefefe;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            text-align: center;
-            position: relative;
-        }
-
-        .custom-alert-close-btn {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            position: absolute;
-            top: 10px;
-            right: 15px;
-        }
-
-        .custom-alert-close-btn:hover,
-        .custom-alert-close-btn:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-
-<header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top header">
-    <div class="container-fluid">
-        <!-- Botão para abrir/fechar o menu lateral -->
-        <button class="navbar-toggler" type="button" id="menu-toggle">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <!-- Logo e Nome da Oficina -->
-        <a class="navbar-brand fw-bold text-primary" href="#">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo da Empresa" style="max-width: 40px; height: auto; margin-right: 10px;">
-            Oficina Web
-        </a>
-        <div class="d-flex align-items-center">
-            <span class="navbar-text me-3">Bem-vindo, {{ current_user.nome }}!</span>
-            <a href="{{ url_for('main.logout') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-arrow-right"></i> Sair</a>
-        </div>
-    </div>
-</header>
-
-<aside class="sidebar">
-    <div class="p-3"><h5 class="text-muted fw-bold">Menu Principal</h5></div>
-    <ul class="nav nav-pills flex-column">
-        <li class="nav-item">
-            <a href="{{ url_for('main.index') }}" class="nav-link"><i class="bi bi-speedometer2"></i>Página Inicial</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.client') }}" class="nav-link active"><i class="bi bi-people-fill"></i>Clientes</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.inventario') }}" class="nav-link"><i class="bi bi-box-seam-fill"></i>Inventário</a>
-        </li>
-		<li class="nav-item">
-            <a href="{{ url_for('main.ordens_servico') }}" class="nav-link"><i class="bi bi-card-checklist"></i>Ordens de Serviço</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.lista_utilizadores') }}" class="nav-link"><i class="bi bi-people"></i>Usuários</a>
-        </li>
-    </ul>
-</aside>
-
-<main class="main-content">
-    <div class="container-fluid">
-        
-        <!-- Mensagens Flash -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <div class="card border-0 shadow-sm p-3 p-md-4">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
-                <h2 class="h4 fw-bold text-dark mb-3 mb-md-0"><i class="bi bi-people-fill text-primary me-2"></i> Listagem de Clientes</h2>
-                <button type="button" class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#addClientModal">
-                    <i class="bi bi-plus-circle me-2"></i>Adicionar Novo Cliente
-                </button>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-8 mb-2 mb-md-0">
-                    <form class="input-group" method="GET" action="{{ url_for('main.client') }}">
-                        <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control bg-light border-0" placeholder="Buscar por nome, CPF/CNPJ ou telefone..." aria-label="Search" name="query" value="{{ search_query }}">
-                        <button class="btn btn-outline-primary" type="submit">Buscar</button>
-                    </form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card border-0 shadow-sm p-3 p-md-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+            <h2 class="h4 fw-bold text-dark mb-3 mb-md-0"><i class="bi bi-people-fill text-primary me-2"></i> Listagem de Clientes</h2>
+            <button type="button" class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#addClientModal">
+                <i class="bi bi-plus-circle me-2"></i>Adicionar Novo Cliente
+            </button>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-8 mb-2 mb-md-0">
+                <form class="input-group" method="GET" action="{{ url_for('main.client') }}">
+                    <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control bg-light border-0" placeholder="Buscar por nome..." aria-label="Search" name="query" value="{{ search_query }}">
+                    <button class="btn btn-outline-primary" type="submit">Buscar</button>
+                </form>
             </div>
+        </div>
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col">Nome</th>
-                            <th scope="col">Telefone(s)</th>
-                            <th scope="col">CPF/CNPJ</th>
-                            <th scope="col">Endereço</th>
-                            <th scope="col" class="text-center">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for cliente in clientes %}
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="client-avatar me-3">{{ cliente.nome[0]|upper }}{{ cliente.apelido[0]|upper if cliente.apelido else '' }}</div>
-                                    <div>
-                                        <!-- CORREÇÃO APLICADA AQUI: LINK APENAS NO NOME -->
-                                        <a href="{{ url_for('main.cliente', id=cliente.id) }}" class="text-blue fw-bold" title="Ver Detalhes de {{ cliente.nome }}">
-                                            {{ cliente.nome }}
-                                        </a>
-                                    </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Nome</th>
+                        <th scope="col">Telefone(s)</th>
+                        <th scope="col">CPF/CNPJ</th>
+                        <th scope="col">Endereço</th>
+                        <th scope="col" class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cliente in clientes %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="client-avatar me-3">{{ cliente.nome[0]|upper }}{{ cliente.apelido[0]|upper if cliente.apelido else '' }}</div>
+                                <div>
+                                    <a href="{{ url_for('main.cliente', id=cliente.id) }}" class="text-primary fw-bold" title="Ver Detalhes de {{ cliente.nome }}">{{ cliente.nome }}</a>
                                 </div>
-                            </td>
-                            <td>
-                                {% if cliente.telefones %}
-                                    {% for telefone in cliente.telefones %}
-                                        {{ telefone.numero }}<br>
-                                    {% endfor %}
-                                {% else %}
-                                    N/A
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if cliente.cpf %}{{ cliente.cpf }}{% elif cliente.cnpj %}{{ cliente.cnpj }}{% else %}N/A{% endif %}
-                            </td>
-                            <td>
-                                {% if cliente.endereco %}{{ cliente.endereco.split(';')[0].strip() }}, {{ cliente.bairro }}, {{ cliente.cidade.split(';')[0].strip() }} - {{ cliente.estado }}{% else %}N/A{% endif %}
-                            </td>
-                            <td class="text-center action-buttons">
-                                <a href="{{ url_for('main.cliente', id=cliente.id) }}" class="btn btn-sm btn-outline-info" title="Ver Detalhes">
-                                    <i class="bi bi-eye-fill"></i>
-                                </a>
-                                {% if current_user.is_authenticated and current_user.is_admin() %}
-                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Apagar Cliente" data-bs-toggle="modal" data-bs-target="#deleteClientModal{{ cliente.id }}">
-                                        <i class="bi bi-trash-fill"></i>
-                                    </button>
-                                {% endif %}
-                            </td>
-                        </tr>
+                            </div>
+                        </td>
+                        <td>
+                            {% for telefone in cliente.telefones %}{{ telefone.numero }}<br>{% else %}N/A{% endfor %}
+                        </td>
+                        <td>
+                            {{ cliente.cpf or cliente.cnpj or "N/A" }}
+                        </td>
+                        <td>
+                            {% if cliente.endereco %}{{ cliente.endereco.split(';')[0] }}, {{ cliente.cidade.split(';')[0] }}{% else %}N/A{% endif %}
+                        </td>
+                        <td class="text-center action-buttons">
+                            <a href="{{ url_for('main.cliente', id=cliente.id) }}" class="btn btn-sm btn-outline-info" title="Ver Detalhes"><i class="bi bi-eye-fill"></i></a>
+                            {% if current_user.is_admin() %}
+                                <button type="button" class="btn btn-sm btn-outline-danger" title="Apagar Cliente" data-bs-toggle="modal" data-bs-target="#deleteClientModal{{ cliente.id }}">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            {% endif %}
+                        </td>
+                    </tr>
 
-                        <!-- Modal de Confirmação de Exclusão para cada cliente -->
-                        <div class="modal fade" id="deleteClientModal{{ cliente.id }}" tabindex="-1" aria-labelledby="deleteClientModalLabel{{ cliente.id }}" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="deleteClientModalLabel{{ cliente.id }}">Confirmar Exclusão</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        Tem certeza que deseja apagar o cliente <strong>{{ cliente.nome }}</strong> e todos os seus dados (telefones, carros, históricos, pagamentos)? Esta ação é irreversível.
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                        <form action="{{ url_for('main.delete_cliente', id=cliente.id) }}" method="POST" style="display: inline;">
-                                            <button type="submit" class="btn btn-danger" onclick="return confirmDeleteClient();">Apagar</button>
-                                        </form>
-                                    </div>
+                    <!-- Modal de Confirmação de Exclusão -->
+                    <div class="modal fade" id="deleteClientModal{{ cliente.id }}" tabindex="-1" aria-labelledby="deleteClientModalLabel{{ cliente.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteClientModalLabel{{ cliente.id }}">Confirmar Exclusão</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Tem certeza que deseja apagar o cliente <strong>{{ cliente.nome }}</strong> e todos os seus dados? Esta ação é irreversível.
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <form action="{{ url_for('main.delete_cliente', id=cliente.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-danger">Apagar</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                    </div>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted p-4">Nenhum cliente encontrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-
     </div>
-</main>
+</div>
 
-<!-- Modal para Adicionar Novo Cliente (Mantido de listacliente.txt) -->
+<!-- Modal para Adicionar Novo Cliente -->
 <div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="addClientModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -319,15 +145,15 @@
             </div>
             <div class="modal-body">
                 <form action="{{ url_for('main.add_cliente') }}" method="POST" id="addClientForm">
-                <div class="input-group mb-4">
-                    <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                    <div class="form-floating flex-grow-1">
-                        <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome Completo" required>
-                        <label for="nome">Nome Completo</label>
+                    <div class="input-group mb-4">
+                        <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                        <div class="form-floating flex-grow-1">
+                            <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome Completo" required>
+                            <label for="nome">Nome Completo</label>
+                        </div>
                     </div>
-                </div>
-                <div class="input-group mb-4">
-                    <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                    <div class="input-group mb-4">
+                        <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
                         <div class="form-floating flex-grow-1">
                             <input type="text" class="form-control" id="apelido" name="apelido" placeholder="Apelido ou Nome Social (Opcional)">
                             <label for="apelido">Apelido ou Nome Social (Opcional)</label>
@@ -336,32 +162,36 @@
                     <div class="input-group mb-4">
                         <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
                         <div class="form-floating flex-grow-1">
-                            <input type="text" class="form-control" id="cpf_cnpj" name="cpf_cnpj" placeholder="Ex: 123.456.789-00 ou 00.000.000/0000-00">
+                            <input type="text" class="form-control" id="cpf_cnpj" name="cpf_cnpj" placeholder="CPF ou CNPJ">
                             <label for="cpf_cnpj">CPF ou CNPJ</label>
-                            <!-- Campos ocultos para enviar ao backend -->
                             <input type="hidden" name="cpf" id="hidden_cpf">
                             <input type="hidden" name="cnpj" id="hidden_cnpj">
-                            <span id="cpfCnpjError" class="text-danger" style="display: none;">Documento inválido.</span>
+                            <span id="cpfCnpjError" class="text-danger small" style="display: none;">Documento inválido.</span>
                         </div>
                     </div>
                     <div id="telefones-container">
                         <div class="input-group mb-4">
                             <span class="input-group-text"><i class="bi bi-phone-fill"></i></span>
                             <div class="form-floating flex-grow-1">
-                                <input type="text" class="form-control me-2 telefone-input" id="numero1" name="numeros[]" placeholder="Telefone" required>
-                                <label for="numero1" class="form-label me-2 mb-0">Telefone</label>
+                                <input type="text" class="form-control telefone-input" name="numeros[]" placeholder="Telefone" required>
+                                <label for="numero1">Telefone</label>
                             </div>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="adicionarCampoTelefone()">+</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="adicionarCampoTelefone()">
+                                <i class="bi bi-plus-circle"></i>
+                            </button>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Salvar Cliente</button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Cliente</button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Custom Alert Modal HTML (Mantido de listacliente.txt) -->
+<!-- Custom Alert Modal HTML -->
 <div id="customAlertModal" class="custom-alert-modal">
     <div class="custom-alert-modal-content">
         <span class="custom-alert-close-btn">&times;</span>
@@ -369,125 +199,46 @@
         <button class="btn btn-primary" onclick="closeCustomAlert()">OK</button>
     </div>
 </div>
+{% endblock %}
 
-<!-- Bootstrap JS (bundle inclui Popper) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- jQuery e jQuery Mask Plugin -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-
+{% block scripts %}
 <script>
-    // Custom Alert Functions (Mantido de listacliente.txt)
+    // Funções de Alerta
     function showCustomAlert(message) {
         document.getElementById('customAlertMessage').innerText = message;
         document.getElementById('customAlertModal').style.display = 'flex';
     }
-
     function closeCustomAlert() {
         document.getElementById('customAlertModal').style.display = 'none';
     }
-
-    // Close button for the custom alert
-    document.querySelector('.custom-alert-close-btn').onclick = function() {
-        closeCustomAlert();
-    }
-
-    // Close when clicking outside the modal content
+    document.querySelector('.custom-alert-close-btn').onclick = closeCustomAlert;
     window.onclick = function(event) {
-        if (event.target == document.getElementById('customAlertModal')) {
-            closeCustomAlert();
-        }
+        if (event.target == document.getElementById('customAlertModal')) closeCustomAlert();
     }
 
-    // Função para adicionar campos de telefone dinamicamente (Mantido de listacliente.txt)
+    // Adicionar/Remover Campos de Telefone
     function adicionarCampoTelefone() {
         const container = document.getElementById('telefones-container');
         const newDiv = document.createElement('div');
         newDiv.classList.add('input-group', 'mb-4');
         newDiv.innerHTML = `
             <span class="input-group-text"><i class="bi bi-phone-fill"></i></span>
-                            <div class="form-floating flex-grow-1">
-                                <input type="text" class="form-control telefone-input" id="numero1" name="numeros[]" placeholder="Telefone">
-                                <label for="telefone">Telefone Extra</label>
-                                </div>
-            <button type="button" class="btn btn-danger btn-sm" onclick="removerCampo(this)">-</button>
+            <div class="form-floating flex-grow-1">
+                <input type="text" class="form-control telefone-input" name="numeros[]" placeholder="Telefone Extra">
+                <label>Telefone Extra</label>
+            </div>
+            <button type="button" class="btn btn-outline-danger" onclick="removerCampo(this)">
+                <i class="bi bi-trash"></i>
+            </button>
         `;
         container.appendChild(newDiv);
-        // Aplica a máscara ao novo campo de telefone
-        $(newDiv).find('.telefone-input').mask('(00) 0000-00009', {
-            onKeyPress: function(val, e, field, options) {
-                var masks = ['(00) 0000-00009', '(00) 00000-0000'];
-                var mask = (val.length > 14) ? masks[1] : masks[0];
-                $(field).mask(mask, options);
-            }
-        });
+        $(newDiv).find('.telefone-input').mask('(00) 00000-0000');
     }
-
-    // Função para remover campos dinamicamente (Mantido de listacliente.txt)
     function removerCampo(button) {
-        button.parentNode.remove();
+        button.closest('.input-group').remove();
     }
 
-    // Função para o menu lateral (Adaptado de teste4.txt e listacliente.txt)
-    document.addEventListener("DOMContentLoaded", function() {
-        const menuToggle = document.getElementById('menu-toggle');
-        const sidebar = document.querySelector('.sidebar');
-        const mainContent = document.querySelector('.main-content'); // Adicionado
-
-        if (menuToggle) {
-            menuToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('active');
-                // Adiciona/remove a classe para ajustar a margem do conteúdo principal
-                mainContent.classList.toggle('active-sidebar'); 
-            });
-        }
-
-        // Ajuste inicial para telas menores (mobile)
-        if (window.innerWidth <= 991.98) { // Usar o breakpoint do Bootstrap
-            sidebar.classList.remove('active'); // Garante que a sidebar esteja escondida no mobile
-            mainContent.classList.remove('active-sidebar'); // Garante que o conteúdo principal não tenha margem extra
-        } else {
-            sidebar.classList.add('active'); // Garante que a sidebar esteja visível no desktop
-            mainContent.classList.add('active-sidebar'); // Garante que o conteúdo principal tenha margem
-        }
-
-        // Adiciona um listener para redimensionamento para ajustar o menu
-        window.addEventListener('resize', function() {
-            if (window.innerWidth <= 991.98) {
-                sidebar.classList.remove('active');
-                mainContent.classList.remove('active-sidebar');
-            } else {
-                sidebar.classList.add('active');
-                mainContent.classList.add('active-sidebar');
-            }
-        });
-    });
-
-    // Função para aplicar as máscaras aos inputs (Mantido de listacliente.txt)
-    function applyMasks() {
-        // Máscara dinâmica para CPF/CNPJ
-        var cpfCnpjMaskBehavior = function (val) {
-            return val.replace(/\D/g, '').length <= 11 ? '000.000.000-009' : '00.000.000/0000-00';
-        },
-        cpfCnpjOptions = {
-            onKeyPress: function(val, e, field, options) {
-                field.mask(cpfCnpjMaskBehavior.apply({}, arguments), options);
-            }
-        };
-        $('#cpf_cnpj').mask(cpfCnpjMaskBehavior, cpfCnpjOptions);
-
-        // Aplica a máscara de telefone para campos com a classe 'telefone-input'
-        $('.telefone-input').mask('(00) 0000-00009', {
-            onKeyPress: function(val, e, field, options) {
-                var masks = ['(00) 0000-00009', '(00) 00000-0000'];
-                var mask = (val.length > 14) ? masks[1] : masks[0];
-                $(field).mask(mask, options);
-            }
-        });
-    }
-
-    // CPF validation function (Mantido de listacliente.txt)
+   // CPF validation function (Mantido de listacliente.txt)
     function validarCPF(cpf) {
         cpf = cpf.replace(/[^\d]+/g, '');
         if (cpf == '') return false;
@@ -511,7 +262,6 @@
         if (rev != parseInt(cpf.charAt(10))) return false;
         return true;
     }
-
     // CNPJ validation function (Mantido de listacliente.txt)
     function validarCNPJ(cnpj) {
         cnpj = cnpj.replace(/[^\d]+/g, '');
@@ -546,84 +296,50 @@
         if (resultado != parseInt(digitos.charAt(1))) return false;
         return true;
     }
-
-    // Função para validar o campo de input CPF/CNPJ (Mantido de listacliente.txt)
+    
     function validateCpfCnpjInput() {
-        var cpfCnpjInput = $('#cpf_cnpj');
-        var errorSpan = $('#cpfCnpjError');
-        var hiddenCpf = $('#hidden_cpf');
-        var hiddenCnpj = $('#hidden_cnpj');
-        
+        var cpfCnpjInput = $('#cpf_cnpj'), errorSpan = $('#cpfCnpjError');
+        var hiddenCpf = $('#hidden_cpf'), hiddenCnpj = $('#hidden_cnpj');
         var valor = cpfCnpjInput.val().replace(/\D/g, '');
 
         errorSpan.hide();
         hiddenCpf.val('');
         hiddenCnpj.val('');
 
-        if (valor === '') {
-            return true;
-        } else if (valor.length === 11) {
-            if (validarCPF(valor)) {
-                hiddenCpf.val(valor);
-                return true;
-            } else {
-                errorSpan.text('CPF inválido. Por favor, verifique o número.').show();
-                return false;
-            }
+        if (valor === '') return true;
+        if (valor.length === 11) {
+            if (validarCPF(valor)) { hiddenCpf.val(valor); return true; }
+            else { errorSpan.text('CPF inválido.').show(); return false; }
         } else if (valor.length === 14) {
-            if (validarCNPJ(valor)) {
-                hiddenCnpj.val(valor);
-                return true;
-            } else {
-                errorSpan.text('CNPJ inválido. Por favor, verifique o número.').show();
-                return false;
-            }
+            if (validarCNPJ(valor)) { hiddenCnpj.val(valor); return true; }
+            else { errorSpan.text('CNPJ inválido.').show(); return false; }
         } else {
-            errorSpan.text('Documento com tamanho inválido. Digite 11 dígitos para CPF ou 14 para CNPJ.').show();
-            return false;
+            errorSpan.text('Documento incompleto.').show(); return false;
         }
     }
-    
-    // Função para confirmar a exclusão do cliente (Adaptado para showCustomAlert)
-    function confirmDeleteClient() {
-        // O modal de exclusão do Bootstrap já serve como confirmação.
-        // Se você ainda quiser um alerta extra, pode descomentar a linha abaixo.
-        // showCustomAlert('Tem certeza que deseja apagar o cliente e todos os seus dados? Esta ação é irreversível.');
-        return true; // Permite que o formulário do modal de exclusão seja submetido
-    }
 
-    // Adiciona um listener para o envio do formulário (Mantido de listacliente.txt)
+    // Aplicar Máscaras e Eventos
     $(document).ready(function() {
-        applyMasks();
+        // Máscara CPF/CNPJ
+        var cpfCnpjMask = function(val) { return val.replace(/\D/g, '').length <= 11 ? '000.000.000-009' : '00.000.000/0000-00'; };
+        $('#cpf_cnpj').mask(cpfCnpjMask, { onKeyPress: function(val, e, field, options) { field.mask(cpfCnpjMask.apply({}, arguments), options); } });
 
-        const cpfCnpjInputModal = document.getElementById('cpf_cnpj');
-        if (cpfCnpjInputModal) {
-            cpfCnpjInputModal.addEventListener('blur', function() {
-                validateCpfCnpjInput();
-            });
-        }
+        // Máscara Telefone
+        $('.telefone-input').mask('(00) 00000-0000');
+        
+        // Evento de validação
+        $('#cpf_cnpj').on('blur', validateCpfCnpjInput);
 
-        // --- BLOCO DE CÓDIGO CORRIGIDO ---
+        // Limpeza de máscaras antes de submeter o formulário
         $('#addClientForm').submit(function(event) {
-            // Executa a validação do CPF/CNPJ.
-            // Se o documento for inválido, a função 'validateCpfCnpjInput' já exibe a mensagem
-            // de erro diretamente no formulário e retorna 'false'.
             if (!validateCpfCnpjInput()) {
-                // Apenas impede o envio do formulário. A mensagem de erro já está visível para o usuário.
-                event.preventDefault(); 
+                event.preventDefault();
                 return;
             }
-
-            // Se a validação passou, remove a máscara dos campos de telefone antes de enviar
             $('.telefone-input').each(function() {
-                var telefone = $(this);
-                if (telefone.val()) {
-                    telefone.val(telefone.val().replace(/\D/g, ''));
-                }
+                $(this).val($(this).val().replace(/\D/g, ''));
             });
         });
-        // --- FIM DO BLOCO CORRIGIDO ---
     });
 </script>
-</body>
-</html>
+{% endblock %}
