@@ -591,8 +591,48 @@ document.addEventListener("DOMContentLoaded", function() {
         $("#vehicle").on('focus', function() { $(this).autocomplete('search', '') });
     }
 
-    $('#addClientForm').on('submit', async function(e) { e.preventDefault(); const nome = $('#newClientName').val(); try { const response = await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: nome }) }); if (!response.ok) throw new Error('Falha ao criar cliente.'); const newClient = await response.json(); $('#clientName').val(newClient.nome); $('#selectedClienteId').val(newClient.id); $('#vehicle').prop('disabled', false).val('').attr('placeholder', 'Digite para buscar um veículo...'); initVehicleAutocomplete(newClient.id); addClientModal.hide(); showCustomAlert('Cliente adicionado com sucesso!'); } catch (error) { showCustomAlert('Erro ao adicionar cliente.', 'danger'); } });
-    $('#addVehicleForm').on('submit', async function(e) { e.preventDefault(); const clienteId = $('#newVehicleClienteId').val(); const vehicleData = { placa: $('#newVehiclePlaca').val(), marca: $('#newVehicleMarca').val(), modelo: $('#newVehicleModelo').val(), ano: $('#newVehicleAno').val() || null }; try { const response = await fetch(`/api/clientes/${clienteId}/carros`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(vehicleData) }); if (!response.ok) throw new Error('Falha ao criar veículo.'); const newVehicle = await response.json(); $('#vehicle').val(newVehicle.full_description); addVehicleModal.hide(); showCustomAlert('Veículo adicionado com sucesso!'); } catch (error) { showCustomAlert('Erro ao adicionar veículo.', 'danger'); } });
+    $('#addClientForm').on('submit', async function(e) { 
+        e.preventDefault(); 
+        const nome = $('#newClientName').val(); 
+        try { 
+            const response = await fetch('/api/clientes', {
+                method: 'POST', headers: { 
+                    'Content-Type': 'application/json' 
+                }, 
+                body: JSON.stringify({ nome: nome }) 
+            }); 
+            if (!response.ok) throw new Error('Falha ao criar cliente.'); 
+            const newClient = await response.json(); 
+            $('#clientName').val(newClient.nome); 
+            $('#selectedClienteId').val(newClient.id); 
+            $('#vehicle').prop('disabled', false).val('').attr('placeholder', 'Digite para buscar um veículo...'); 
+            initVehicleAutocomplete(newClient.id); addClientModal.hide(); 
+            showCustomAlert('Cliente adicionado com sucesso!'); 
+        } 
+        catch (error) { 
+            showCustomAlert('Erro ao adicionar cliente.', 'danger'); 
+        } 
+    });
+    $('#addVehicleForm').on('submit', async function(e) { 
+        e.preventDefault(); 
+        const clienteId = $('#newVehicleClienteId').val(); 
+        const vehicleData = { 
+            placa: $('#newVehiclePlaca').val(), marca: $('#newVehicleMarca').val(), modelo: $('#newVehicleModelo').val(), ano: $('#newVehicleAno').val() || null 
+        }; 
+        try { 
+            const response = await fetch(`/api/clientes/${clienteId}/carros`, { 
+                method: 'POST', headers: { 
+                    'Content-Type': 'application/json' 
+                }, body: JSON.stringify(vehicleData) 
+            }); 
+            if (!response.ok) throw new Error('Falha ao criar veículo.'); 
+            const newVehicle = await response.json(); $('#vehicle').val(newVehicle.full_description); 
+            addVehicleModal.hide(); showCustomAlert('Veículo adicionado com sucesso!'); 
+        } 
+        catch (error) { 
+            showCustomAlert('Erro ao adicionar veículo.', 'danger'); 
+        } 
+    });
 
     async function loadInitialOrders() {
         try {
