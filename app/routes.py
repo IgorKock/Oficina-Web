@@ -92,31 +92,31 @@ def cliente(id):
 
     return render_template('cliente.html', cliente=cliente, telefones=telefones, historicos=historicos, pagamentos=pagamentos, carros=carros, active_page='clientes')
     
-@main.route('/add', methods=['POST'])
-@login_required
-def add_cliente():
-    nome = request.form['nome'].strip()
-    numeros = request.form.getlist('numeros[]')
-    cpf = request.form.get('cpf', '').strip()
-    cnpj = request.form.get('cnpj', '').strip()
-    apelido = request.form.get('apelido', '').strip()
+#@main.route('/add', methods=['POST'])
+#@login_required
+#def add_cliente():
+#    nome = request.form['nome'].strip()
+#    numeros = request.form.getlist('numeros[]')
+#    cpf = request.form.get('cpf', '').strip()
+#    cnpj = request.form.get('cnpj', '').strip()
+#    apelido = request.form.get('apelido', '').strip()
 
-    cliente_existente = Cliente.query.filter_by(nome=nome).first()
-    if cliente_existente:
-        flash('Erro: Este cliente já está cadastrado!', 'danger')
-        return redirect(url_for('main.client'))
+#    cliente_existente = Cliente.query.filter_by(nome=nome).first()
+#    if cliente_existente:
+#        flash('Erro: Este cliente já está cadastrado!', 'danger')
+#        return redirect(url_for('main.client'))
 
-    novo_cliente = Cliente(nome=nome, cpf=cpf or None, cnpj=cnpj or None, apelido=apelido or None)
-    db.session.add(novo_cliente)
-    db.session.commit()
-
-    for numero in numeros:
-        if numero.strip():
-            novo_telefone = Telefone(numero=numero.strip(), cliente_id=novo_cliente.id)
-            db.session.add(novo_telefone)
-    db.session.commit()
-    flash('Cliente adicionado com sucesso!', 'success')
-    return redirect(url_for('main.client'))
+#    novo_cliente = Cliente(nome=nome, cpf=cpf or None, cnpj=cnpj or None, apelido=apelido or None)
+#    db.session.add(novo_cliente)
+#    db.session.commit()
+#
+#    for numero in numeros:
+#        if numero.strip():
+#            novo_telefone = Telefone(numero=numero.strip(), cliente_id=novo_cliente.id)
+#            db.session.add(novo_telefone)
+#    db.session.commit()
+#    flash('Cliente adicionado com sucesso!', 'success')
+#    return redirect(url_for('main.client'))
 
 @main.route('/delete_cliente/<int:id>', methods=['POST'])
 @login_required
@@ -701,6 +701,104 @@ def delete_ordem_servico(id):
     db.session.delete(ordem)
     db.session.commit()
     return jsonify({'success': 'Ordem de serviço deletada'}), 200
+
+# --- INÍCIO: NOVAS ROTAS DE API PARA AUTOCOMPLETE ---
+
+@main.route('/api/clientes/search')
+@login_required
+def search_clientes():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return jsonify([])
+    
+    # Busca tanto pelo ID quanto pelo nome
+    if query.isdigit():
+        clientes = Cliente.query.filter(
+            (Cliente.id == int(query)) | (Cliente.nome.ilike(f'%{query}%'))
+        ).limit(10).all()
+    else:
+        clientes = Cliente.query.filter(Cliente.nome.ilike(f'%{query}%')).limit(10).all()
+    
+    # O 'label' é o que o usuário vê (ID + Nome)
+    results = [
+        {'id': cliente.id, 'label': f"#{cliente.id} - {cliente.nome}", 'value': cliente.nome}
+        for cliente in clientes
+    ]
+    return jsonify(results)
+
+@main.route('/api/clientes/<int:cliente_id>/veiculos/search')
+@login_required
+def search_veiculos_cliente(cliente_id):
+    query = request.args.get('q', '').strip().lower()
+    
+    carros = Carro.query.filter_by(cliente_id=cliente_id).all()
+    
+    # Filtra em memória se houver uma query
+    if query:
+        filtered_carros = [
+            carro for carro in carros 
+            if query in carro.full_description.lower()
+        ]
+    else:
+        filtered_carros = carros
+
+    results = [
+        {'id': carro.id, 'label': carro.full_description, 'value': carro.full_description}
+        for carro in filtered_carros[:10]
+    ]
+    return jsonify(results)
+
+# --- FIM: NOVAS ROTAS DE API PARA AUTOCOMPLETE ---
+
+# --- ROTAS DE ADIÇÃO MODIFICADAS PARA RETORNAR JSON ---
+@main.route('/api/clientes', methods=['POST'])
+@login_required
+def api_add_cliente():
+    data = request.get_json()
+    nome = data.get('nome', '').strip()
+    if not nome:
+        return jsonify({'error': 'O nome do cliente é obrigatório.'}), 400
+    
+    if Cliente.query.filter_by(nome=nome).first():
+        return jsonify({'error': 'Este cliente já está cadastrado.'}), 409
+
+    novo_cliente = Cliente(nome=nome)
+    db.session.add(novo_cliente)
+    db.session.commit()
+    
+    return jsonify({
+        'id': novo_cliente.id,
+        'nome': novo_cliente.nome
+    }), 201
+
+# Adicione esta nova rota para carros
+@main.route('/api/clientes/<int:cliente_id>/carros', methods=['POST'])
+@login_required
+def api_add_carro(cliente_id):
+    if not Cliente.query.get(cliente_id):
+        return jsonify({'error': 'Cliente não encontrado.'}), 404
+        
+    data = request.get_json()
+    placa = data.get('placa', '').strip()
+    if not placa:
+        return jsonify({'error': 'A placa do veículo é obrigatória.'}), 400
+
+    if Carro.query.filter_by(placa=placa).first():
+        return jsonify({'error': 'Veículo com esta placa já cadastrado.'}), 409
+
+    novo_carro = Carro(
+        cliente_id=cliente_id,
+        marca=data.get('marca', ''),
+        modelo=data.get('modelo', ''),
+        placa=placa,
+        ano=data.get('ano') or None,
+        motor=data.get('motor') or None,
+        quilometragem=data.get('quilometragem') or None
+    )
+    db.session.add(novo_carro)
+    db.session.commit()
+
+    return jsonify(novo_carro.to_dict()), 201
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():

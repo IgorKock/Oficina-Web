@@ -176,8 +176,27 @@ class Carro(db.Model):
     historicos = db.relationship('Historico', backref='carro', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Relacionamento com Historico (mantido)
     pagamentos = db.relationship('Pagamento', backref='carro', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Relacionamento com Pagamento
 
-    def __repr__(self):
-        return f'<Carro {self.marca} {self.modelo}>'
+    @property
+    def full_description(self):
+        """Retorna uma string completa para busca, ex: 'Ford Mustang 2022 - ABC1234'"""
+        return f"{self.marca or ''} {self.modelo or ''} {self.ano or ''} - {self.placa or ''}".strip()
+
+    def to_dict(self):
+        """Converte o objeto Carro para um dicionário."""
+        return {
+            'id': self.id,
+            'cliente_id': self.cliente_id,
+            'marca': self.marca,
+            'modelo': self.modelo,
+            'motor': self.motor,
+            'ano': self.ano,
+            'placa': self.placa,
+            'quilometragem': self.quilometragem,
+            'full_description': self.full_description
+        }
+
+    #def __repr__(self):
+    #    return f'<Carro {self.marca} {self.modelo}>'
 
 # Evento para o modelo Carro
 @listens_for(Carro, 'before_insert')
