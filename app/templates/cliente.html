@@ -4,13 +4,58 @@
 
 {% block styles %}
 <style>
-    .card-header-tabs .nav-link { color: #495057; font-weight: 500; }
-    .card-header-tabs .nav-link.active { color: #0d6efd; background-color: #fff; border-color: #dee2e6 #dee2e6 #fff; font-weight: 600; }
-    .tab-content { padding-top: 1rem; }
-    .custom-alert-modal { display: none; position: fixed; z-index: 1055; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
-    .custom-alert-modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); text-align: center; position: relative; }
-    .custom-alert-close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 10px; right: 15px; }
-    .custom-alert-close-btn:hover, .custom-alert-close-btn:focus { color: black; text-decoration: none; cursor: pointer; }
+    .card-header-tabs .nav-link { 
+        color: #495057; 
+        font-weight: 500; 
+    }
+    .card-header-tabs .nav-link.active { 
+        color: #0d6efd; 
+        background-color: #fff; 
+        border-color: #dee2e6 #dee2e6 #fff; 
+        font-weight: 600; 
+    }
+    .tab-content { 
+        padding-top: 1rem; 
+    }
+    .custom-alert-modal { 
+        display: none; 
+        position: fixed; 
+        z-index: 1055; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        height: 100%; 
+        overflow: auto; 
+        background-color: rgba(0,0,0,0.4); 
+        justify-content: center; 
+        align-items: center; 
+    }
+    .custom-alert-modal-content { 
+        background-color: #fefefe;
+        margin: auto; 
+        padding: 20px; 
+        border: 1px solid #888; 
+        width: 80%; 
+        max-width: 500px; 
+        border-radius: 8px; 
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+        text-align: center; 
+        position: relative;
+    }
+    .custom-alert-close-btn { 
+        color: #aaa; 
+        float: right; 
+        font-size: 28px; 
+        font-weight: bold; 
+        position: absolute; 
+        top: 10px; 
+        right: 15px; 
+    }
+    .custom-alert-close-btn:hover, .custom-alert-close-btn:focus { 
+        color: black; 
+        text-decoration: none; 
+        cursor: pointer;
+    }
     
     @media print {
         body * { visibility: hidden; }
@@ -18,7 +63,23 @@
         #print-area { position: absolute; left: 0; top: 0; width: 100%; }
         .no-print { display: none !important; }
     }
-    #print-sections-container { display: none; }
+    #print-sections-container { 
+        display: none; 
+    }
+    /* Estilos para a nova lista de OS */
+    .os-details { 
+        font-size: 0.9rem; 
+    }
+    .os-details ul { 
+        padding-left: 1.2rem; 
+        margin-bottom: 0.5rem; 
+    }
+    .accordion-button { 
+        font-size: 0.95rem; 
+    }
+    .accordion-body { 
+        padding: 1rem 1.25rem; 
+    }
 </style>
 {% endblock %}
 
@@ -45,7 +106,7 @@
         <div class="card-header bg-white no-print">
             <ul class="nav nav-tabs card-header-tabs" id="clientTab" role="tablist">
                 <li class="nav-item" role="presentation"><button class="nav-link active" id="dados-pessoais-tab" data-bs-toggle="tab" data-bs-target="#dados-pessoais-pane" type="button">Dados Pessoais</button></li>
-                <li class="nav-item" role="presentation"><button class="nav-link" id="veiculos-tab" data-bs-toggle="tab" data-bs-target="#veiculos-pane" type="button">Veículos</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="veiculos-tab" data-bs-toggle="tab" data-bs-target="#veiculos-pane" type="button">Veículos e Ordens de Serviço</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="telefones-tab" data-bs-toggle="tab" data-bs-target="#telefones-pane" type="button">Telefones</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="pagamentos-tab" data-bs-toggle="tab" data-bs-target="#pagamentos-pane" type="button">Pagamentos</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="print-tab" data-bs-toggle="tab" data-bs-target="#print-pane" type="button">Imprimir</button></li>
@@ -174,211 +235,107 @@
 						</form>
                     </div>
 
-                    <!-- Aba: Veículos -->
-                    <div class="tab-pane fade" id="veiculos-pane" role="tabpanel" aria-labelledby="veiculos-tab">
-                        {# 🔹 Campo oculto para persistir a aba ativa #}
-                        <input type="hidden" name="active_tab" form="addCarroForm" id="active_tab_input_veiculos">
-
-						<div class="d-flex justify-content-between align-items-center mb-3">
-							<h4 class="mb-0">Veículos do Cliente</h4>
-							<button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addCarroModal"><i class="bi bi-plus-circle me-1"></i>Adicionar Veículo</button>
-						</div>
-						
-						{% if carros %}
-							{% for carro in carros %}
-								<div class="card mb-3">
-									<div class="card-header d-flex justify-content-between align-items-center">
-										<h5 class="mb-0">{{ carro.marca }} {{ carro.modelo }} ({{ carro.ano }}) - {{ carro.placa }}</h5>
-										<div>
-											<button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#updateCarroModal{{ carro.id }}"><i class="bi bi-pencil-fill"></i></button>
-										</div>
-									</div>
-									<div class="card-body">
-										<p><strong>Motor:</strong> {{ carro.motor or 'N/A' }} | <strong>Quilometragem:</strong> {{ carro.quilometragem or 'N/A' }} KMs</p>
-										
-										<h6 class="mt-4">Histórico de Serviços</h6>
-										{% if carro.historicos %}
-											<table class="table table-sm table-striped table-hover">
-												<thead>
-													<tr>
-														<th>Data e Hora</th>
-														<th>Descrição do Serviço</th>
-														<th class="text-end">Ações</th>
-													</tr>
-												</thead>
-												<tbody>
-													{% for historico in carro.historicos %}
-													<tr>
-														<td>{{ historico.data_local.strftime('%d/%m/%Y %H:%M') if historico.data_local else '' }}</td>
-														<td>{{ historico.descricao }}</td>
-														<td class="text-end">
-															<button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#editHistoricoModal{{ historico.id }}"><i class="bi bi-pencil"></i></button>
-															<form action="{{ url_for('main.delete_historico', id=historico.id) }}" method="POST" class="d-inline">
-                                                                {# 🔹 Campo oculto para persistir a aba ativa #}
-                                                                <input type="hidden" name="active_tab" value="veiculos-pane">
-																<button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?');"><i class="bi bi-trash"></i></button>
-															</form>
-														</td>
-													</tr>
-													{% endfor %}
-												</tbody>
-											</table>
-										{% else %}
-											<p class="text-muted">Nenhum histórico de serviço registrado.</p>
-										{% endif %}
-										
-										<div class="mt-3">
-											<form action="/add_historico/{{ carro.id }}" method="POST" class="row gx-2 align-items-end">
-                                                {# 🔹 Campo oculto para persistir a aba ativa #}
-                                                <input type="hidden" name="active_tab" value="veiculos-pane">
-                                                <h4 class="md-6 mb-3">Adicionar novo histórico de serviços</h4>
-												<div class="col md-6 mb-3">
-                                                    <div class="input-group mb-4">
-                                                    <span class="input-group-text"><i class="bi bi-tag-fill"></i></span>
-                                                        <div class="form-floating flex-grow-1">													    
-													        <input type="text" name="descricao" placeholder="Descrição do serviço" class="form-control form-control-sm" required>
-                                                            <label for="descricao_hist" class="form-label small">Descrição</label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-												<div class="col md-6 mb-3">
-                                                    <div class="input-group mb-4">
-                                                    <span class="input-group-text"><i class="bi bi-calendar"></i></span>
-                                                        <div class="form-floating flex-grow-1">														
-													        <input type="date" name="data" class="form-control form-control-sm" required>
-                                                            <label for="data_hist" class="form-label small">Data</label>
-												        </div>
-                                                    </div>
-                                                </div>
-												<div class="col-auto">
-													<button type="submit" class="btn btn-primary btn-sm">Adicionar</button>
-												</div>
-											</form>
-										</div>
-									</div>
-								</div>
-
-								<!-- Modal para Editar Carro -->
-								<div class="modal fade" id="updateCarroModal{{ carro.id }}" tabindex="-1" aria-hidden="true">
-									<div class="modal-dialog">
-										<div class="modal-content">
-											<div class="modal-header">
-												<h5 class="modal-title">Editar Veículo</h5>
-												<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-											</div>
-											<form action="{{ url_for('main.update_carros', cliente_id=cliente.id) }}" method="POST">
-                                                {# 🔹 Campo oculto para persistir a aba ativa #}
-                                                <input type="hidden" name="active_tab" value="veiculos-pane">
-												<div class="modal-body">
-													<input type="hidden" name="carro_id" value="{{ carro.id }}">
-													<div class="col mb-3">
-                                                        <div class="input-group mb-4">
-                                                        <span class="input-group-text"><i class="bi bi-car-front-fill"></i></span>
-                                                            <div class="form-floating flex-grow-1">                                                                  
-                                                                <input type="text" name="marca_{{ carro.id }}" class="form-control" value="{{ carro.marca }}" required>
-                                                                <label class="form-label">Marca</label>
-                                                            </div>
-                                                        </div>
-													</div>                                                                                                     
-													<div class="col mb-3">
-                                                        <div class="input-group mb-4">
-                                                            <span class="input-group-text"><i class="bi bi-car-front-fill"></i></span>
-                                                            <div class="form-floating flex-grow-1">                                                               
-                                                                <input type="text" name="modelo_{{ carro.id }}" class="form-control" value="{{ carro.modelo }}" required>
-                                                                <label class="form-label">Modelo</label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-													<div class="col mb-3">
-                                                        <div class="input-group mb-4">
-                                                            <span class="input-group-text"><i class="bi bi-car-front"></i></span>
-                                                            <div class="form-floating flex-grow-1">                                                                
-                                                                <input type="text" name="motor_{{ carro.id }}" class="form-control" value="{{ carro.motor }}">
-                                                                <label class="form-label">Motor</label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-													<div class="col mb-3">
-                                                        <div class="input-group mb-4">
-                                                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
-                                                            <div class="form-floating flex-grow-1">                                                                
-                                                                <input type="number" name="ano_{{ carro.id }}" class="form-control ano-input" value="{{ carro.ano }}">
-                                                                <label class="form-label">Ano</label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-													<div class="col mb-3">
-                                                        <div class="input-group mb-4">
-                                                            <span class="input-group-text"><i class="bi bi-tags-fill"></i></span>
-                                                            <div class="form-floating flex-grow-1">                                                                
-                                                                <input type="text" name="placa_{{ carro.id }}" class="form-control placa-input" value="{{ carro.placa }}" required>
-                                                                <label class="form-label">Placa</label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-													<div class="col mb-3">
-                                                        <div class="input-group mb-4">
-                                                            <span class="input-group-text"><i class="bi bi-speedometer2"></i></span>
-                                                            <div class="form-floating flex-grow-1">                                                                
-                                                                <input type="number" name="quilometragem_{{ carro.id }}" class="form-control" value="{{ carro.quilometragem }}">
-                                                                <label class="form-label">Quilometragem</label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-												</div>
-												<div class="modal-footer">
-													<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-													<button type="submit" class="btn btn-primary">Salvar Alterações</button>
-												</div>
-											</form>
-										</div>
-									</div>
-								</div>
-
-								<!-- Modais para Editar Histórico (um para cada histórico) -->
-								{% for historico in carro.historicos %}
-								<div class="modal fade" id="editHistoricoModal{{ historico.id }}" tabindex="-1" aria-hidden="true">
-									<div class="modal-dialog">
-										<div class="modal-content">
-											<div class="modal-header"><h5 class="modal-title">Editar Histórico de serviço</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-											<form action="{{ url_for('main.edit_historico', id=historico.id) }}" method="POST">
-                                                {# 🔹 Campo oculto para persistir a aba ativa #}
-                                                <input type="hidden" name="active_tab" value="veiculos-pane">
-												<div class="modal-body">
-													<div class="col mb-3">
-                                                        <div class="input-group mb-4">
-                                                        <span class="input-group-text"><i class="bi bi-tag-fill"></i></span>
-                                                            <div class="form-floating flex-grow-1">                                                                
-                                                                <input type="text" class="form-control" name="descricao" value="{{ historico.descricao }}" required>
-                                                                <label class="form-label">Descrição</label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-													<div class="col mb-3">
-                                                        <div class="input-group mb-4">
-                                                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
-                                                            <div class="form-floating flex-grow-1">                                                                
-                                                                <input type="date" class="form-control" name="data" value="{{ historico.data_local.strftime('%Y-%m-%d') if historico.data_local else '' }}" required>
-                                                                <label class="form-label">Data</label>
-                                                            </div>
-                                                        </div>
-                                                    </div>  
-												</div>
-												<div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div>
-											</form>
-										</div>
-									</div>
-								</div>
-								{% endfor %}
-							{% endfor %}
-						{% else %}
-							<div class="text-center p-4 border rounded bg-light">
-								<p class="mb-0 text-muted">Nenhum veículo registrado para este cliente.</p>
-							</div>
-						{% endif %}
+                    <!-- Aba: Veículos e Ordens de Serviço -->
+                <div class="tab-pane fade" id="veiculos-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">Veículos do Cliente</h4>
+                        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addCarroModal"><i class="bi bi-plus-circle me-1"></i> Adicionar Veículo</button>
                     </div>
+                    {% if carros %}
+                        {% for carro in carros %}
+                            <div class="card mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                                    <h5 class="mb-0 fs-6 fw-bold">{{ carro.full_description }}</h5>
+                                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#updateCarroModal{{ carro.id }}"><i class="bi bi-pencil-fill"></i></button>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="mt-2">Ordens de Serviço Associadas</h6>
+                                    {% set ordens_do_carro = ordens_servico | selectattr('veiculo', 'equalto', carro.full_description) | list %}
+                                    {% if ordens_do_carro %}
+                                        <div class="accordion" id="accordion-carro-{{ carro.id }}">
+                                            {% for os in ordens_do_carro %}
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header" id="heading-os-{{ os.id }}">
+                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-os-{{ os.id }}">
+                                                        <strong>OS #{{ os.id }}</strong>&nbsp;|&nbsp; {{ os.data_criacao.strftime('%d/%m/%Y') }} &nbsp;|&nbsp; {{ os.descricao or 'Serviço Geral' }} &nbsp;|&nbsp; <span class="ms-2 fw-bold">Total: R$ {{ "%.2f"|format(os.total) }}</span>
+                                                    </button>
+                                                </h2>
+                                                <div id="collapse-os-{{ os.id }}" class="accordion-collapse collapse" data-bs-parent="#accordion-carro-{{ carro.id }}">
+                                                    <div class="accordion-body os-details">
+                                                        {% if os.servicos %}<strong>Serviços:</strong><ul>{% for servico in os.servicos %}<li>{{ servico.nome }} ({{ servico.responsavel or 'N/A' }}) - R$ {{ "%.2f"|format(servico.valor) }}</li>{% endfor %}</ul>{% endif %}
+                                                        {% if os.pecas_utilizadas %}<strong>Peças:</strong><ul>{% for peca in os.pecas_utilizadas %}<li>{{ peca.quantidade }}x {{ peca.nome }} - R$ {{ "%.2f"|format(peca.valor_unitario) }}/un</li>{% endfor %}</ul>{% endif %}
+                                                        <div class="mt-3">
+                                                            {% if os.pagamento %}
+                                                                <button class="btn btn-sm btn-success" disabled><i class="bi bi-check-circle-fill me-1"></i> Pagamento Registrado</button>
+                                                            {% else %}
+                                                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPagamentoModal" data-os-id="{{ os.id }}" data-os-total="{{ os.total }}"><i class="bi bi-currency-dollar me-1"></i> Registrar Pagamento</button>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <p class="text-muted">Nenhuma ordem de serviço registrada para este veículo.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Modal para Editar Carro (DENTRO do loop) -->
+                            <div class="modal fade" id="updateCarroModal{{ carro.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Editar Veículo</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <form action="{{ url_for('main.update_carros', cliente_id=cliente.id) }}" method="POST">
+                                            <input type="hidden" name="active_tab" value="veiculos-pane">
+                                            <div class="modal-body">
+                                                <input type="hidden" name="carro_id" value="{{ carro.id }}">
+                                                <div class="col mb-3"><div class="input-group mb-4"><span class="input-group-text"><i class="bi bi-car-front-fill"></i></span><div class="form-floating flex-grow-1"><input type="text" name="marca_{{ carro.id }}" class="form-control" value="{{ carro.marca }}" required><label class="form-label">Marca</label></div></div></div>
+                                                <div class="col mb-3"><div class="input-group mb-4"><span class="input-group-text"><i class="bi bi-car-front-fill"></i></span><div class="form-floating flex-grow-1"><input type="text" name="modelo_{{ carro.id }}" class="form-control" value="{{ carro.modelo }}" required><label class="form-label">Modelo</label></div></div></div>
+                                                <div class="col mb-3"><div class="input-group mb-4"><span class="input-group-text"><i class="bi bi-car-front"></i></span><div class="form-floating flex-grow-1"><input type="text" name="motor_{{ carro.id }}" class="form-control" value="{{ carro.motor }}"><label class="form-label">Motor</label></div></div></div>
+                                                <div class="col mb-3"><div class="input-group mb-4"><span class="input-group-text"><i class="bi bi-calendar"></i></span><div class="form-floating flex-grow-1"><input type="number" name="ano_{{ carro.id }}" class="form-control ano-input" value="{{ carro.ano }}"><label class="form-label">Ano</label></div></div></div>
+                                                <div class="col mb-3"><div class="input-group mb-4"><span class="input-group-text"><i class="bi bi-tags-fill"></i></span><div class="form-floating flex-grow-1"><input type="text" name="placa_{{ carro.id }}" class="form-control placa-input" value="{{ carro.placa }}" required><label class="form-label">Placa</label></div></div></div>
+                                                <div class="col mb-3"><div class="input-group mb-4"><span class="input-group-text"><i class="bi bi-speedometer2"></i></span><div class="form-floating flex-grow-1"><input type="number" name="quilometragem_{{ carro.id }}" class="form-control" value="{{ carro.quilometragem }}"><label class="form-label">Quilometragem</label></div></div></div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modais para Editar Histórico (DENTRO do loop) -->
+                            {% for historico in carro.historicos %}
+                            <div class="modal fade" id="editHistoricoModal{{ historico.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header"><h5 class="modal-title">Editar Histórico de serviço</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                        <form action="{{ url_for('main.edit_historico', id=historico.id) }}" method="POST">
+                                            <input type="hidden" name="active_tab" value="veiculos-pane">
+                                            <div class="modal-body">
+                                                <div class="col mb-3"><div class="input-group mb-4"><span class="input-group-text"><i class="bi bi-tag-fill"></i></span><div class="form-floating flex-grow-1"><input type="text" class="form-control" name="descricao" value="{{ historico.descricao }}" required><label class="form-label">Descrição</label></div></div></div>
+                                                <div class="col mb-3"><div class="input-group mb-4"><span class="input-group-text"><i class="bi bi-calendar"></i></span><div class="form-floating flex-grow-1"><input type="date" class="form-control" name="data" value="{{ historico.data_local.strftime('%Y-%m-%d') if historico.data_local else '' }}" required><label class="form-label">Data</label></div></div></div>  
+                                            </div>
+                                            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center p-4 border rounded bg-light">
+                            <p class="mb-0 text-muted">Nenhum veículo registrado para este cliente.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
 
                     <!-- Aba: Telefones -->
                     <div class="tab-pane fade" id="telefones-pane" role="tabpanel" aria-labelledby="telefones-tab">
@@ -439,14 +396,14 @@
 									<tbody>
 										{% for pagamento in pagamentos %}
 										<tr>
-											<td>{{ pagamento.carro.marca }} {{ pagamento.carro.modelo }} {{ pagamento.carro.ano }}</td>
-											<td>{{ pagamento.historico.descricao }}</td>
-											<td>{{ pagamento.data_local.strftime('%d/%m/%Y %H:%M') if pagamento.data_local else '' }}</td>
+											<td>{{ pagamento.ordem_servico.veiculo }}</td>
+                                            <td>{{ pagamento.ordem_servico.descricao }}</td>
+                                            <td>{{ pagamento.data_local.strftime('%d/%m/%Y %H:%M') if pagamento.data_local else '' }}</td>
 											<td>R$ {{ "%.2f"|format(pagamento.valor) }}</td>
 											<td>{{ pagamento.metodo }} {% if pagamento.tipo_pagamento == 'Parcelado' %}({{ pagamento.parcelas }}x){% endif %}  {% if not pagamento.tipo_pagamento == 'Parcelado' %} ({{ "A vista" }}) {% endif %}</td>
 											<td class="text-end">
 												<button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#editPagamentoModal{{ pagamento.id }}"><i class="bi bi-pencil"></i></button>
-												<form action="{{ url_for('main.delete_pagamento', id=pagamento.id) }}" method="POST" class="d-inline">
+												<form action="{{ url_for('main.delete_pagamento', pagamento_id=pagamento.id) }}" method="POST" class="d-inline">
                                                     {# 🔹 Campo oculto para persistir a aba ativa #}
                                                     <input type="hidden" name="active_tab" value="pagamentos-pane">
 													<button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?');"><i class="bi bi-trash"></i></button>
@@ -460,87 +417,7 @@
 						{% else %}
 							<p class="text-muted">Nenhum pagamento registrado.</p>
 						{% endif %}
-						<hr>
-						<h5 class="mt-4 mb-3">Registrar Novo Pagamento</h5>
-						{% set servicos_sem_pagamento = namespace(count=0) %}
-						{% for carro in carros %}
-							{% for historico in carro.historicos %}
-								{% if not historico.tem_pagamento %}
-									{% set servicos_sem_pagamento.count = servicos_sem_pagamento.count + 1 %}
-									<form id="form_pagamento_{{ historico.id }}" action="{{ url_for('main.add_pagamento', cliente_id=cliente.id, carro_id=carro.id, historico_id=historico.id) }}" method="POST" class="mb-4 p-3 border rounded bg-light">
-                                        {# 🔹 Campo oculto para persistir a aba ativa #}
-                                        <input type="hidden" name="active_tab" value="pagamentos-pane">
-										<p class="fw-bold">Para: {{ historico.descricao }} ({{ carro.marca }} {{ carro.modelo }})</p>
-                                        <div class="row">
-											<div class="col-md-6 mb-3">
-                                                <div class="input-group mb-4">
-                                                    <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
-                                                    <div class="form-floating flex-grow-1">
-                                                        <input type="text" class="form-control money-input" name="valor" required>
-                                                        <label class="form-label">Valor (R$)</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-											<div class="col-md-6 mb-3">
-                                                <div class="input-group mb-4">
-                                                    <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
-                                                    <div class="form-floating flex-grow-1">
-                                                        <select name="metodo" class="form-select" required onchange="toggleOpcaoPagamento(this)">
-                                                            <option value="Dinheiro">Dinheiro</option>
-                                                            <option value="Cartão de Crédito">Cartão de Crédito</option>
-                                                            <option value="Cartão de Débito">Cartão de Débito</option>
-                                                            <option value="Pix">Pix</option>
-                                                        </select>
-                                                        <label class="form-label">Método</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-											<div class="col-md-6 mb-3 opcaoCartao" style="display: none;">
-												<div class="row">
-													<div class="col-md-6 mb-3">
-                                                        <div class="input-group mb-4">
-                                                            <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>                                          
-                                                                <div class="form-floating flex-grow-1"> 
-                                                                <select name="tipo_pagamento" class="form-select" onchange="toggleParcelas(this)">
-                                                                    <option value="À vista">À vista</option>
-                                                                    <option value="Parcelado">Parcelado</option>
-                                                                </select>
-                                                                <label class="form-label">Tipo</label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                                                                    
-													<div class="col-md-6 mb-3 opcaoParcelado" style="display: none;">
-                                                        <div class="input-group mb-4">
-                                                            <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
-                                                                <div class="form-floating flex-grow-1">
-                                                                    <input type="number" name="parcelas" min="1" max="12" class="form-control">
-                                                                    <label class="form-label">Parcelas</label>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-												</div>
-                                            </div>
-											<div class="col-md-6 mb-3">
-                                                <div class="input-group mb-4">
-                                                    <span class="input-group-text"><i class="bi bi-calendar-fill"></i></span>
-                                                    <div class="form-floating flex-grow-1">                                            
-                                                        <input type="date" name="data_pagamento" class="form-control" required>
-                                                        <label class="form-label">Data</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-											<div class="col-md-12">
-                                                <button type="submit" class="btn btn-primary">Registrar</button>
-                                            </div>
-										</div>
-									</form>
-								{% endif %}
-							{% endfor %}
-						{% endfor %}
-						{% if servicos_sem_pagamento.count == 0 and carros %}
-							<p class="text-success">Todos os serviços já possuem pagamentos registrados.</p>
-						{% endif %}
+						<hr>					
 
 						<!-- Modais para editar pagamentos -->
 						{% for pagamento in pagamentos %}
@@ -548,7 +425,7 @@
 							<div class="modal-dialog">
 								<div class="modal-content">
 									<div class="modal-header"><h5 class="modal-title">Editar Pagamento</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-									<form action="{{ url_for('main.edit_pagamento', id=pagamento.id) }}" method="POST">
+									<form action="{{ url_for('main.edit_pagamento', pagamento_id=pagamento.id) }}" method="POST">
                                         {# 🔹 Campo oculto para persistir a aba ativa #}
                                         <input type="hidden" name="active_tab" value="pagamentos-pane">
 										<div class="modal-body">
@@ -612,8 +489,8 @@
 						<h4 class="mb-3">Seleção para Impressão</h4>
 						<form id="print-form" class="mb-3">
 							<div class="form-check"><input type="checkbox" id="checkbox-print-dados-pessoais" class="form-check-input"><label class="form-check-label" for="checkbox-print-dados-pessoais">Dados Pessoais</label></div>
-							<div class="form-check"><input type="checkbox" id="checkbox-print-telefones" class="form-check-input"><label class="form-check-label" for="checkbox-print-telefones">Telefones</label></div>
-							<div class="form-check"><input type="checkbox" id="checkbox-print-veiculos" class="form-check-input"><label class="form-check-label" for="checkbox-print-veiculos">Veículos e Históricos</label></div>
+                            <div class="form-check"><input type="checkbox" id="checkbox-print-telefones" class="form-check-input"><label class="form-check-label" for="checkbox-print-telefones">Telefones</label></div>
+                            <div class="form-check"><input type="checkbox" id="checkbox-print-veiculos" class="form-check-input"><label class="form-check-label" for="checkbox-print-veiculos">Veículos e Ordens de Serviço</label></div>
                             <div class="form-check"><input type="checkbox" id="checkbox-print-pagamentos" class="form-check-input"><label class="form-check-label" for="checkbox-print-pagamentos">Pagamentos</label></div>
 						</form>
 						<button type="button" class="btn btn-primary" onclick="imprimirSelecionados()"><i class="bi bi-printer-fill me-2"></i>Imprimir Selecionados</button>
@@ -657,15 +534,26 @@
 								{% for telefone in telefones %}<p>{{ telefone.numero }}</p>{% endfor %}
 							</div>
 							<div id="print-section-veiculos" class="print-section">
-								<h4>Veículos e Históricos</h4>
+								<h4>Veículos e Ordens de Serviço</h4>
 								{% for carro in carros %}
 									<div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ccc;">
-										<p><strong>Veículo:</strong> {{ carro.marca }} {{ carro.modelo }} ({{ carro.ano }}) - Placa: {{ carro.placa }}</p>
-										<p><strong>Serviços:</strong></p>
-                                        <ul>{% for historico in carro.historicos %}<li><strong>{{ historico.data_local.strftime('%d/%m/%Y %H:%M') }}:</strong> {{ historico.descricao }}</li>{% endfor %}</ul>
-									</div>
-								{% endfor %}
-							</div>
+										<p><strong>Veículo:</strong> {{ carro.full_description }}</p>
+                                    {% set ordens_do_carro = ordens_servico | selectattr('veiculo', 'equalto', carro.full_description) | list %}
+                                    {% if ordens_do_carro %}
+                                        <ul>
+                                        {% for os in ordens_do_carro %}
+                                            <li>
+                                                <strong>{{ os.data_criacao.strftime('%d/%m/%Y') }}:</strong> {{ os.descricao or 'Serviço Geral' }}
+                                                (Total: R$ {{ "%.2f"|format(os.total) }})
+                                            </li>
+                                        {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p>Nenhuma OS para este veículo.</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
 							<div id="print-section-pagamentos" class="print-section">
 								<h4>Pagamentos</h4>
 								<table class="table table-sm">
@@ -673,10 +561,11 @@
 									<tbody>
 									{% for pagamento in pagamentos %}
 										<tr>
-											<td>{{ pagamento.data_local.strftime('%d/%m/%Y %H:%M') }}</td>
-											<td>{{ pagamento.historico.descricao }}</td>
-											<td>R$ {{ "%.2f"|format(pagamento.valor) }}</td>
-											<td>{{ pagamento.metodo }} {% if pagamento.tipo_pagamento == 'Parcelado' %}({{ pagamento.parcelas }}x){% endif %}  {% if not pagamento.tipo_pagamento == 'Parcelado' %} ({{ "A vista" }}) {% endif %}</td>
+										<td>{{ pagamento.data_local.strftime('%d/%m/%Y') if pagamento.data_local }}</td>
+                                        <td>{{ pagamento.ordem_servico.id }}</td>
+                                        <td>{{ pagamento.ordem_servico.descricao or 'N/A' }}</td>
+                                        <td>R$ {{ "%.2f"|format(pagamento.valor) }}</td>
+                                        <td>{{ pagamento.metodo }} {% if pagamento.tipo_pagamento == 'Parcelado' %}({{ pagamento.parcelas }}x){% endif %}</td>
 										</tr>
 									{% endfor %}
 									</tbody>
@@ -690,6 +579,74 @@
 
     </div>
 </main>
+
+<!-- Modal de pagamento -->
+<div class="modal fade" id="addPagamentoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Registrar Pagamento para OS #<span id="pagamentoOsId"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addPagamentoForm" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <div class="input-group mb-4">
+                            <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                            <div class="form-floating flex-grow-1">                        
+                                <input type="text" class="form-control money-input" id="pagamentoValor" name="valor" required>
+                                <label for="pagamentoValor" class="form-label">Valor Total (R$)</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                            <div class="input-group mb-4">
+                            <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
+                            <div class="form-floating flex-grow-1">
+                                <select id="pagamentoMetodo" name="metodo" class="form-select" required onchange="toggleOpcaoPagamento(this)">
+                                    <option value="Dinheiro" selected>Dinheiro</option>
+                                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                    <option value="Cartão de Débito">Cartão de Débito</option>
+                                    <option value="Pix">Pix</option>
+                                </select>
+                                <label for="pagamentoMetodo" class="form-label">Método</label>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="opcaoCartao" style="display: none;">
+                        <!-- Campo Tipo de Pagamento -->
+                        <div class="mb-3">
+                             <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-credit-card-2-back-fill"></i></span>
+                                <div class="form-floating flex-grow-1">
+                                    <select id="pagamentoTipo" name="tipo_pagamento" class="form-select" onchange="toggleParcelas(this)">
+                                        <option value="À vista">À vista</option>
+                                        <option value="Parcelado">Parcelado</option>
+                                    </select>
+                                    <label for="pagamentoTipo" class="form-label">Tipo</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3 opcaoParcelado" style="display: none;">
+                            <div class="input-group">
+                                <div class="input-group mb-4">
+                                <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
+                                <div class="form-floating flex-grow-1">                                    
+                                    <input type="number" id="pagamentoParcelas" name="parcelas" min="1" max="12" class="form-control">
+                                    <label for="pagamentoParcelas" class="form-label">Parcelas</label>
+                                </div>
+                            </div>   
+                        </div>                
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Modal para Adicionar Novo Carro -->
 <div class="modal fade" id="addCarroModal" tabindex="-1" aria-hidden="true">
@@ -963,28 +920,45 @@
         });
     }
 
-    function toggleOpcaoPagamento(selectElement) {
-        const form = selectElement.closest("form") || selectElement.closest(".modal-body");
-        const opcaoCartao = form.querySelector(".opcaoCartao");
-        if (selectElement.value === "Cartão de Crédito") {
-            opcaoCartao.style.display = "block";
-        } else {
-            opcaoCartao.style.display = "none";
+        // --- FUNÇÕES DE MANIPULAÇÃO DO FORMULÁRIO DE PAGAMENTO ---
+        document.addEventListener("DOMContentLoaded", function() {
+        
+        function toggleOpcaoPagamento(selectElement) {
+            const form = selectElement.closest(".modal-body");
+            const opcaoCartao = form.querySelector(".opcaoCartao");
+            opcaoCartao.style.display = (selectElement.value === "Cartão de Crédito") ? "block" : "none";
+            if (selectElement.value !== "Cartão de Crédito") {
+                const opcaoParcelado = form.querySelector(".opcaoParcelado");
+                if (opcaoParcelado) opcaoParcelado.style.display = "none";
+            }
+        }
+
+        function toggleParcelas(selectElement) {
+            const form = selectElement.closest(".modal-body");
             const opcaoParcelado = form.querySelector(".opcaoParcelado");
-            if (opcaoParcelado) opcaoParcelado.style.display = "none";
+            opcaoParcelado.style.display = (selectElement.value === "Parcelado") ? "block" : "none";
         }
-    }
 
-    function toggleParcelas(selectElement) {
-        const form = selectElement.closest("form") || selectElement.closest(".modal-body");
-        const opcaoParcelado = form.querySelector(".opcaoParcelado");
-        if (selectElement.value === "Parcelado") {
-            opcaoParcelado.style.display = "block";
-        } else {
-            opcaoParcelado.style.display = "none";
-        }
-    }
+        const addPagamentoModal = document.getElementById('addPagamentoModal');
+        addPagamentoModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const osId = button.getAttribute('data-os-id');
+            const osTotal = parseFloat(button.getAttribute('data-os-total')).toFixed(2);
+            
+            const form = document.getElementById('addPagamentoForm');
+            form.action = `/api/ordens_servico/${osId}/pagamento`;
 
+            document.getElementById('pagamentoOsId').textContent = osId;
+            const valorInput = document.getElementById('pagamentoValor');
+            valorInput.value = osTotal.replace('.', ',');
+            $(valorInput).mask('000.000.000,00', {reverse: true});
+        });
+
+        // Adiciona as funções globalmente para serem acessíveis pelo `onchange`
+        window.toggleOpcaoPagamento = toggleOpcaoPagamento;
+        window.toggleParcelas = toggleParcelas;
+    });
+    
     // 🔹 Função para formatar CPF/CNPJ para impressão (sem censura)
     function formatCpfCnpjForPrint(value) {
         if (!value) return '';

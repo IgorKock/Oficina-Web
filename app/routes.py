@@ -71,27 +71,40 @@ def cliente(id):
     telefones = Telefone.query.filter_by(cliente_id=id).all()
     carros = Carro.query.filter_by(cliente_id=id).all()
     # Eager load related data to avoid N+1 problem
-    historicos = Historico.query.filter_by(cliente_id=id).order_by(Historico.data.desc()).all()
+    #historicos = Historico.query.filter_by(cliente_id=id).order_by(Historico.data.desc()).all()
+    # Buscamos os pagamentos para passar para o template (útil para a aba de pagamentos)
     pagamentos = Pagamento.query.filter_by(cliente_id=id).order_by(Pagamento.data.desc()).all()
     
     # Create a set of historico_ids that have payments for faster lookup
-    historicos_com_pagamento_ids = {p.historico_id for p in pagamentos}
+    #historicos_com_pagamento_ids = {p.historico_id for p in pagamentos}
 
-    for historico in historicos:
-        if historico.data: 
-            historico.data_local = ajustar_para_brasilia(historico.data)
-        else:
-            historico.data_local = None
-        historico.tem_pagamento = historico.id in historicos_com_pagamento_ids
-        
-    for pagamento in pagamentos:
-        if pagamento.data:
-            pagamento.data_local = ajustar_para_brasilia(pagamento.data)
-        else:
-            pagamento.data_local = None
+    ordens_servico = OrdemServico.query.filter_by(cliente_nome=cliente.nome).order_by(OrdemServico.data_criacao.desc()).all()
 
-    return render_template('cliente.html', cliente=cliente, telefones=telefones, historicos=historicos, pagamentos=pagamentos, carros=carros, active_page='clientes')
-    
+    #for historico in historicos:
+    #    if historico.data: 
+    #        historico.data_local = ajustar_para_brasilia(historico.data)
+    #    else:
+    #        historico.data_local = None
+    #    historico.tem_pagamento = historico.id in historicos_com_pagamento_ids
+
+    for p in pagamentos:
+        p.data_local = ajustar_para_brasilia(p.data)
+
+    #for pagamento in pagamentos:
+    #    if pagamento.data:
+    #        pagamento.data_local = ajustar_para_brasilia(pagamento.data)
+    #    else:
+    #        pagamento.data_local = None
+
+    #return render_template('cliente.html', cliente=cliente, telefones=telefones, historicos=historicos, pagamentos=pagamentos, carros=carros, active_page='clientes')
+    return render_template('cliente.html', 
+        cliente=cliente, 
+        carros=carros,
+        ordens_servico=ordens_servico,
+        pagamentos=pagamentos,
+        telefones=telefones,
+        active_page='clientes')
+
 #@main.route('/add', methods=['POST'])
 #@login_required
 #def add_cliente():
@@ -309,72 +322,72 @@ def update_carros(cliente_id):
 
     return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
     
-@main.route('/add_pagamento/<int:cliente_id>/<int:carro_id>/<int:historico_id>', methods=['POST'])
-@login_required
-def add_pagamento(cliente_id, carro_id, historico_id):
-    active_tab = request.form.get('active_tab', 'pagamentos-pane')
-    try:
-        valor_str = request.form['valor'].replace('.', '').replace(',', '.')
-        valor = float(valor_str)
-        
-        metodo = request.form['metodo']
-        tipo_pagamento = request.form.get('tipo_pagamento')
-        parcelas_str = request.form.get('parcelas')
-        data_pagamento_str = request.form.get('data_pagamento')
+#@main.route('/add_pagamento/<int:cliente_id>/<int:carro_id>/<int:historico_id>', methods=['POST'])
+#@login_required
+#def add_pagamento(cliente_id, carro_id, historico_id):
+#    active_tab = request.form.get('active_tab', 'pagamentos-pane')
+#    try:
+#        valor_str = request.form['valor'].replace('.', '').replace(',', '.')
+#        valor = float(valor_str)
+#        
+#        metodo = request.form['metodo']
+#        tipo_pagamento = request.form.get('tipo_pagamento')
+#        parcelas_str = request.form.get('parcelas')
+#        data_pagamento_str = request.form.get('data_pagamento')
+#
+#        data_pagamento = datetime.combine(
+#            datetime.strptime(data_pagamento_str, '%Y-%m-%d').date(),
+#            datetime.now().time()
+#        )
+#
+#        parcelas = int(parcelas_str) if tipo_pagamento == 'Parcelado' and parcelas_str and parcelas_str.strip() else None
+#
+#        novo_pagamento = Pagamento(
+#            cliente_id=cliente_id, carro_id=carro_id, historico_id=historico_id,
+#            valor=valor, metodo=metodo, tipo_pagamento=tipo_pagamento,
+#            parcelas=parcelas, data=data_pagamento
+#        )
+#        db.session.add(novo_pagamento)
+#        db.session.commit()
+#        flash('Pagamento registrado com sucesso!', 'success')
+#    except Exception as e:
+#        flash(f'Erro ao registrar pagamento: {e}', 'danger')
+#        db.session.rollback()
+#
+#    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
 
-        data_pagamento = datetime.combine(
-            datetime.strptime(data_pagamento_str, '%Y-%m-%d').date(),
-            datetime.now().time()
-        )
+#@main.route('/edit_pagamento/<int:id>', methods=['POST'])
+#@login_required
+#def edit_pagamento(id):
+#    pagamento = Pagamento.query.get_or_404(id)
+#    active_tab = request.form.get('active_tab', 'pagamentos-pane')
+#    
+#    try:
+#        valor_str = request.form['valor'].replace('.', '').replace(',', '.')
+#        pagamento.valor = float(valor_str)
+#        pagamento.metodo = request.form['metodo']
+#        pagamento.tipo_pagamento = request.form.get('tipo_pagamento')
+#        parcelas_str = request.form.get('parcelas')
+#        pagamento.parcelas = int(parcelas_str) if pagamento.tipo_pagamento == 'Parcelado' and parcelas_str and parcelas_str.strip() else None
+#
+#        db.session.commit()
+#        flash('Pagamento atualizado com sucesso!', 'success')
+#    except Exception as e:
+#        flash(f'Erro ao atualizar pagamento: {e}', 'danger')
+#        db.session.rollback()
+#
+#    return redirect(url_for('main.cliente', id=pagamento.cliente_id, tab=active_tab))
 
-        parcelas = int(parcelas_str) if tipo_pagamento == 'Parcelado' and parcelas_str and parcelas_str.strip() else None
-
-        novo_pagamento = Pagamento(
-            cliente_id=cliente_id, carro_id=carro_id, historico_id=historico_id,
-            valor=valor, metodo=metodo, tipo_pagamento=tipo_pagamento,
-            parcelas=parcelas, data=data_pagamento
-        )
-        db.session.add(novo_pagamento)
-        db.session.commit()
-        flash('Pagamento registrado com sucesso!', 'success')
-    except Exception as e:
-        flash(f'Erro ao registrar pagamento: {e}', 'danger')
-        db.session.rollback()
-
-    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
-
-@main.route('/edit_pagamento/<int:id>', methods=['POST'])
-@login_required
-def edit_pagamento(id):
-    pagamento = Pagamento.query.get_or_404(id)
-    active_tab = request.form.get('active_tab', 'pagamentos-pane')
-    
-    try:
-        valor_str = request.form['valor'].replace('.', '').replace(',', '.')
-        pagamento.valor = float(valor_str)
-        pagamento.metodo = request.form['metodo']
-        pagamento.tipo_pagamento = request.form.get('tipo_pagamento')
-        parcelas_str = request.form.get('parcelas')
-        pagamento.parcelas = int(parcelas_str) if pagamento.tipo_pagamento == 'Parcelado' and parcelas_str and parcelas_str.strip() else None
-
-        db.session.commit()
-        flash('Pagamento atualizado com sucesso!', 'success')
-    except Exception as e:
-        flash(f'Erro ao atualizar pagamento: {e}', 'danger')
-        db.session.rollback()
-
-    return redirect(url_for('main.cliente', id=pagamento.cliente_id, tab=active_tab))
-
-@main.route('/delete_pagamento/<int:id>', methods=['POST'])
-@login_required
-def delete_pagamento(id):
-    pagamento = Pagamento.query.get_or_404(id)
-    cliente_id = pagamento.cliente_id
-    active_tab = request.form.get('active_tab', 'pagamentos-pane')
-    db.session.delete(pagamento)
-    db.session.commit()
-    flash('Pagamento removido com sucesso!', 'danger')
-    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
+#@main.route('/delete_pagamento/<int:id>', methods=['POST'])
+#@login_required
+#def delete_pagamento(id):
+#    pagamento = Pagamento.query.get_or_404(id)
+#    cliente_id = pagamento.cliente_id
+#    active_tab = request.form.get('active_tab', 'pagamentos-pane')
+#    db.session.delete(pagamento)
+#    db.session.commit()
+#    flash('Pagamento removido com sucesso!', 'danger')
+#    return redirect(url_for('main.cliente', id=cliente_id, tab=active_tab))
 
 @main.route('/add_peca', methods=['POST'])
 @login_required
@@ -623,6 +636,7 @@ def add_ordem_servico():
     
     db.session.commit()
     return jsonify(nova_ordem.to_dict()), 201
+
 # 4. API para ATUALIZAR uma Ordem de Serviço existente (PUT) - CORRIGIDA
 @main.route('/api/ordens_servico/<int:id>', methods=['PUT'])
 @login_required
@@ -799,6 +813,98 @@ def api_add_carro(cliente_id):
     db.session.commit()
 
     return jsonify(novo_carro.to_dict()), 201
+
+# --- NOVA ROTA PARA ADICIONAR PAGAMENTO A UMA OS ---
+@main.route('/api/ordens_servico/<int:os_id>/pagamento', methods=['POST'])
+@login_required
+def add_pagamento_os(os_id):
+    ordem = OrdemServico.query.get_or_404(os_id)
+    cliente = Cliente.query.filter_by(nome=ordem.cliente_nome).first()
+
+    if not cliente:
+        flash('Cliente associado à Ordem de Serviço não encontrado.', 'danger')
+        return redirect(request.referrer or url_for('main.client'))
+
+    if ordem.pagamento:
+        flash('Esta Ordem de Serviço já possui um pagamento registrado.', 'warning')
+        return redirect(url_for('main.cliente', id=cliente.id, tab='veiculos-pane'))
+    
+    try:
+        data = request.form
+        valor_str = data.get('valor').replace('.', '').replace(',', '.')
+        valor = float(valor_str)
+        
+        novo_pagamento = Pagamento(
+            cliente_id=cliente.id,
+            ordem_servico_id=os_id,
+            data=datetime.now(pytz.utc),
+            valor=valor,
+            metodo=data.get('metodo'),
+            tipo_pagamento=data.get('tipo_pagamento'),
+            parcelas=int(data.get('parcelas')) if data.get('parcelas') else None
+        )
+        db.session.add(novo_pagamento)
+        db.session.commit()
+        flash('Pagamento registrado com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao registrar pagamento: {e}', 'danger')
+
+    return redirect(url_for('main.cliente', id=cliente.id, tab='veiculos-pane'))
+
+# --- INÍCIO: NOVA ROTA PARA EDITAR PAGAMENTO ---
+@main.route('/api/pagamentos/<int:pagamento_id>/edit', methods=['POST'])
+@login_required
+def edit_pagamento(pagamento_id):
+    pagamento = Pagamento.query.get_or_404(pagamento_id)
+    cliente_id = pagamento.cliente_id
+
+    # Verificação de permissão (opcional)
+    if pagamento.ordem_servico.cliente_nome != current_user.nome and not current_user.is_admin():
+        flash('Você não tem permissão para editar este pagamento.', 'danger')
+        return redirect(url_for('main.cliente', id=cliente_id, tab='pagamentos-pane'))
+
+    try:
+        data = request.form
+        valor_str = data.get('valor').replace('.', '').replace(',', '.')
+        pagamento.valor = float(valor_str)
+        pagamento.metodo = data.get('metodo')
+        pagamento.tipo_pagamento = data.get('tipo_pagamento')
+        pagamento.parcelas = int(data.get('parcelas')) if data.get('parcelas') else None
+        
+        db.session.commit()
+        flash('Pagamento atualizado com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao atualizar pagamento: {e}', 'danger')
+        
+    return redirect(url_for('main.cliente', id=cliente_id, tab='pagamentos-pane'))
+
+# --- FIM: NOVA ROTA ---
+
+# --- INÍCIO: NOVA ROTA PARA DELETAR PAGAMENTO ---
+@main.route('/api/pagamentos/<int:pagamento_id>/delete', methods=['POST'])
+@login_required
+def delete_pagamento(pagamento_id):
+    pagamento = Pagamento.query.get_or_404(pagamento_id)
+    cliente_id = pagamento.cliente_id # Guarda o ID do cliente para o redirecionamento
+    
+    # Verificação de permissão (opcional, mas recomendado)
+    if pagamento.ordem_servico.cliente_nome != current_user.nome and not current_user.is_admin():
+        flash('Você não tem permissão para deletar este pagamento.', 'danger')
+        return redirect(url_for('main.cliente', id=cliente_id, tab='pagamentos-pane'))
+
+    try:
+        db.session.delete(pagamento)
+        db.session.commit()
+        flash('Pagamento removido com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao remover pagamento: {e}', 'danger')
+        
+    return redirect(url_for('main.cliente', id=cliente_id, tab='pagamentos-pane'))
+
+# --- FIM: NOVA ROTA ---
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():

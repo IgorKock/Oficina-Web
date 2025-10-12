@@ -119,10 +119,10 @@ class Cliente(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
-    telefones = db.relationship('Telefone', backref='cliente', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Cascade para telefones
+    telefones = db.relationship('Telefone', backref='cliente', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Cascade para telefones 
     carros = db.relationship('Carro', backref='cliente', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Cascade para carros
-    historicos = db.relationship('Historico', backref='cliente', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Cascade para históricos
-    pagamentos = db.relationship('Pagamento', backref='cliente', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Cascade para pagamentos
+    #historicos = db.relationship('Historico', backref='cliente', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Cascade para históricos
+    #pagamentos = db.relationship('Pagamento', backref='cliente', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Cascade para pagamentos
 
     def __repr__(self):
         return f'<Cliente {self.nome}>'
@@ -173,8 +173,8 @@ class Carro(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
-    historicos = db.relationship('Historico', backref='carro', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Relacionamento com Historico (mantido)
-    pagamentos = db.relationship('Pagamento', backref='carro', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Relacionamento com Pagamento
+    #historicos = db.relationship('Historico', backref='carro', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Relacionamento com Historico (mantido)
+    #pagamentos = db.relationship('Pagamento', backref='carro', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Relacionamento com Pagamento
 
     @property
     def full_description(self):
@@ -243,7 +243,7 @@ class Historico(db.Model): # 🔹 MANTIDO COMO 'Historico'
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
-    pagamentos = db.relationship('Pagamento', backref='historico', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Relacionamento com Pagamento (mantido)
+#    pagamentos = db.relationship('Pagamento', backref='historico', lazy='dynamic', cascade="all, delete-orphan") # 🔹 Relacionamento com Pagamento (mantido)
 
     def __repr__(self):
         return f'<Historico {self.id}>'
@@ -268,8 +268,8 @@ class Pagamento(db.Model):
     __tablename__ = 'pagamentos'
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
-    carro_id = db.Column(db.Integer, db.ForeignKey('carros.id'), nullable=False)  # 🔹 Associando ao veículo
-    historico_id = db.Column(db.Integer, db.ForeignKey('historicos.id'), nullable=False)  # 🔹 Associando ao serviço (referencia 'historicos')
+    #carro_id = db.Column(db.Integer, db.ForeignKey('carros.id'), nullable=False)  # 🔹 Associando ao veículo
+    #historico_id = db.Column(db.Integer, db.ForeignKey('historicos.id'), nullable=False)  # 🔹 Associando ao serviço (referencia 'historicos')
     data = db.Column(db.DateTime, nullable=False) # Removido o default para controle manual no routes.py
     valor = db.Column(db.Float, nullable=False)
     metodo = db.Column(db.String(50), nullable=False)
@@ -277,6 +277,10 @@ class Pagamento(db.Model):
     parcelas = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp()) # Adicionado
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp()) # Adicionado
+
+    # A ligação agora é diretamente com a Ordem de Serviço
+    ordem_servico_id = db.Column(db.Integer, db.ForeignKey('ordens_servico.id'), unique=True, nullable=False)
+
 
     def __repr__(self):
         return f'<Pagamento {self.id}>'
@@ -309,6 +313,8 @@ class OrdemServico(db.Model):
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     fotos = db.relationship('Foto', backref='ordem_servico', lazy=True, cascade="all, delete-orphan")
     dataPrevisaoEntrega = db.Column(db.Date, nullable=True)
+    # --- NOVA RELAÇÃO ADICIONADA ---
+    pagamento = db.relationship('Pagamento', backref='ordem_servico', uselist=False, cascade="all, delete-orphan")
 
     # REMOVIDO: A coluna 'valor' foi removida.
     # valor = db.Column(db.Float, nullable=False, default=0.0)
