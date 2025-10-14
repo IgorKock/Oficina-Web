@@ -13,7 +13,7 @@ import os
 main = Blueprint('main', __name__)
 
 UPLOAD_FOLDER = 'uploads' 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 def ajustar_para_brasilia(data_utc):
     fuso_brasilia = pytz.timezone('America/Sao_Paulo')
