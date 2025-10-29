@@ -776,10 +776,25 @@ def api_add_cliente():
     if Cliente.query.filter_by(nome=nome).first():
         return jsonify({'error': 'Este cliente já está cadastrado.'}), 409
 
-    novo_cliente = Cliente(nome=nome)
+    novo_cliente = Cliente(
+        nome=nome,
+        apelido=data.get('apelido', '').strip() or None,
+        cpf=data.get('cpf', '').strip() or None,
+        cnpj=data.get('cnpj', '').strip() or None
+    )
     db.session.add(novo_cliente)
     db.session.commit()
+
+    # Adiciona os telefones
+    numeros = data.get('numeros', [])
+    for numero in numeros:
+        if numero.strip():
+            novo_telefone = Telefone(numero=numero.strip(), cliente_id=novo_cliente.id)
+            db.session.add(novo_telefone)
     
+    db.session.commit() # Commit final com os telefones
+    
+    # Retorna os dados do cliente criado para o frontend    
     return jsonify({
         'id': novo_cliente.id,
         'nome': novo_cliente.nome

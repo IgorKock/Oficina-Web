@@ -160,11 +160,47 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="addClientForm">
-                <div class="modal-header"><h5 class="modal-title">Novo Cliente</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                <div class="modal-body">
-                    <div class="mb-3"><label for="newClientName" class="form-label">Nome do Cliente</label><input type="text" class="form-control" id="newClientName" required></div>
+                <div class="modal-header"><h5 class="modal-title">Novo Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary">Salvar Cliente</button></div>
+                <div class="input-group mb-4">
+                        <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                        <div class="form-floating flex-grow-1">
+                            <input type="text" class="form-control" id="add_client_nome" name="nome" placeholder="Nome Completo" required>
+                            <label for="add_client_nome">Nome Completo</label>
+                        </div>
+                    </div>
+                <div class="input-group mb-4">
+                        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                        <div class="form-floating flex-grow-1">
+                            <input type="text" class="form-control" id="add_client_apelido" name="apelido" placeholder="Apelido ou Nome Social (Opcional)">
+                            <label for="add_client_apelido">Apelido ou Nome Social (Opcional)</label>
+                        </div>
+                    </div>
+                    <div class="input-group mb-4">
+                        <span class="input-group-text"><i class="bi bi-credit-card-2-front-fill"></i></span>
+                        <div class="form-floating flex-grow-1">
+                            <input type="text" class="form-control" id="add_client_cpf_cnpj" placeholder="CPF ou CNPJ">
+                            <label for="add_client_cpf_cnpj">CPF ou CNPJ</label>
+                            <input type="hidden" name="cpf" id="add_client_hidden_cpf">
+                            <input type="hidden" name="cnpj" id="add_client_hidden_cnpj">
+                            <span id="add_client_cpfCnpjError" class="text-danger small" style="display: none;">Documento inválido.</span>
+                        </div>
+                    </div>
+                    <div id="add_client_telefones_container">
+                        <div class="input-group mb-4">
+                            <span class="input-group-text"><i class="bi bi-phone-fill"></i></span>
+                            <div class="form-floating flex-grow-1">
+                                <input type="text" class="form-control telefone-input" name="numeros[]" placeholder="Telefone" required>
+                                <label>Telefone</label>
+                            </div>
+                            <button type="button" class="btn btn-outline-secondary" onclick="adicionarCampoTelefoneModal(this)"><i class="bi bi-plus-circle"></i></button>
+                        </div>
+                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Cliente</button>
+                </div>
             </form>
         </div>
     </div>
@@ -540,7 +576,7 @@ document.addEventListener("DOMContentLoaded", function() {
         minLength: 1,
         select: function(event, ui) {
             if (ui.item.isNew) {
-                $('#newClientName').val(ui.item.value);
+                document.getElementById('add_client_nome').value = ui.item.value;
                 addClientModal.show();
                 return false;
             } else {
@@ -564,6 +600,8 @@ document.addEventListener("DOMContentLoaded", function() {
         li.append(`<div>${item.label}</div>`).appendTo(ul);
         return li;
     };
+
+    
     
     function initVehicleAutocomplete(clienteId) {
         $("#vehicle").autocomplete({
@@ -596,28 +634,68 @@ document.addEventListener("DOMContentLoaded", function() {
         $("#vehicle").on('focus', function() { $(this).autocomplete('search', '') });
     }
 
-    $('#addClientForm').on('submit', async function(e) { 
-        e.preventDefault(); 
-        const nome = $('#newClientName').val(); 
-        try { 
-            const response = await fetch('/api/clientes', {
-                method: 'POST', headers: { 
-                    'Content-Type': 'application/json' 
-                }, 
-                body: JSON.stringify({ nome: nome }) 
-            }); 
-            if (!response.ok) throw new Error('Falha ao criar cliente.'); 
-            const newClient = await response.json(); 
-            $('#clientName').val(newClient.nome); 
-            $('#selectedClienteId').val(newClient.id); 
-            $('#vehicle').prop('disabled', false).val('').attr('placeholder', 'Digite para buscar um veículo...'); 
-            initVehicleAutocomplete(newClient.id); addClientModal.hide(); 
-            showCustomAlert('Cliente adicionado com sucesso!'); 
-        } 
-        catch (error) { 
+     addClientForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!validateCpfCnpjInputModal()) return;
+
+        const formData = new FormData(this);
+        // Limpa máscaras
+        $('.telefone-input', this).each(function() {
+            $(this).val($(this).val().replace(/\D/g, ''));
+        });
+
+        // Converte FormData para um objeto JSON para a API
+        const data = Object.fromEntries(formData.entries());
+        data['numeros'] = formData.getAll('numeros[]'); // Trata o array de telefones
+
+        try {
+            const response = await fetch("{{ url_for('main.api_add_cliente') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Falha ao criar cliente.');
+            }
+            const newClient = await response.json();
+
+            $('#clientName').val(newClient.nome);
+            $('#selectedClienteId').val(newClient.id);
+            $('#vehicle').prop('disabled', false).val('').attr('placeholder', 'Digite para buscar um veículo...');
+            initVehicleAutocomplete(newClient.id); addClientModal.hide();
+            showCustomAlert('Cliente adicionado com sucesso!');
+        } catch (error) {
+            //showCustomAlert('Erro: ' + error.message, 'danger');
             showCustomAlert('Erro ao adicionar cliente.', 'danger'); 
-        } 
+        }
     });
+
+    //$('#addClientForm').on('submit', async function(e) { 
+    //    e.preventDefault(); 
+    //    const nome = $('#newClientName').val(); 
+    //    try { 
+    //        const response = await fetch('/api/clientes', {
+    //            method: 'POST', headers: { 
+    //                'Content-Type': 'application/json' 
+    //            }, 
+    //            body: JSON.stringify({ nome: nome }) 
+    //        }); 
+    //        if (!response.ok) throw new Error('Falha ao criar cliente.'); 
+    //        const newClient = await response.json(); 
+    //        $('#clientName').val(newClient.nome); 
+    //        $('#selectedClienteId').val(newClient.id); 
+    //        $('#vehicle').prop('disabled', false).val('').attr('placeholder', 'Digite para buscar um veículo...'); 
+    //        initVehicleAutocomplete(newClient.id); addClientModal.hide(); 
+    //        showCustomAlert('Cliente adicionado com sucesso!'); 
+    //    } 
+    //     catch (error) { 
+    //        showCustomAlert('Erro ao adicionar cliente.', 'danger'); 
+    //    } 
+    // });
+
     $('#addVehicleForm').on('submit', async function(e) { 
         e.preventDefault(); 
         const clienteId = $('#newVehicleClienteId').val(); 
@@ -638,6 +716,95 @@ document.addEventListener("DOMContentLoaded", function() {
             showCustomAlert('Erro ao adicionar veículo.', 'danger'); 
         } 
     });
+
+    $('#addClientModal').on('shown.bs.modal', function () {
+        var cpfCnpjInput = $('#add_client_cpf_cnpj');
+        var cpfCnpjMask = function(val) {
+            return val.replace(/\D/g, '').length <= 11 ? '000.000.000-009' : '00.000.000/0000-00';
+        };
+        
+        cpfCnpjInput.mask(cpfCnpjMask, { 
+            onKeyPress: function(val, e, field, options) {
+                field.mask(cpfCnpjMask.apply({}, arguments), options);
+            }
+        });
+        $('#add_client_telefones_container .telefone-input').mask('(00) 00000-0000');
+        cpfCnpjInput.on('blur', validateCpfCnpjInputModal);
+    });
+
+    window.adicionarCampoTelefoneModal = function() {
+        const container = document.getElementById('add_client_telefones_container');
+        const newDiv = document.createElement('div');
+        newDiv.className = 'input-group mb-4';
+        newDiv.innerHTML = `
+            <span class="input-group-text"><i class="bi bi-phone-fill"></i></span>
+            <div class="form-floating flex-grow-1">
+                <input type="text" class="form-control telefone-input" name="numeros[]" placeholder="Telefone Extra">
+                <label>Telefone Extra</label>
+            </div>
+            <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()"><i class="bi bi-trash"></i></button>
+        `;
+        container.appendChild(newDiv);
+        $(newDiv.querySelector('.telefone-input')).mask('(00) 00000-0000');
+    }
+
+    const validarCPF = (cpf) => {
+        cpf = cpf.replace(/[^\d]+/g, '');
+        if (cpf == '' || cpf.length != 11 || /^(\d)\1+$/.test(cpf)) return false;
+        let add = 0;
+        for (let i = 0; i < 9; i++) add += parseInt(cpf.charAt(i)) * (10 - i);
+        let rev = 11 - (add % 11);
+        if (rev == 10 || rev == 11) rev = 0;
+        if (rev != parseInt(cpf.charAt(9))) return false;
+        add = 0;
+        for (let i = 0; i < 10; i++) add += parseInt(cpf.charAt(i)) * (11 - i);
+        rev = 11 - (add % 11);
+        if (rev == 10 || rev == 11) rev = 0;
+        if (rev != parseInt(cpf.charAt(10))) return false;
+        return true;
+    };
+
+    const validarCNPJ = (cnpj) => {
+        cnpj = cnpj.replace(/[^\d]+/g, '');
+        if (cnpj == '' || cnpj.length != 14 || /^(\d)\1+$/.test(cnpj)) return false;
+        let tamanho = cnpj.length - 2;
+        let numeros = cnpj.substring(0, tamanho);
+        let digitos = cnpj.substring(tamanho);
+        let soma = 0;
+        let pos = tamanho - 7;
+        for (let i = tamanho; i >= 1; i--) {
+            soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+            if (pos < 2) pos = 9;
+        }
+        let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+        if (resultado != parseInt(digitos.charAt(0))) return false;
+        tamanho = tamanho + 1;
+        numeros = cnpj.substring(0, tamanho);
+        soma = 0;
+        pos = tamanho - 7;
+        for (let i = tamanho; i >= 1; i--) {
+            soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+            if (pos < 2) pos = 9;
+        }
+        resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+        if (resultado != parseInt(digitos.charAt(1))) return false;
+        return true;
+    };
+
+    function validateCpfCnpjInputModal() {
+        var input = $('#add_client_cpf_cnpj'), error = $('#add_client_cpfCnpjError');
+        var hiddenCpf = $('#add_client_hidden_cpf'), hiddenCnpj = $('#add_client_hidden_cnpj');
+        var valor = input.val().replace(/\D/g, '');
+        error.hide(); hiddenCpf.val(''); hiddenCnpj.val('');
+        if (valor === '') return true;
+        if (valor.length <= 11) {
+            if (validarCPF(valor)) { hiddenCpf.val(valor); return true; }
+            else { error.text('CPF inválido.').show(); return false; }
+        } else {
+            if (validarCNPJ(valor)) { hiddenCnpj.val(valor); return true; }
+            else { error.text('CNPJ inválido.').show(); return false; }
+        }
+    }
 
     // --- LÓGICA DE EFEITO OVERLAY PARA MODAIS EMPILHADOS ---
     $(document).on('shown.bs.modal', '.modal', function () {
