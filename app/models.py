@@ -312,7 +312,8 @@ class OrdemServico(db.Model):
     data_criacao = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     fotos = db.relationship('Foto', backref='ordem_servico', lazy=True, cascade="all, delete-orphan")
-    dataPrevisaoEntrega = db.Column(db.Date, nullable=True)
+    # dataPrevisaoEntrega = db.Column(db.Date, nullable=True)
+    data_previsao_entrega = db.Column('dataPrevisaoEntrega', db.Date, nullable=True)
     # --- NOVA RELAÇÃO ADICIONADA ---
     pagamento = db.relationship('Pagamento', backref='ordem_servico', uselist=False, cascade="all, delete-orphan")
 
@@ -351,7 +352,7 @@ class OrdemServico(db.Model):
             'fotos': [f.to_dict() for f in self.fotos], # NOVO: Adiciona as fotos
             'total': self.total,
             'createdAt': data_local_criacao.isoformat() if data_local_criacao else None,
-            'dataPrevisaoEntrega': self.dataPrevisaoEntrega.isoformat() if self.dataPrevisaoEntrega else None
+            'dataPrevisaoEntrega': self.data_previsao_entrega.isoformat() if self.data_previsao_entrega else None
         }
 
     def __repr__(self):

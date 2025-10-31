@@ -596,7 +596,8 @@ def add_ordem_servico():
         descricao=data.get('description', ''),
         status=data.get('status', 'Em Andamento'),
         desconto=float(data.get('desconto', 0.0)),
-        dataPrevisaoEntrega=data_previsao_obj  # Corrigido de dataPrevisaoEntrega
+        # Usar o nome do atributo corrigido: data_previsao_entrega
+        data_previsao_entrega=data_previsao_obj
     )
     db.session.add(nova_ordem)
 
@@ -669,9 +670,9 @@ def update_ordem_servico(id):
     # CORREÇÃO: Lógica para atualizar a data de previsão
     data_previsao_str = data.get('dataPrevisaoEntrega')
     if data_previsao_str:
-        ordem.dataPrevisaoEntrega = datetime.strptime(data_previsao_str, '%Y-%m-%d').date()
+        ordem.ordem.data_previsao_entrega = datetime.strptime(data_previsao_str, '%Y-%m-%d').date()
     else:
-        ordem.dataPrevisaoEntrega = None
+        ordem.ordem.data_previsao_entrega = None
 
     # --- RECRIAÇÃO DE SERVIÇOS E PEÇAS ---
     Servico.query.filter_by(ordem_servico_id=id).delete()

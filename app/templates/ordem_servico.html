@@ -325,7 +325,7 @@ document.addEventListener("DOMContentLoaded", function() {
         newItem.innerHTML = `
             <div class="col-md-5"><label class="form-label d-none d-md-block">Nome do Serviço</label><input type="text" class="form-control servico-nome" value="${servico.nome}" placeholder="Nome do Serviço" required></div>
             <div class="col-md-3"><label class="form-label d-none d-md-block">Valor (R$)</label><input type="text" class="form-control servico-valor" value="${valorInicial}" placeholder="0,00"></div>
-            <div class="col-md-3"><label class="form-label d-none d-md-block">Responsável</label><select class="form-select servico-responsavel"><option value="">Selecione...</option>${mecanicoOptions}</select></div>
+            <div class="col-md-3"><label class="form-label d-none d-md-block">Responsável</label><select class="form-select servico-responsavel"><option value="">Selecione</option>${mecanicoOptions}</select></div>
             <div class="col-md-1 d-flex justify-content-center align-items-end mt-3 mt-md-0"><button class="btn btn-outline-danger remove-item-btn" type="button"><i class="bi bi-trash"></i></button></div>`;
         servicosContainer.appendChild(newItem);
         applyMask(newItem, '.servico-valor');
@@ -375,6 +375,14 @@ document.addEventListener("DOMContentLoaded", function() {
         resetAndPrepareForm();
         addServicoItem();
         addPecaItem();
+        // --- ALTERAÇÃO AQUI: Preenche a data de previsão com a data de hoje ---
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // Adiciona 1 porque os meses são de 0 a 11
+        const day = String(today.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+        document.getElementById('dataPrevisaoEntrega').value = formattedDate;
+        // --- FIM DA ALTERAÇÃO ---    
         orderModal.show();
     }
 
