@@ -19,7 +19,7 @@ services:
     networks:
       - oficina_network
 
-  # Seu serviço da aplicação web (Flask)
+  # Serviço da aplicação web (Flask)
   web:
     build: .
     image: igorkock/oficinaweb:latest
