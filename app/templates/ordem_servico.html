@@ -375,14 +375,14 @@ document.addEventListener("DOMContentLoaded", function() {
         resetAndPrepareForm();
         addServicoItem();
         addPecaItem();
-        // --- ALTERAÇÃO AQUI: Preenche a data de previsão com a data de hoje ---
+        
         const today = new Date();
         const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0'); // Adiciona 1 porque os meses são de 0 a 11
+        const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
         const formattedDate = `${year}-${month}-${day}`;
         document.getElementById('dataPrevisaoEntrega').value = formattedDate;
-        // --- FIM DA ALTERAÇÃO ---    
+        
         orderModal.show();
     }
 
@@ -609,25 +609,36 @@ document.addEventListener("DOMContentLoaded", function() {
         return li;
     };
 
-    
-    
     function initVehicleAutocomplete(clienteId) {
+        // 1. GARANTE A LIMPEZA: Remove qualquer instância anterior do autocomplete.
+        // Isso é crucial para que, ao trocar de cliente, a lista de veículos seja atualizada corretamente.
+        if ($("#vehicle").data("ui-autocomplete")) {
+            $("#vehicle").autocomplete("destroy");
+        }
+
         $("#vehicle").autocomplete({
+            // 2. BUSCA OS DADOS: A fonte de dados continua a mesma.
             source: function(request, response) {
                 fetch(`/api/clientes/${clienteId}/veiculos/search?q=${request.term}`)
                     .then(res => res.json())
                     .then(data => {
-                        data.push({ label: `+ Adicionar novo veículo...`, value: request.term, isNew: true });
+                        data.push({ 
+                            label: `+ Adicionar novo veículo...`, 
+                            value: request.term, 
+                            isNew: true 
+                        });
                         response(data);
                     });
             },
+            // 3. ATIVA COM 0 CARACTERES: Essencial para permitir a busca ao clicar (busca vazia).
             minLength: 0,
             select: function(event, ui) {
                 if (ui.item.isNew) {
-                    $('#newVehiclePlaca').val(ui.item.value);
+                    $('#newVehiclePlaca').val(''); 
                     $('#newVehicleClienteId').val(clienteId);
                     addVehicleModal.show();
-                    return false;
+                    $("#vehicle").val(''); 
+                    return false; 
                 } else {
                     $(this).val(ui.item.value);
                     return false;
@@ -639,7 +650,12 @@ document.addEventListener("DOMContentLoaded", function() {
             li.append(`<div>${item.label}</div>`).appendTo(ul);
             return li;
         };
-        $("#vehicle").on('focus', function() { $(this).autocomplete('search', '') });
+
+        // 4. AÇÃO NO CLIQUE: Anexa o evento de 'focus' (clique) para disparar a busca.
+        $("#vehicle").on('focus', function() {
+            // Realiza uma busca com um termo vazio, mostrando todas as opções.
+            $(this).autocomplete('search', '');
+        });
     }
 
      addClientForm.addEventListener('submit', async function(e) {
@@ -648,14 +664,12 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!validateCpfCnpjInputModal()) return;
 
         const formData = new FormData(this);
-        // Limpa máscaras
         $('.telefone-input', this).each(function() {
             $(this).val($(this).val().replace(/\D/g, ''));
         });
 
-        // Converte FormData para um objeto JSON para a API
         const data = Object.fromEntries(formData.entries());
-        data['numeros'] = formData.getAll('numeros[]'); // Trata o array de telefones
+        data['numeros'] = formData.getAll('numeros[]');
 
         try {
             const response = await fetch("{{ url_for('main.api_add_cliente') }}", {
@@ -676,33 +690,9 @@ document.addEventListener("DOMContentLoaded", function() {
             initVehicleAutocomplete(newClient.id); addClientModal.hide();
             showCustomAlert('Cliente adicionado com sucesso!');
         } catch (error) {
-            //showCustomAlert('Erro: ' + error.message, 'danger');
             showCustomAlert('Erro ao adicionar cliente.', 'danger'); 
         }
     });
-
-    //$('#addClientForm').on('submit', async function(e) { 
-    //    e.preventDefault(); 
-    //    const nome = $('#newClientName').val(); 
-    //    try { 
-    //        const response = await fetch('/api/clientes', {
-    //            method: 'POST', headers: { 
-    //                'Content-Type': 'application/json' 
-    //            }, 
-    //            body: JSON.stringify({ nome: nome }) 
-    //        }); 
-    //        if (!response.ok) throw new Error('Falha ao criar cliente.'); 
-    //        const newClient = await response.json(); 
-    //        $('#clientName').val(newClient.nome); 
-    //        $('#selectedClienteId').val(newClient.id); 
-    //        $('#vehicle').prop('disabled', false).val('').attr('placeholder', 'Digite para buscar um veículo...'); 
-    //        initVehicleAutocomplete(newClient.id); addClientModal.hide(); 
-    //        showCustomAlert('Cliente adicionado com sucesso!'); 
-    //    } 
-    //     catch (error) { 
-    //        showCustomAlert('Erro ao adicionar cliente.', 'danger'); 
-    //    } 
-    // });
 
     $('#addVehicleForm').on('submit', async function(e) { 
         e.preventDefault(); 
@@ -724,6 +714,22 @@ document.addEventListener("DOMContentLoaded", function() {
             showCustomAlert('Erro ao adicionar veículo.', 'danger'); 
         } 
     });
+
+    // --- INÍCIO: CORREÇÃO PARA SUBMISSÃO COM 'ENTER' NO MODAL DE VEÍCULO ---
+    $('#addVehicleModal').on('shown.bs.modal', function () {
+        $('#newVehiclePlaca').focus();
+        $(this).find('input').on('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                $('#addVehicleForm').submit();
+            }
+        });
+    });
+
+    $('#addVehicleModal').on('hidden.bs.modal', function () {
+        $(this).find('input').off('keydown');
+    });
+    // --- FIM DA CORREÇÃO ---
 
     $('#addClientModal').on('shown.bs.modal', function () {
         var cpfCnpjInput = $('#add_client_cpf_cnpj');
@@ -816,17 +822,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // --- LÓGICA DE EFEITO OVERLAY PARA MODAIS EMPILHADOS ---
     $(document).on('shown.bs.modal', '.modal', function () {
-        // Ao abrir um novo modal, verifica se já existe um aberto
         const visibleModals = $('.modal.show');
         if (visibleModals.length > 1) {
-            // Adiciona a classe ao primeiro modal visível (o que está por baixo)
             $(visibleModals.get(0)).addClass('modal-beneath');
         }
     });
 
     $(document).on('hidden.bs.modal', '.modal', function () {
-        // Ao fechar qualquer modal, remove a classe de overlay de todos os modais
-        // que ainda possam estar visíveis, para restaurar o foco no modal de cima.
         $('.modal.show').removeClass('modal-beneath');
     });
 
