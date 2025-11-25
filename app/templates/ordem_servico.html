@@ -352,14 +352,32 @@ document.addEventListener("DOMContentLoaded", function() {
         const newItem = document.createElement('div');
         newItem.classList.add('row', 'os-item-row', 'align-items-center');
         const valorInicial = servico.valor > 0 ? formatarValor(servico.valor).replace('R$ ', '') : '';
-        const mecanicoOptions = MECANICOS.map(mecanico => `<option value="${mecanico.nome}" ${mecanico.nome === servico.responsavel ? 'selected' : ''}>${mecanico.nome}</option>`).join('');
+        const nomesMecanicos = MECANICOS.map(mecanico => mecanico.nome);
+        //const mecanicoOptions = MECANICOS.map(mecanico => `<option value="${mecanico.nome}" ${mecanico.nome === servico.responsavel ? 'selected' : ''}>${mecanico.nome}</option>`).join('');
         newItem.innerHTML = `
-            <div class="col-md-5"><label class="form-label d-none d-md-block">Nome do Serviço</label><input type="text" class="form-control servico-nome" value="${servico.nome}" placeholder="Nome do Serviço" required></div>
-            <div class="col-md-3"><label class="form-label d-none d-md-block">Valor (R$)</label><input type="text" class="form-control servico-valor" value="${valorInicial}" placeholder="0,00"></div>
-            <div class="col-md-3"><label class="form-label d-none d-md-block">Responsável</label><select class="form-select servico-responsavel"><option value="">Selecione...</option>${mecanicoOptions}</select></div>
-            <div class="col-md-1 d-flex justify-content-center align-items-end mt-3 mt-md-0"><button class="btn btn-outline-danger remove-item-btn" type="button"><i class="bi bi-trash"></i></button></div>`;
+            <div class="col-md-5">
+                <label class="form-label d-none d-md-block">Nome do Serviço</label>
+                <input type="text" class="form-control servico-nome" value="${servico.nome}" placeholder="Nome do Serviço" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label d-none d-md-block">Valor (R$)</label>
+                <input type="text" class="form-control servico-valor" value="${valorInicial}" placeholder="0,00">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label d-none d-md-block">Responsável</label>
+                <input type="text" class="form-control servico-responsavel" value="${servico.responsavel || ''}" placeholder="Digite o nome">
+            </div>
+            <div class="col-md-1 d-flex justify-content-center align-items-end mt-3 mt-md-0">
+            <button class="btn btn-outline-danger remove-item-btn" type="button"><i class="bi bi-trash"></i></button>
+            </div>`;
         servicosContainer.appendChild(newItem);
         applyMask(newItem, '.servico-valor');
+        $(newItem).find('.servico-responsavel').autocomplete({
+            source: nomesMecanicos,
+            minLength: 0
+        }).on('focus', function() {
+            $(this).autocomplete('search', '');
+        });
         newItem.querySelectorAll('input, select').forEach(i => i.addEventListener('input', calcularTotais));
         newItem.querySelector('.remove-item-btn').addEventListener('click', () => {
             newItem.remove(); if (servicosContainer.children.length === 0) servicosContainer.innerHTML = '<div class="alert alert-info text-center">Nenhum serviço adicionado.</div>'; calcularTotais();
