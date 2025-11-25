@@ -307,6 +307,7 @@ class OrdemServico(db.Model):
     cliente_nome = db.Column(db.String(150), nullable=False)
     veiculo = db.Column(db.String(150), nullable=False)
     descricao = db.Column(db.Text, nullable=True) # Alterado para permitir nulo
+    diagnostico = db.Column(db.Text, nullable=True)
     status = db.Column(db.String(50), nullable=False, default='Em Andamento')
     desconto = db.Column(db.Float, nullable=False, default=0.0) # NOVO: Campo para desconto
     data_criacao = db.Column(db.DateTime, default=db.func.current_timestamp())
@@ -344,6 +345,7 @@ class OrdemServico(db.Model):
             'id': self.id,
             'clientName': self.cliente_nome,
             'vehicle': self.veiculo,
+            'diagnostico': self.diagnostico, # --- NOVA LINHA ADICIONADA ---
             'description': self.descricao,
             'status': self.status,
             'desconto': self.desconto,

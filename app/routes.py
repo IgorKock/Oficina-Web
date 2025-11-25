@@ -594,6 +594,7 @@ def add_ordem_servico():
         cliente_nome=data['clientName'],
         veiculo=data['vehicle'],
         descricao=data.get('description', ''),
+        diagnostico=data.get('diagnostico', ''), # --- NOVA LINHA ---
         status=data.get('status', 'Em Andamento'),
         desconto=float(data.get('desconto', 0.0)),
         # Usar o nome do atributo corrigido: data_previsao_entrega
@@ -664,15 +665,16 @@ def update_ordem_servico(id):
     ordem.cliente_nome = data.get('clientName', ordem.cliente_nome)
     ordem.veiculo = data.get('vehicle', ordem.veiculo)
     ordem.descricao = data.get('description', ordem.descricao)
+    ordem.diagnostico = data.get('diagnostico', ordem.diagnostico) # --- NOVA LINHA ---
     ordem.status = data.get('status', ordem.status)
     ordem.desconto = float(data.get('desconto', ordem.desconto))
 
     # CORREÇÃO: Lógica para atualizar a data de previsão
     data_previsao_str = data.get('dataPrevisaoEntrega')
     if data_previsao_str:
-        ordem.ordem.data_previsao_entrega = datetime.strptime(data_previsao_str, '%Y-%m-%d').date()
+        ordem.data_previsao_entrega = datetime.strptime(data_previsao_str, '%Y-%m-%d').date()
     else:
-        ordem.ordem.data_previsao_entrega = None
+        ordem.data_previsao_entrega = None
 
     # --- RECRIAÇÃO DE SERVIÇOS E PEÇAS ---
     Servico.query.filter_by(ordem_servico_id=id).delete()
