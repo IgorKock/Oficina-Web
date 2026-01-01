@@ -1154,13 +1154,33 @@
 
     // --- FUNÇÕES DE MÁSCARA E EVENTOS ---
     function applyMasks() {
-        var cpfCnpjMask = function(val) { return val.replace(/\D/g, '').length <= 11 ? '000.000.000-009' : '00.000.000/0000-00'; };
-        $('#cpf_cnpj').mask(cpfCnpjMask, { onKeyPress: function(val, e, field, options) { field.mask(cpfCnpjMask.apply({}, arguments), options); } });
+        var cpfCnpjMask = function(val) { 
+            return val.replace(/\D/g, '').length <= 11 ? '000.000.000-009' : '00.000.000/0000-00'; 
+        };
+        $('#cpf_cnpj').mask(cpfCnpjMask, { 
+            onKeyPress: function(val, e, field, options) { 
+                field.mask(cpfCnpjMask.apply({}, arguments), options); 
+            } 
+        });
         $('.cep-input').mask('00000-000');
-        $('.placa-input').mask('SSS-0A00', { translation: { 'S': { pattern: /[A-Za-z]/ }, 'A': { pattern: /[0-9A-Ja-j]/ } }, onKeyPress: function(val, e, field, options){ $(field).mask(val.length > 4 && /[A-Za-z]/.test(val.charAt(4)) ? 'SSS-0A00' : 'SSS-0000', options); } });
+        $('.placa-input').mask('SSS-0A00', { 
+            translation: { 
+                'S': { 
+                    pattern: /[A-Za-z]/ 
+                }, 
+                'A': { 
+                    pattern: /[0-9A-Ja-j]/ 
+                } 
+            }, 
+            onKeyPress: function(val, e, field, options){ 
+                $(field).mask(val.length > 4 && /[A-Za-z]/.test(val.charAt(4)) ? 'SSS-0A00' : 'SSS-0000', options); 
+            } 
+        });
         $('.ano-input').mask('0000');
         $('.telefone-input').mask('(00) 00000-0000');
-        $('.money-input').mask('000.000.000.000.000,00', {reverse: true, placeholder: "0,00"}); // 🔹 Aplicando máscara de dinheiro
+        $('.money-input').mask('000.000.000.000.000,00', {
+            reverse: true, placeholder: "0,00"
+        }); // 🔹 Aplicando máscara de dinheiro
     }
 
     // 🔹 Função para obter o ID da aba ativa
