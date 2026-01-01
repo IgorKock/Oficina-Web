@@ -244,10 +244,51 @@
                 <input type="hidden" id="newVehicleClienteId">
                 <div class="modal-header"><h5 class="modal-title">Novo Veículo</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
                 <div class="modal-body">
-                    <div class="mb-3"><label for="newVehiclePlaca" class="form-label">Placa</label><input type="text" class="form-control" id="newVehiclePlaca" required></div>
-                    <div class="mb-3"><label for="newVehicleMarca" class="form-label">Marca</label><input type="text" class="form-control" id="newVehicleMarca"></div>
-                    <div class="mb-3"><label for="newVehicleModelo" class="form-label">Modelo</label><input type="text" class="form-control" id="newVehicleModelo"></div>
-                    <div class="mb-3"><label for="newVehicleAno" class="form-label">Ano</label><input type="number" class="form-control" id="newVehicleAno"></div>
+                    <div class="col mb-3">
+                        <div class="input-group mb-4">
+                            <span class="input-group-text"><i class="bi bi-tags-fill"></i></span>
+                            <div class="form-floating flex-grow-1">                                
+                                <input type="text" class="form-control" id="newVehiclePlaca" required>
+                                <label for="newVehiclePlaca" class="form-label">Placa</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col mb-3">
+                        <div class="input-group mb-4">
+                            <span class="input-group-text"><i class="bi bi-car-front-fill"></i></span>
+                            <div class="form-floating flex-grow-1">
+                                <input type="text" class="form-control" id="newVehicleMarca">
+                                <label for="newVehicleMarca" class="form-label">Marca</label>                   
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col mb-3">
+                        <div class="input-group mb-4">
+                            <span class="input-group-text"><i class="bi bi-car-front"></i></span>
+                            <div class="form-floating flex-grow-1">                    
+                                <input type="text" class="form-control" id="newVehicleModelo">
+                                <label for="newVehicleModelo" class="form-label">Modelo</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col mb-3">
+                        <div class="input-group mb-4">
+                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                            <div class="form-floating flex-grow-1">                                
+                                <input type="number" class="form-control" id="newVehicleAno">
+                                <label for="newVehicleAno" class="form-label">Ano</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col mb-3">
+                        <div class="input-group mb-4">
+                            <span class="input-group-text"><i class="bi bi-car-front"></i></span>
+                            <div class="form-floating flex-grow-1">                                
+                                <input type="text" class="form-control" id="newVehicleMotor">
+                                <label class="form-label">Motor</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary">Salvar Veículo</button></div>
             </form>
@@ -805,7 +846,7 @@ document.addEventListener("DOMContentLoaded", function() {
         e.preventDefault(); 
         const clienteId = $('#newVehicleClienteId').val(); 
         const vehicleData = { 
-            placa: $('#newVehiclePlaca').val(), marca: $('#newVehicleMarca').val(), modelo: $('#newVehicleModelo').val(), ano: $('#newVehicleAno').val() || null 
+            placa: $('#newVehiclePlaca').val(), marca: $('#newVehicleMarca').val(), modelo: $('#newVehicleModelo').val(), ano: $('#newVehicleAno').val(), motor: $('#newVehicleMotor').val() || null 
         }; 
         try { 
             const response = await fetch(`/api/clientes/${clienteId}/carros`, { 
