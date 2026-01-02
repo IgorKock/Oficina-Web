@@ -4,7 +4,7 @@ Um sistema web utilizando python para gerenciamento de clientes de oficina e de 
 # Requisitos
 Precisa do Python 3.13.2 ou suprior e dos seguintes pacotes do pip: Flask, Flask-Migrate, Flask-SQLAlchemy, Flask-Login, pytz, werkzeug, PyMySQL e o SQLAlchemy.
 
-Também precisa do MySQL/MariaDB.
+Também precisa do MySQL ou do MariaDB (qualquer um serve).
 
 # Executar localmente
 Se preferir executar localmente siga esses passos abaixo.
