@@ -9,7 +9,7 @@ Também precisa do MySQL ou do MariaDB (qualquer um serve).
 # Executar localmente
 Se preferir executar localmente siga esses passos abaixo.
 
-No MySQL/MariaDB execute esses comandos:
+No MySQL ou no MariaDB execute esses comandos:
 > CREATE DATABASE oficina_web CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 > 
 > CREATE USER 'seu_usuario'@'localhost' IDENTIFIED BY 'sua_senha';
