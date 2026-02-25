@@ -1,5 +1,5 @@
 # Sobre
-Sistema web utilizando python para gerenciamento de clientes de oficina e de gerenciamento de inventário.
+Sistema web utilizando python para gerenciamento de clientes de oficina mecânica e de gerenciamento de inventário.
 
 # Requisitos
 Precisa do Python 3.13.2 ou suprior e dos seguintes pacotes do pip: Flask, Flask-Migrate, Flask-SQLAlchemy, Flask-Login, pytz, werkzeug, PyMySQL e o SQLAlchemy.
