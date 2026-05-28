@@ -22,7 +22,7 @@ No MySQL ou no MariaDB execute esses comandos:
 
 Lembre-se de trocar o usuário e a senha para um próprio.
 
-Execute o arquivo run.py e digite a URL que aparecer no terminal em seu navegador (precisa ser "http://SEU_IP:5000").
+Execute o arquivo run.py e digite a URL que aparecer no terminal em seu navegador (tem que ser "http://SEU_IP:5000").
 
 # Executar via docker
 Se preferir executar via docker siga esses passos abaixo.
@@ -31,4 +31,4 @@ Altere o arquivo do docker-compose para trocar o usuário e a senha para um pró
 
 Excecute o comando do Docker Compose "docker compose up --build -d" ou "docker compose up --build" para construir os dockers.
 
-Digite a URL que aparecer no terminal em seu navegador (precisa ser "http://SEU_IP:5000").
+Digite a URL que aparecer no terminal em seu navegador (tem que ser "http://SEU_IP:5000").
