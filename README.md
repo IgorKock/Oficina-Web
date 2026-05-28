@@ -1,5 +1,5 @@
 # Sobre
-Sistema web utilizando python para gerenciamento de clientes de oficina mecânica e de gerenciamento de inventário.
+Sistema web para gerenciamento de clientes de oficina mecânica e de gerenciamento de inventário.
 
 # Requisitos
 Precisa do Python 3.13.2 ou suprior e dos seguintes pacotes do pip: Flask, Flask-Migrate, Flask-SQLAlchemy, Flask-Login, pytz, werkzeug, PyMySQL e o SQLAlchemy.
@@ -32,5 +32,3 @@ Altere o arquivo do docker-compose para trocar o usuário e a senha para um pró
 Após isso pode escolher um desses:
 
 Usar o Docker Compose com o comando "docker compose up --build -d" ou "docker compose up --build".
-
-Ou através de um Docker pronto no Docker Hub: https://hub.docker.com/r/igorkock/oficinaweb
