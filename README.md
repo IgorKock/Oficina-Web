@@ -22,7 +22,9 @@ No MySQL ou no MariaDB execute esses comandos:
 
 Lembre-se de trocar o usuário e a senha para um próprio.
 
-Execute o arquivo run.py e digite a URL que aparecer no terminal em seu navegador (tem que ser "http://SEU_IP:5000").
+Execute o arquivo run.py.
+
+Digite a URL que aparecer no terminal em seu navegador (tem que ser "http://SEU_IP:5000").
 
 # Executar via docker
 Se preferir executar via docker siga esses passos abaixo.
