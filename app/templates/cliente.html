@@ -557,7 +557,7 @@
 							<div id="print-section-pagamentos" class="print-section">
 								<h4>Pagamentos</h4>
 								<table class="table table-sm">
-									<thead><tr><th>Data e Hora</th><th>Serviço</th><th>Valor</th><th>Método</th></tr></thead>
+									<thead><tr><th>Data e Hora</th><th>ID do Serviço</th><th>Serviço</th><th>Valor</th><th>Método</th></tr></thead>
 									<tbody>
 									{% for pagamento in pagamentos %}
 										<tr>
@@ -565,7 +565,7 @@
                                         <td>{{ pagamento.ordem_servico.id }}</td>
                                         <td>{{ pagamento.ordem_servico.descricao or 'N/A' }}</td>
                                         <td>R$ {{ "%.2f"|format(pagamento.valor) }}</td>
-                                        <td>{{ pagamento.metodo }} {% if pagamento.tipo_pagamento == 'Parcelado' %}({{ pagamento.parcelas }}x){% endif %}</td>
+                                        <td>{{ pagamento.metodo }} {% if pagamento.tipo_pagamento == 'Parcelado' %}({{ pagamento.parcelas }}x){% endif %} {% if not pagamento.tipo_pagamento == 'Parcelado' %} ({{ "A vista" }}) {% endif %}</td>
 										</tr>
 									{% endfor %}
 									</tbody>
