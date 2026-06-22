@@ -29,8 +29,8 @@ Digite a URL que aparecer no terminal em seu navegador (tem que ser "http://SEU_
 # Executar via docker
 Se preferir executar via docker siga esses passos abaixo.
 
-Altere o arquivo do docker-compose para trocar o usuário e a senha para um próprio seu.
+Altere o arquivo do Docker Compose (docker-compose.yml) para trocar o usuário e a senha para um próprio seu.
 
-Excecute o comando do Docker Compose "docker compose up --build -d" ou "docker compose up --build" para construir os dockers.
+Excecute o comando do Docker Compose "docker compose up --build -d" ou "docker compose up --build" para construir o docker.
 
 Digite a URL que aparecer no terminal em seu navegador (tem que ser "http://SEU_IP:5000").
