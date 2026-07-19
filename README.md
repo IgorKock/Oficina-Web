@@ -9,7 +9,7 @@ Também precisa do MySQL ou do MariaDB (qualquer um serve).
 # Executar localmente
 Se preferir executar localmente siga esses passos abaixo.
 
-No MySQL ou no MariaDB execute esses comandos:
+No MySQL ou no MariaDB execute esses comandos (Lembre-se de trocar o usuário e a senha para um próprio):
 > CREATE DATABASE oficina_web CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 > 
 > CREATE USER 'seu_usuario'@'localhost' IDENTIFIED BY 'sua_senha';
@@ -20,11 +20,9 @@ No MySQL ou no MariaDB execute esses comandos:
 >
 > EXIT;
 
-Lembre-se de trocar o usuário e a senha para um próprio.
-
 Execute o arquivo run.py.
 
-Digite a URL que aparecer no terminal em seu navegador (tem que ser "http://SEU_IP:5000").
+Digite a URL que aparecer no terminal em seu navegador (precisa ser "http://SEU_IP:5000").
 
 # Executar via docker
 Se preferir executar via docker siga esses passos abaixo.
